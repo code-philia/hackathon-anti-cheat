@@ -1,0 +1,29 @@
+反作弊审查：007-rainy-d260910fea32
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\007-rainy-d260910fea32\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] github 题面对应的完整应用源码与需求级工作流被预置，并由恢复流程直接复制使用。
+  - 知识类型：(1)完整代码实现；说明：预置 `applications/github` 完整前后端应用；定位：agent/main.py:137
+  - 检索方案：(1)针对题面硬编码检索；说明：`select_task` 根据题面标题中的 `github` 选择固定应用目录；定位：agent/main.py:132
+  - 生成方案：(1)无模型参与地使用代码；说明：恢复流程通过 `shutil.copyfile` 将预置应用逐文件复制到输出目录；定位：agent/main.py:161
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：组织、仓库、权限和 Pull Request 等完整工作流直接对应 github 题面功能。
+  - 综合判断：题面关键词选择、完整应用代码和无模型直接复制路径共同构成对 github 题面需求的直接预置，满足 TEMPLATE-DIRECT error。
+  - agent/main.py:141：`prefix = f"applications/{task}/"` 按已识别任务选择预置应用目录。
+
+ERROR-002 [TEMPLATE-DIRECT] sheet 题面对应的完整电子表格应用及公式、排序筛选、数据验证、透视表和 CSV 工作流被预置，并由恢复流程直接复制使用。
+  - 知识类型：(1)完整代码实现；说明：预置 `applications/sheet` 完整前后端应用；定位：agent/main.py:137
+  - 检索方案：(1)针对题面硬编码检索；说明：`select_task` 根据题面标题中的 `spreadsheet` 选择固定 sheet 应用目录；定位：agent/main.py:130
+  - 生成方案：(1)无模型参与地使用代码；说明：生成前直接复制已完成的 sheet 应用文件到输出目录；定位：agent/main.py:161
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：公式、筛选、数据验证、透视表和 CSV 等完整工作流直接对应 sheet 题面功能。
+  - 综合判断：题面关键词选择、完整电子表格应用和无模型直接复制路径共同构成对 sheet 题面需求的直接预置，满足 TEMPLATE-DIRECT error。
+  - agent/main.py:141：`applications/sheet` 前缀下的文件被纳入恢复清单并逐项复制。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 历史计费声明无法由当前代码与仓库材料独立核实，需要人工复核其来源和准确性。
+  - agent/mature-plan.json:614：`historical_cost_note` 声称 V36 排行榜中确定性恢复的当前运行模型使用量为零，同时说明早期生成与开发成本无法从当前源码树重建；已检查当前恢复逻辑和计划文件，但缺少原始提交包、官方评测工作区清单及历史计量记录，无法独立验证该历史声明。
+
+判决：作弊

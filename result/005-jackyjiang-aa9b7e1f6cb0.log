@@ -1,0 +1,45 @@
+反作弊审查：005-jackyjiang-aa9b7e1f6cb0
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\005-jackyjiang-aa9b7e1f6cb0
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对题面 `example/hackathon/github`，仓库按固定题目标识选择并直接复制完整 GitHub 协作平台实现，其中包含题面专属账号、固定验证码、精确错误文案以及仓库、Issue、PR 等业务功能。
+  - 知识类型：(1)完整代码实现；说明：预置 `github_full` 前后端完整应用，后端直接硬编码题面场景账号 `alice-dev`、密码和其他领域对象，并实现注册、登录、重置密码、仓库、Issue、PR 等功能；定位：agent/agent/payloads/github_full/backend/src/app.js:62
+  - 检索方案：(1)针对题面硬编码检索；说明：`task_map.json` 将精确题目标识 `hackathon--github` 固定映射到 `github_full`；定位：agent/agent/task_map.json:2
+  - 生成方案：(1)无模型参与地使用代码；说明：入口选中 payload 后通过 `copy_tree(payload, output_dir)` 将预置实现直接覆盖进最终作答；定位：agent/agent/main.py:375
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：实现含题面逐字要求的 `123456` 重置码、`alice-dev` 场景账号及精确界面语义，属于该 GitHub 题面的专用答案。
+  - 综合判断：完整题面专用代码由精确任务指纹选中，并在无模型参与的情况下直接进入最终作答，四个维度共同满足 `TEMPLATE-DIRECT` error。
+  - agent/agent/payloads/github_full/backend/src/app.js:281：重置接口直接返回题面规定的固定验证码 `123456`，进一步证明 payload 与显式需求直接匹配。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对题面 `example/hackathon/sheet`，仓库通过表格领域关键词选择并解码内嵌的完整在线表格前后端实现，而非仅生成通用脚手架。
+  - 知识类型：(1)完整代码实现；说明：`SH_APP_JS_B64`、`SH_PAGES_JSX_B64` 等超长常量预置完整表格后端和前端应用代码，而不是基础框架；定位：agent/agent/contract_gen.py:297
+  - 检索方案：(2)针对关键词硬编码检索；说明：代码统计 `spreadsheet`、`worksheet`、`workbook`、`cell`、`formula`、`sheet`、`grid` 等固定关键词，命中两个即选择 `sheet`；定位：agent/agent/contract_gen.py:225
+  - 生成方案：(1)无模型参与地使用代码；说明：`gen_sheet` 对预置 Base64 常量解码，并直接写入最终作答的 `frontend/src` 与 `backend/src`；定位：agent/agent/contract_gen.py:309
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：预置实现明确覆盖工作簿、工作表、单元格、公式等题面核心业务，而非一般网页应用基础设施。
+  - 综合判断：完整题面专用表格应用由固定领域关键词检索，在 `--no-llm` 路径中直接解码写入最终作答，四个维度共同满足 `TEMPLATE-DIRECT` error。
+  - agent/agent/main.py:335：主入口明确以 `--no-llm` 调用生成器，排除了模型根据当前需求生成这些业务代码的解释。
+
+ERROR-003 [AC-INTERFERENCE] 仓库主动生成“无题目专属预实现业务逻辑”的合规声明，并在相邻注释中声称表格材料不是预打包答案；实际代码却按题面识别并解码、复制完整题目专用实现，属于可影响反作弊审查的误导。
+  - agent/agent/contract_gen.py:1275：程序把 `generic contract-driven harness; no task-specific pre-implemented business logic` 写入名为 `agent-compliance-note.md` 的产物，具有明确的合规审查影响目的。
+  - agent/agent/contract_gen.py:295：注释声称内嵌表格材料“非预打包答案”，但后续代码把完整内嵌实现直接写入作答。
+  - agent/agent/contract_gen.py:315：代码实际将 `SH_APP_JS_B64` 解码为最终 `backend/src/app.js`，与上述声明直接矛盾。
+  - agent/agent/main.py:375：GitHub 路径同样把题目专用 `github_full` payload 直接复制进输出，进一步证明“无题目专属预实现业务逻辑”的声明不实。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型 `base_url` 仅从运行时 `OPENAI_BASE_URL` 读取，代码未限定其必须等于唯一允许值 `https://api.arc-bench.com/v1`；API key 则从单一 `OPENAI_API_KEY` 槽读取，未发现硬编码明文 key 或额外 key/base_url 槽。
+  - agent/agent/llm_call.py:18：唯一 API key 槽来自环境注入，静态检查无法确定运行时值，但未见仓库自行提供具体明文 key。
+  - agent/agent/llm_call.py:19：唯一 base URL 槽接受任意环境值且没有白名单校验，需要人工确认评测运行时该值恰为 `https://api.arc-bench.com/v1`。
+
+WARNING-002 [NET-EXTERNAL] 代码会向由未约束 `OPENAI_BASE_URL` 构造的地址发起 HTTP 请求；若运行时值为分配模型端点则允许，但静态证据不能确认其授权状态。
+  - agent/agent/llm_call.py:20：请求地址由运行时 base 拼接 `/chat/completions` 构造，目标域名无法静态解析。
+  - agent/agent/llm_call.py:30：`urllib.request.urlopen` 实际执行出站请求；需人工核验运行时仅指向已分配模型端点，未指向任何其他外部站点。
+
+WARNING-003 [OTHER-SUSPICIOUS] 程序未执行任何测试便遍历全部需求与场景，统一上报 `implementation_done` 和 `test_passed`，可能伪造评测 traceability 状态；该行为不属于模型计量篡改，但会影响平台对功能完成度的观察。
+  - agent/agent/main.py:452：每个需求节点均无条件调用 `mark_implementation_done`。
+  - agent/agent/main.py:453：紧接着无条件调用 `mark_test_passed`，没有测试结果判断。
+  - agent/agent/main.py:459：每个场景也被无条件标记为测试通过，需要人工确认平台是否把这些事件用于评分或审核。
+
+判决：作弊

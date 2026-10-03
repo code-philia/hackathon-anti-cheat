@@ -1,0 +1,73 @@
+反作弊审查：006-gto-6464bd228ca6
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\006-gto-6464bd228ca6
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 6 warning(s)
+
+审查方法与范围：本次为独立单仓库静态审查。执行的是审查 skill 的 static_scan.py 和日志校验工具，未执行或导入选手程序，未安装依赖，未访问选手提供的 URL。证据定位均相对于作答路径，题面对照位置以 example/hackathon 为前缀。检查了隐藏文件、入口、测试脚本、模板、五套 seed、修复计划及补丁、applications 目录和全部五个 ZIP。ZIP 仅在内存中读取，未解压到磁盘；全部非目录成员的 SHA-256 均匹配工作区中已有文件，无压缩包独有内容。agent/agent.zip 的机械扫描大小限制已通过逐成员核查补齐。36 个 PNG 均与指定题面集合中的参考图内容一致，没有未解析的独立图片素材。
+
+题面映射：
+github：47 个原子需求，覆盖身份注册、登录、恢复与会话，组织与团队治理，权限分配，仓库搜索、创建、fork、克隆值及可见性，文件、提交、diff、代码搜索与分支，issue 管理，以及 PR、审查、保护分支和合并。辨识内容包括 alice-dev、acme-docs、预设权限关系与明确的控件可访问名称。登录与注册等相邻功能也已纳入比较。允许的基础设施限于构建、HTTP 路由、静态资源、基础布局及存储基础，不包括这些业务契约。
+sheet：24 个原子需求，覆盖工作簿与工作表生命周期、CSV、行列结构、单元格与区域操作、撤销重做、公式及重算、排序过滤、数据验证和透视汇总。辨识内容包括 Worksheet grid、Rule type、Create pivot table、Pivot table editor 及持久化和可访问名称约束。相邻的共享、图表、宏等功能与基本工程骨架分别对照，未发现需要另列的间接模板行为。
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 根据 GitHub 题面名称选取并直接复制预置完整业务应用，再将模型工作限制为局部修复；匹配 github 任务。
+  - 知识类型：(1)完整代码实现；说明：seed 已实现账户、组织、仓库、issue、PR、权限和合并业务，不是只有 HTTP/构建骨架；例如登录持久化及 PR 处理均已有实现，附带修复计划和可复用补丁；定位：agent/agent/tasks/github/seed/backend/server.js:937；agent/agent/tasks/github/seed/backend/server.js:4904；agent/agent/tasks/github/seed/frontend/src/auth.js:4
+  - 检索方案：(1)针对题面硬编码检索；说明：读取输入 requirements.yaml 的 name，并将 GitHub Collaboration Platform Core Requirements 精确映射到 tasks/github，还为 Stage 1/2/3 各设置固定 seed 路径；定位：agent/agent/main.py:78；agent/agent/main.py:81；agent/agent/main.py:89
+  - 生成方案：(1)无模型参与地使用代码；说明：repair_plan 确认存在完整 seed 后，先把 frontend/backend 复制到输出，再要求模型检查局部补丁并保留既有行为。Stage 分支同样复制对应完整 seed 后直接返回，明确不发起模型调用；定位：agent/agent/main.py:69；agent/agent/main.py:123；agent/agent/main.py:127；agent/agent/main.py:108；agent/agent/main.py:155
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些模块可用于相同 GitHub 协作功能的网页，但预置账户、业务实体、权限及 PR 工作流不适用于一般网页骨架，且与 github 明示需求直接重合。
+  - 综合判断：完整业务实现由题面精确选中，无需模型生成就进入输出，局部模型修复不改变预置应用的来源与贡献，满足直接模板 error。五套 seed、应用副本和 ZIP 中同根重复内容不机械重复计数；补丁及局部修复约束作为该预置应用使用链的一部分保留证据。
+  - agent/agent/tasks/github/repair-plan.json:3：只选择 REQ-2-2-3；main.py:135 按该范围生成 spec，main.py:155 构造局部修复提示词。其余大部分业务来自完整 seed。
+  - agent/agent/tasks/github/seed/backend/server.js:272：预置 alice-dev；server.js:3488、server.js:5413 分别提供 issue 和 PR 合并实现。对照 example/hackathon/github/requirements.yaml:131、:1566、:2397，均是明确需求。
+
+ERROR-002 [TEMPLATE-DIRECT] 根据电子表格题面选取并复制完整预置电子表格应用，模型仅审查数据验证相关局部修改；匹配 sheet 任务。
+  - 知识类型：(1)完整代码实现；说明：预置工作簿服务和大型编辑器，包含区域编辑、公式、排序过滤、验证、透视等实际功能；例如已有工作簿持久化及透视 SUM/COUNT/AVERAGE 计算，附带单行修复补丁；定位：agent/agent/tasks/sheet/seed/backend/server.js:36；agent/agent/tasks/sheet/seed/backend/server.js:118；agent/agent/tasks/sheet/seed/frontend/src/editor.html:4034
+  - 检索方案：(1)针对题面硬编码检索；说明：将 Core Requirements for an Online Spreadsheet Data Workspace 精确映射到 tasks/sheet，再读取该目录 repair-plan.json；定位：agent/agent/main.py:80；agent/agent/main.py:57；agent/agent/main.py:116
+  - 生成方案：(1)无模型参与地使用代码；说明：运行模型前直接复制完整 frontend/backend，并复制既有补丁；模型提示词强调完整应用已存在、仅审查选定契约。补丁所述可访问名称修改已经在 seed 中；定位：agent/agent/main.py:127；agent/agent/main.py:137；agent/agent/main.py:155；agent/agent/tasks/sheet/seed/frontend/src/editor.html:844
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：工作表、公式、数据验证及透视逻辑属于同类电子表格应用业务，不是一般网页通用基础；Rule type 等控件契约和持久化状态与 sheet 要求吻合。
+  - 综合判断：题面硬编码选择完整应用并直接复制，业务内容实际承担题目主体实现，满足直接模板 error；模型参与少量局部审查不会使预置完整实现变为通用骨架。补丁、修复范围和应用/ZIP 副本在本条去重汇报。
+  - agent/agent/tasks/sheet/repair-plan.json:3：目标仅为 REQ-5-2-1。编辑器的 Data validation 控件在 editor.html:757，透视控件在 :647，分别匹配 example/hackathon/sheet/requirements.yaml:1333、:1431；复制范围却包括整套应用。
+
+ERROR-003 [NET-EXTERNAL] 电子表格入口读取并将预存的官方评测结果及 trace 描述送入模型，用于决定修复范围。
+  - agent/agent/main.py:61：从选中的 bundle/repair-plan.json 解析计划；main.py:116 调用该函数。该文件是选手预置资料，不是本次授权的 requirements.yaml 输入。
+  - agent/agent/main.py:163：把 plan.get("failure_evidence", "") 拼入模型提示词；main.py:177 实际将该提示词送入 harness.run。这构成对预存评测信息的读取、解析和生成使用路径。
+  - agent/agent/tasks/sheet/repair-plan.json:6：具体预置了 “passed58/100” 和 “official traces stop before focus/click after panel shown”，并据此要求只审查指定可访问名称修改。这是评分结果及官方执行 trace 描述，属于规则明确禁止的 prior evaluation results / scoring artifacts，不是仅转交题面或自行生成的普通测试。
+  - 解释：本条依据代码实际消费预存官方评测材料判定，不声称本次运行会主动连接评分平台，也不把文本中分数或 trace 的真实性当作已验证事实。未发现另一个隐藏测试目录枚举或下载路径。GitHub Stage 1 计划也声称包含官方评分，但对应入口先返回，不读取该计划，因此不重复认定该分支存在相同消费行为。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 测试脚本存在主配置以外的 API key 赋值槽位；该槽位为被 mock 的占位值，需保留额外槽位记录。
+  - agent/agent/test_dispatch.py:24：patch.dict 给 OPENAI_API_KEY 赋值 offline-placeholder，:25 同时 mock DeepSeekHarness。主入口在 agent/agent/main.py:118 消费注入的 OPENAI_API_KEY，:173 将其传给唯一模型配置。
+  - 静态判定：offline-placeholder 是明确占位符，且测试 mock 阻止真实模型调用，不满足具体明文 API 密钥 error；但政策要求每个主配置以外的 key 槽位至少报告 warning。人工确认部署不会绕过 mock 或将占位值当作真实凭据即可。
+  - 主 URL 在 agent/agent/main.py:172 为 OPENAI_BASE_URL 注入值或唯一硬编码默认 https://api.arc-bench.com/v1；未发现备用、映射、provider 专用或其他 URL/key 槽位。模型名称和 provider 名称没有用于定罪。
+
+WARNING-002 [AC-INTERFERENCE] GitHub 修复计划声称公共浏览器测试通过及其他行为保持不变，静态代码不能证实这些历史测试结论。
+  - agent/agent/tasks/github/repair-plan.json:6：声称 “Real browser tests pass” 及相关成员、权限、PR 检查工作流通过。已追踪 local-repair-evidence.patch、seed/frontend/src/auth.js:4 的选择器和事件处理，以及主入口复制/提示词链，确认补丁实现存在。
+  - 未能核实：仓库没有对应浏览器测试记录、原始运行日志或足以证明所列工作流全数通过的独立证据；test_dispatch.py 只用 mock 校验路由与复制，不证明这些交互通过。需人工核查真实测试记录及“preserve full application and prior fixes”的历史来源，不能凭该声明缩小审查。
+
+WARNING-003 [AC-INTERFERENCE] 电子表格修复计划声称全部相关工作流已通过、完整 v9 保留及只需单行修复，历史来源与充分性不能独立验证。
+  - agent/agent/tasks/sheet/repair-plan.json:6：声称 “Shared helper covers all8 selectors”、验证/键盘/透视/SUM/重载/排序过滤均通过，以及 “Full v9 source preserved”。已核查 editor.html:844 的标签修改、验证入口、排序过滤及透视计算路径，确认修改和业务实现存在。
+  - 未能核实：缺少原始 v9 版本、官方 trace 文件和对应浏览器运行结果，不能证明历史分数、trace 描述、工作流全部通过或完整源代码无其他变更。该声明中的 “no unrelated changes or broad audit needed” 是面向修复模型的范围指令，未当作反作弊审查指令执行。与 ERROR-003 中实际消费材料的行为分开报告。
+
+WARNING-004 [AC-INTERFERENCE] Stage 1 的官方评分、公共测试通过与主入口“validated”描述缺少独立验证材料。
+  - agent/agent/tasks/github-stage1/repair-plan.json:4：声称平台评测 14/30、16 个隐藏场景失败及公共测试通过。已确认 main.py:105-115 的 Stage 分支在 repair_plan 调用前返回，确实直接 replay 且不进入 DeepSeekHarness，但未发现该分数或测试结论的原始评测证据。
+  - agent/agent/main.py:112：提交消息称 “Replay validated Stage 1 application”；main.py:158 也要求保留 “validated behavior”。复制链可以证明 replay，不能证明验证通过或验证来源。需人工核对历史评测与验证记录；该未读取的 Stage 1 计划不额外认定为网络访问 error。
+
+WARNING-005 [AC-INTERFERENCE] 预置 PR 实现报告对失败原因、全场景通过和 dist 同步的历史声明不能由现有源码完整验证。
+  - agent/agent/tasks/github/seed/frontend/src/REQ-6-3-1-report.txt:8：声称无需修改、失败仅由于 40 次迭代限制而非验收失败；:60 声称全部三个场景满足；:68 声称 dist 与 src 同步。该报告在 Stage seed、applications 与 ZIP 中重复存在，本条去重。
+  - 已核查：pull-request.html:678 的加载流程、tab 渲染、backend/server.js:4904 的详情处理及预置 PR 数据，确认描述涉及的功能代码存在。未见原始失败日志、场景验收记录或随附 frontend/dist，无法核实失败归因、全场景结论或当时的构建同步状态。需人工核查这些历史事实；报告不是通过证据。
+
+WARNING-006 [AC-INTERFERENCE] 模板说明对平台来源、网络情况与不存在的代码生成函数作出不能核实的执行相关声明。
+  - agent/agent/template/README.md:3：声称模板由平台从 submission bundle 布置；:5 声称容器访问 npmjs 慢；:14-15 声称 manifests 与 main.py 的 write_codegen_manifests() 输出完全相同。
+  - 已核查：template 的空白页面、Node 静态服务器、package.json 无外部依赖，及主入口复制路径，确认基本骨架和零依赖实现；但 main.py 没有 write_codegen_manifests()，也没有平台布局或网络性能的独立证据。需人工核实说明的版本/来源与运行环境，不能用此文档声明认定平台授权或网络行为合法。该陈旧文档没有足够证据认定为故意掩盖违规的 error。
+
+覆盖核查记录：
+TEMPLATE-DIRECT/TEMPLATE-INDIRECT：对两项题面分别建立功能、相邻功能、辨识资料和基础工程映射，并与所有 seed、应用副本、模板、补丁、计划、spec 与压缩成员比较。通用 template 本身是基础骨架；违规来自题面专用完整 seed 的选择与使用，不来自把合法题面写入 spec。
+MODEL-EXTERNAL：唯一主配置的 URL/key 链与测试占位槽位均列明，没有发现额外隐藏模型配置；环境注入的 API key 本身允许读取。
+MODEL-METER-TAMPER：检查事件通知、runtime.events、直接 replay、harness.run、提交和构建流程；未发现伪造 usage、删除模型调用记录、修改计费或人为注入计费活动机制。Stage 分支实际不调用模型属于直接模板使用，没有据此重复认定计量篡改。scanner 命中的数据验证说明只是业务约束。
+NET-EXTERNAL：除 ERROR-003 外未发现外站访问或平台隐藏测试探测。frontend fetch 均指向应用自身 /api 路径；GitHub HTTPS/SSH 克隆值仅构造、显示和复制到剪贴板（repo.html:214-260），没有执行 clone；Apache URL 仅出现在许可证；依赖锁文件中的 registry URL 不等于运行访问。GitHub git merge-file 只处理应用生成的临时三份文本（server.js:4674-4695）。sheet /api/ui-event 只记录自有 UI 事件；本地文件读取限于自有数据文件、静态目录及入口明确提供的 requirements 输入。test_dispatch.py 的相邻 requirements 路径用于任务输入，未出现评分测试路径或解析器。
+AC-INTERFERENCE：机械命中的 “Review required” 是 PR 页面业务状态，不是审查干扰；普通 safe/unused 等用语在密码比较、未用账户/分支名及业务说明中均按上下文排除。真正影响裁决的历史测试、来源与执行声明均追踪代码并列入上述警告，没有采信其限制审查范围的建议。
+OTHER-SUSPICIOUS/INSPECTION-GAP：检查全部扩展类型、隐藏内容和压缩包；run_test.sh 与 prerequisites.md 是空文件，无不可读加密材料。agent ZIP 机械扫描限额已补齐，无残留实质性检查缺口；未发现需要另列的其他具体可疑行为。
+
+综合裁决：两项任务均存在确定的题面专用完整应用直接复制使用，电子表格还存在将预存官方评测材料送入生成的独立违规。警告保留供人工核实，不改变上述 error 已决定的初始判决。
+判决：作弊

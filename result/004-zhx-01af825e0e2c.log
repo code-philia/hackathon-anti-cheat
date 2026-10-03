@@ -1,0 +1,45 @@
+反作弊审查：004-zhx-01af825e0e2c
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\004-zhx-01af825e0e2c
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的 `DELIVERY_RULES` 含有直接匹配 github 与 sheet 题目要求的应用功能合同，并被全量注入生成模型的系统提示词。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置内容规定同时显示字段错误、权限角色不可按通用累积阶梯处理、行列删除时的数据移动、表格选区/公式/撤销重做及异步保存行为，已经超出基础脚手架而属于两个题目的功能实现约束；定位：agent/agent/main.py:209
+  - 检索方案：(4)无检索机制（全量使用）；说明：`SYSTEM_PROMPT` 无条件拼接完整 `DELIVERY_RULES`，没有按题目或通用基础设施边界筛选；定位：agent/agent/main.py:250
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：完整系统提示词作为 `system_prompt` 参数进入负责修改作答代码的 `client.agent2` 会话；定位：agent/agent/main.py:580
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些合同可复用于具有相同 GitHub 协作或电子表格功能的应用，但不是一般网页基础设施。
+  - 综合判断：知识与 github 的注册/权限规则以及 sheet 的工作簿、网格、公式、行列和撤销重做要求直接相符；其全量预置和进入生成提示词的路径均已由源码闭合，四个维度共同支持 TEMPLATE-DIRECT error。
+  - agent/agent/main.py:213：硬编码 `New blank workbook -> Create`、默认名 `Untitled workbook` 及重命名校验的具体表格功能合同。
+  - agent/agent/main.py:215：硬编码与 github 题面“角色不是自动累积阶梯”直接对应的服务端权限合同。
+  - agent/agent/main.py:217：硬编码 sheet 行列删除、单元格移动和清理旧坐标的实现约束。
+  - agent/agent/main.py:219：硬编码 sheet 数据模型、ARIA 状态、复制/剪切、公式偏移、撤销/重做和异步保存约束。
+
+ERROR-002 [TEMPLATE-DIRECT] 仓库预置了按 github 与 sheet 题面特征选择的专用 Playwright 检查代码，直接执行后又将失败结果用于模型修复。
+  - 知识类型：(2)代码片段；说明：`browser_check.cjs` 预置可执行的 sheet 建表、单元格编辑、行列菜单、区间复制、公式引用检查，以及 github 注册、登录、恢复、搜索和导航检查；定位：agent/agent/arc_light/browser_check.cjs:57
+  - 检索方案：(1)针对题面硬编码检索；说明：选择器以 `Create a Blank Workbook`、`Edit a Cell Through the Grid or Formula Bar` 等精确要求名称和固定界面文本识别题目；另有固定关键词标记，属于精确题面指纹与关键词混合，主类别为针对题面硬编码检索；定位：agent/agent/arc_light/public_checks.py:35
+  - 生成方案：(1)无模型参与地使用代码；说明：交付检查直接以 Node 执行预置 `browser_check.cjs`；检查失败随后还会进入修复提示词，但专用检查代码的首要使用方式是无模型直接执行；定位：agent/agent/arc_light/delivery.py:229
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：精确 accessible name、固定验证码 `123456`、错误文案、公式 `=A1+$B$1` 和特定交互序列均紧贴本次 github/sheet 题面。
+  - 综合判断：预置测试代码通过题面指纹选择并直接验证两个任务的具体功能，结果还能驱动后续代码修复，已形成明确使用路径；四个维度共同支持 TEMPLATE-DIRECT error。
+  - agent/agent/arc_light/browser_check.cjs:223：预置 github 注册校验与持久化登录的完整交互检查，包含题面精确字段名和错误消息。
+  - agent/agent/arc_light/browser_check.cjs:271：预置 github 本地密码恢复检查并断言题面固定验证码 `123456`。
+  - agent/agent/arc_light/browser_check.cjs:150：预置 sheet 区间复制、剪切、撤销、重做和刷新持久化检查。
+  - agent/agent/main.py:681：自检结果由协调器取得，失败时在 `main.py:656` 构造修复提示并于 `main.py:694` 再次调用模型修改作答。
+
+ERROR-003 [NET-EXTERNAL] 交付自检在依赖未就绪或缓存摘要变化时执行 `npm install`，构成运行期访问外部包服务并安装依赖的具体尝试。
+  - agent/agent/arc_light/delivery.py:181：对 frontend/backend 直接启动 `npm install --no-audit --no-fund`；该命令会解析并获取 npm 依赖，属于政策明确禁止的包目录服务访问。
+  - agent/agent/arc_light/delivery.py:184：检测到网络失败后还会再次执行同一安装命令，证明网络访问是被设计并主动重试的运行路径。
+  - agent/agent/main.py:238：系统提示同时要求给 `npm install` 足够的超时时间，使生成代理也被明确引导执行同类依赖安装；此证据与自检中的确定调用相互印证。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置包含多个 URL/密钥入口，但仓库未给出其运行时具体值，无法静态确认最终 URL 是否严格等于 `https://api.arc-bench.com/v1`，也无法确认是否解析出多个不同密钥。
+  - agent/agent/main.py:554：主运行路径在 `OPENAI_API_KEY` 与 `OPENCOLLAB_API_KEY` 两个密钥槽之间选择，额外槽位必须记录。
+  - agent/agent/main.py:555：主运行路径在 `OPENAI_BASE_URL` 与 `OPENCOLLAB_BASE_URL` 两个 URL 槽之间选择，未硬编码允许值。
+  - agent/agent/opencollab/bootstrap/config.py:339：配置层还枚举 `DASHSCOPE_API_KEY`；`config.py:341` 枚举 `ANTHROPIC_API_KEY`，`config.py:342` 再枚举 `OPENCOLLAB_API_KEY`/`OPENAI_API_KEY`。
+  - agent/agent/opencollab/bootstrap/config.py:418：配置层可选择 `ANTHROPIC_BASE_URL` 或 `OPENAI_BASE_URL`；`config.py:423` 还接受 `OPENCOLLAB_BASE_URL`。
+  - agent/agent/opencollab/adapters/llm/client.py:119：模型客户端另有 `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY` 回退；`client.py:130` 至 `client.py:133` 另有 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 回退。
+  - agent/agent/opencollab/adapters/cli/main.py:69：CLI 暴露独立 `--api-key` 与 `--base-url` 覆盖槽；SDK 构造器在 `opencollab/sdk/client.py:118` 至 `client.py:120` 也接受同类覆盖。需人工核验实际启动环境、任何调用方覆盖及最终解析记录，确认唯一密钥来自评测注入且唯一有效 URL 为允许值。
+
+判决：作弊
