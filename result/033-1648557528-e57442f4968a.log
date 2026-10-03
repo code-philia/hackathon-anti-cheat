@@ -1,0 +1,48 @@
+反作弊审查：033-1648557528-e57442f4968a
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/033-1648557528-e57442f4968a
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：6 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 提交预置了同时覆盖 github 与 sheet 两个题目的完整可运行应用，根据题面关键词选择产品 profile，然后无模型参与地直接复制成最终作答。
+  - 知识类型：(1)完整代码实现；说明：预置后端包含 github 注册、登录、固定验证码找回等精确契约，以及 sheet 工作簿/工作表、CSV、公式、排序过滤、验证和透视表的完整实现，并配有对应前端页面、种子数据和 E2E 规格；定位：template/backend/src/routes/auth.js:14；template/backend/src/routes/sheet.js:3
+  - 检索方案：(2)针对关键词硬编码检索；说明：代码硬编码 spreadsheet/worksheet/formula/pivot 与 github/repository/issue/pull request 等领域关键词计分，将题面选为 sheet 或 github profile，再加载对应专用数据；定位：factory/compile.py:23
+  - 生成方案：(1)无模型参与地使用代码；说明：copy_template 逐项将预置 template 的前后端目录直接复制到 output_dir，main 在默认流程立即调用该操作；定位：factory/build.py:16
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：实现直接写入题面的 REQ 结构、精确英文控件/错误文案、固定验证码、SheetN/PivotN 规则与两套题目专用数据，远超基础通用脚手架。
+  - 综合判断：这是按题面功能关键词选择、无模型地直接交付的两套题目专用完整代码；同一工厂行为对 github 和 sheet 两个任务生效，故合并为一项 TEMPLATE-DIRECT error。
+  - template/backend/src/routes/sheet.js:54：代码明示将题面精确文案作为“Contract strings (verbatim from the requirement descriptions)”，包括工作簿/工作表错误、CSV、透视表与验证提示。
+  - template/backend/src/app.js:58：运行时按 kind 在完整 github 路由组和 sheet 路由之间选择，证明预置代码有可达的实际使用路径。
+
+ERROR-002 [NET-EXTERNAL] 默认自验证流程主动定位、读取、复制并执行平台提供的外部评分 Playwright 测试，再将测试源码、失败信息和通过状态写回作答产物。
+  - factory/verify.py:96：discover_tests 从 ARCBENCH_TESTS_DIR/ARCBENCH_TEST_DIR/ARC_TESTS_DIR 以及 output/requirements 的父目录主动搜索 spec/test 文件，并明确将命中标记为平台的 external suite。
+  - factory/verify.py:53：archive_suite 递归读取命中的外部测试树，并将源文件复制到 output_dir/.arc-factory/discovered-tests。
+  - factory/verify.py:317：提交以 npx playwright test --config 直接执行该测试，读取 JSON 报告后收集失败与状态；main.py:289 进一步用结果改写需求节点的验证状态。
+  - template/backend/playwright.config.js:63：即使主验证路径未命中，交付应用内的 Playwright 配置仍会对项目上级目录搜索并选取外部 spec。
+
+ERROR-003 [NET-EXTERNAL] 提交在运行期枚举超出授权需求输入的平台环境、文件系统根目录、作答/需求父目录和测试候选目录，并将侦察结果写入作答产物。
+  - factory/recon.py:25：environment_snapshot 遍历全部 os.environ，记录命令行、当前目录和平台信息，而不仅是读取运行所需配置。
+  - factory/recon.py:75：directory_recon 显式枚举 output_parent、requirements_parent 与 Path("/")，并在多个输入范围外的基目录搜索测试文件和 Playwright 配置。
+  - factory/recon.py:114：write_recon 将这些平台侦察结果持久化到 output_dir/.arc-factory/recon.json，代码模块顶部还明示其目的是记录“platform's real harness”。
+
+ERROR-004 [NET-EXTERNAL] 提交的默认构建路径会通过 npm 安装依赖，并调用 Playwright 安装 Chromium，构成对外部包/浏览器分发服务的具体访问尝试。
+  - main.py:204：只有显式设置 ARC_FACTORY_SKIP_INSTALL 才跳过 npm-install，默认会调用 install_dependencies；main.py:255 同样在默认自验证流程调用 prepare_playwright_browsers。
+  - factory/build.py:94：install_dependencies 对 backend 和 frontend 直接执行 npm install --no-audit --no-fund --loglevel=error。
+  - factory/build.py:108：prepare_playwright_browsers 直接执行 npm exec -- playwright install chromium，是另一条明确的外部下载路径。
+
+ERROR-005 [AC-INTERFERENCE] README 将预置产物称为“blank application template”，但可执行代码是按题面 profile 切换的 github/sheet 完整业务应用；该说明错误弱化了预置模板的专用性，能够影响反作弊审查。
+  - README.md:13：原文声称 stage-template 复制“the bundled blank application template”。
+  - template/backend/src/app.js:58：实际代码预置 github 的 auth/orgs/repos/issues/pulls 整套路由和 sheet 路由，并按 pack kind 动态挂载；template/backend/src/routes/sheet.js:54 更直接声明内含题面逐字契约。
+  - factory/build.py:16：所谓“blank”目录被 copy_template 原样复制到作答输出，而非仅创建通用空白脚手架。
+
+ERROR-006 [AC-INTERFERENCE] 身份路由的说明声称测试重置接口在普通部署中不可达，但实际代码允许任意客户端仅通过自行添加请求头启用整库重置，对可达性的解释与代码矛盾。
+  - template/backend/src/routes/auth.js:295：注释声称接口“fenced twice”，且“A plain deployment answers `404 Not found`, so the route is not a reachable back door.”
+  - template/backend/src/routes/auth.js:316：resetEnabled 使用“服务端环境变量或客户端 x-arc-e2e-reset: 1 请求头”的或条件，因此普通部署中客户端也能自行满足条件。
+  - template/backend/src/routes/auth.js:511：POST /_e2e/reset 在该客户端可控条件通过后会执行 resetAndSeed(config)，证明“plain deployment 不可达”的说明不实。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 仓库多处将自带的证据脚本称为“official ARC-Bench”，并声称其格式必然与平台读取方式一致；仓库内证据只能确认脚本被调用，无法独立核实其官方来源和平台信任关系。
+  - README.md:23：待核验声称是“through the official ARC-Bench skill scripts”；已检查 factory/traceability.py:17 的脚本路径、factory/traceability.py:29 的子进程调用链和仓库内三个 skill 内容，可确认它们会写入 .arc 记录，但仓库没有可独立验证“official”身份或“平台必然读取该格式”的可信来源，需人工向赛事平台核实这两项来源/信任事实。
+
+判决：作弊

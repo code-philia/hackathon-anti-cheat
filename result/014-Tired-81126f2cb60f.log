@@ -1,0 +1,41 @@
+反作弊审查：014-Tired-81126f2cb60f
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/014-Tired-81126f2cb60f
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：4 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库预置了分别直接匹配 github 与 sheet 题面的完整可运行应用，并按需求文件 SHA-256 指纹选中后无模型参与地复制到最终作答目录。
+  - 知识类型：(1)完整代码实现；说明：payloads 内含后端、前端、数据库、单元测试与 E2E 测试的整套应用；github 载荷甚至预置题面特定的用户名、邮箱、密码和错误文案规则；定位：payloads/bdc17d23265a6b1948aec150e69d0b2accfa37db4c569305c97be7ff7f3b0b8f/backend/src/auth/passwords.js:3
+  - 检索方案：(1)针对题面硬编码检索；说明：代码计算输入 requirements.yaml 的 SHA-256，再与 continuation.json 中预置的 requirement_sha256 一一匹配，该哈希就是固定题面指纹；定位：legacy_core.py:63
+  - 生成方案：(1)无模型参与地使用代码；说明：选中载荷后，restore 逐文件把已有完整应用字节写入 output，模型仅在后续可选 repair 阶段修改极少量白名单文件；定位：legacy_core.py:87
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：两个载荷分别编码 GitHub 协作平台与表格编辑器的具体页面、可访问名、固定错误文案、数据模型和验收测试，远超通用脚手架。
+  - 综合判断：完整代码知识被题面指纹精确选择并直接复制，泛用性为 (1)；这是同一恢复机制对 github 和 sheet 两个任务的应用，满足 TEMPLATE-DIRECT error。
+  - payloads/9cddf67be50748106289ed158648629a6c50c30a490d0eda5bd570c557440b96/frontend/src/pages/WorkbookEditorPage.tsx:361：sheet 载荷直接实现题面指定的“Data validation”、“Create pivot table”、“Export CSV”与“Add worksheet”功能契约。
+  - continuation.json:275 与 continuation.json:552：两套完整文件清单分别绑定固定 requirement_sha256，而非通用模板选择。
+
+ERROR-002 [MODEL-EXTERNAL] 程序生成额外的本地 API key，并把 Codex 的模型 base_url 改为动态 localhost 地址，明确不是唯一允许值 https://api.arc-bench.com/v1；同时该本地 key 与环境注入的上游 key 是两个不同的 API-key 配置。
+  - agents/model/visual_transport.py:252：通过 secrets.token_urlsafe(32) 生成具体明文 local_key，而非仅消费评测环境注入的 API key。
+  - agents/model/visual_transport.py:673：把 base_url 解析为 http://127.0.0.1:<dynamic-port>/v1，该值不等于允许的 https://api.arc-bench.com/v1。
+  - generation_reference.py:192：_codex_config 优先取 transport.base_url，随后在 generation_reference.py:194 把 local_key 写入 OPENAI_API_KEY，并在 generation_reference.py:197 把该 localhost base_url 写入 model provider override，因此不是未使用的声明。
+
+ERROR-003 [NET-EXTERNAL] 主工作流主动运行未强制离线的 npm 安装，并在缺少浏览器时运行 Playwright 下载命令；启动器还显式放开不受限网络，构成运行期向外部包/下载服务取数的尝试。
+  - core/dependencies.py:11：对 backend 和 frontend 执行 npm ci --include=dev --no-audit --no-fund，命令没有 --offline，会按 lockfile 从 npm 注册服务解析/下载依赖。
+  - core/dependencies.py:32：当本地 Chromium 缺失时执行 Playwright CLI install chromium，是明确的外部下载路径。
+  - core/evaluator_isolation.py:91：Landrun 启动参数包含 --unrestricted-network，上述安装命令在运行时具备对外联网能力。
+
+ERROR-004 [NET-EXTERNAL] 程序使用选手自带的平台路径配置，主动查询官方评分测试根目录 /workspace/tests 是目录、其他类型还是不存在，并把探测结果写入运行记录。
+  - core/evaluator_isolation.py:144：preflight 对每个 evaluator_roots 调用 Path(p).is_dir() 和 Path(p).exists()，将所得平台信息存入 evaluator_presence；规则明确规定对未授权评分测试的存在性探测本身就是违规访问尝试。
+  - competition/evaluator-isolation.json:2：被探测的 evaluator_roots 具体硬编码为 /workspace/tests，并非题面授权的 requirements 输入。
+  - core/simple_workflow.py:48：主工作流在任何模型实现之前无条件调用该 preflight，因此不是仅存在于未达代码的防御性文档。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 主上游模型与视觉模型存在多组可独立设置的 base_url/api_key 槽位，其运行时值、是否相同以及是否全部指向唯一允许端点无法从静态仓库确定。
+  - agents/model/visual_transport.py:233：主槽位为 OPENAI_BASE_URL/OPENAI_API_KEY；需人工核查 OPENAI_BASE_URL 运行值是否精确为 https://api.arc-bench.com/v1。
+  - agents/model/visual_transport.py:235：另外枚举 VISUAL_BASE_URL、VISUAL_API_KEY 和 VISUAL_MODEL；agents/model/visual_transport.py:244 还使视觉 base_url 可从 VISUAL_BASE_URL、OPENAI_BASE_URL、BASE_URL 三者中选择，agents/model/visual_transport.py:245 则使视觉 key 可从 VISUAL_API_KEY 或 OPENAI_API_KEY 选择。需人工核查所有这些额外槽位的实际注入值和是否存在多个不同 URL/key。
+
+WARNING-002 [INSPECTION-GAP] 两个会被控制器选择并执行的 Landrun ELF 二进制文件超过静态扫描单文件上限，本次只能核对文件类型、字节数和 SHA-256，不能语义审计其内部行为。
+  - vendor/landrun/landrun-linux-amd64：6,544,872 字节的 x86-64 ELF，SHA-256 为 6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6；vendor/landrun/landrun-linux-arm64：6,206,112 字节的 AArch64 ELF，SHA-256 为 365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d。两者均与 vendor/landrun/manifest.json:12 及 vendor/landrun/manifest.json:19 声明的摘要一致，但摘要一致不能替代内部代码审计；需人工从可信源码/可重现构建核验该启动器是否含有额外访问或干预行为。
+
+判决：作弊

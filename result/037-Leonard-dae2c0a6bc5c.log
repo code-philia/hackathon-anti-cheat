@@ -1,0 +1,44 @@
+反作弊审查：037-Leonard-dae2c0a6bc5c
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/037-Leonard-dae2c0a6bc5c
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：4 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的应用功能契约直接覆盖 github 题面的登录、会话、权限、搜索/列表与记录导航需求，也覆盖 sheet 题面的网格可访问性、持久化与状态交互要求，并被全量注入架构规划、源码生成及修复提示词。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：固定 CONTRACT 预先规定账号与密码种子、会话和权限、精确 ARIA role/name、数据持久化、首页与登录后列表、搜索及记录子页面导航等应用行为，已超出基础脚手架；定位：workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:184
+  - 检索方案：(4)无检索机制（全量使用）；说明：contract_text() 对固定 host 直接返回整个 CONTRACT，没有按题面选择或过滤；定位：workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:229
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：static_prompt_head() 将 contract_text() 拼入每个 source_generation 提示词，随后该提示词被提交给源码生成模型；定位：workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:368
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些契约可复用于带账号、权限、记录列表或网格持久化的同类网页，但不能泛化为不含这些功能的一般网页基础设施。
+  - 综合判断：四轴共同表明这是与两个题面明确需求直接重合的预置应用行为契约，且存在全量、实际的模型生成路径；按政策中“准备好的应用契约直接匹配任一明示需求并被提供给生成”的规则构成 error。
+  - workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:461：组装后的 prompt 被 call('source_generation', ...) 实际送入模型，生成结果随后写入作答源码。
+
+ERROR-002 [TEMPLATE-DIRECT] 预置验收代码和规则直接实现 github 的登录流程定位以及 sheet 的坐标单元格/网格定位，并通过测试失败反馈驱动作答源码修复。
+  - 知识类型：(2)代码片段；说明：固定 helper 模块预置精确可访问名称匹配、表格/网格单元格角色和坐标单元格定位代码，固定 TEST_CONVENTIONS 还规定登录、种子重置、精确标签及状态断言；定位：workspace/037-Leonard-dae2c0a6bc5c/acceptance_assets/evogit-helpers.ts:24
+  - 检索方案：(4)无检索机制（全量使用）；说明：每个生成测试套件都无条件复制 evogit-helpers.ts 与 evogit-fixtures.ts，未按题面筛选；定位：workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:221
+  - 生成方案：(1)无模型参与地使用代码；说明：固定 helper 源码被直接复制进临时 Playwright 套件并执行；测试结果随后进入修复循环，而非仅作为未使用示例存在；定位：workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:307
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：精确登录控件和坐标命名 gridcell/cell 约束可用于同类身份系统或电子表格，但不是一般网页脚手架。
+  - 综合判断：预置代码直接匹配 github 身份流程和 sheet 单元格交互需求，被全量复制、执行并用于闭环修复，具有明确贡献路径，构成 TEMPLATE-DIRECT error。
+  - workspace/037-Leonard-dae2c0a6bc5c/tdd_loop.py:325：失败测试摘要与固定契约被送入 test_repair 模型调用，证明验收结果会进一步影响最终作答代码。
+
+ERROR-003 [NET-EXTERNAL] 作答在运行期间主动安装 npm/Playwright 依赖并下载 Chromium，包含明确的外部镜像地址，构成从包服务和 CDN 获取第三方信息的尝试。
+  - workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:90：build() 在 frontend/backend 缺少 node_modules 或 install=True 时组装 npm install 命令；generate() 会以 install=True 调用该路径。
+  - workspace/037-Leonard-dae2c0a6bc5c/generated_application.py:95：上述安装命令由 subprocess.run 实际执行，不是依赖清单中的静态 URL。
+  - workspace/037-Leonard-dae2c0a6bc5c/app_runtime.py:126：ensure_playwright() 主动执行 npm install @playwright/test@1.57.0。
+  - workspace/037-Leonard-dae2c0a6bc5c/app_runtime.py:141：浏览器安装依次使用默认 CDN 和明确的 https://registry.npmmirror.com/-/binary/playwright 外部镜像。
+  - workspace/037-Leonard-dae2c0a6bc5c/app_runtime.py:146：Playwright CLI 的 install chromium-headless-shell 命令由 subprocess.run 执行。
+
+ERROR-004 [AC-INTERFERENCE] 源码宣称本地验收检查“仅”来自所给需求场景，但实际还加入预置的登录、种子状态、定位器与网格单元格规则；该不实归因会掩盖 TEMPLATE-DIRECT 行为并影响反作弊判断。
+  - workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:3：docstring 明确声称 “derives local Playwright checks only from the supplied requirement scenarios”。
+  - workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:93：检查定义实际始于固定 TEST_CONVENTIONS，而非仅由运行时题面组成。
+  - workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:109：固定规则自行规定登录 UI 与种子凭据的使用方式；acceptance.py:125 还预置按坐标查找单元格的规则。
+  - workspace/037-Leonard-dae2c0a6bc5c/acceptance.py:151：spec_prompt() 把固定 TEST_CONVENTIONS 与题面共同拼入测试生成提示词，直接反驳“only from”归因。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 唯一发现的主模型 base_url 槽位来自 OPENAI_BASE_URL 环境变量，仓库没有静态约束其值必须精确等于 https://api.arc-bench.com/v1；api_key 仅从 OPENAI_API_KEY 注入，未发现明文密钥或额外 URL/key 槽位。
+  - workspace/037-Leonard-dae2c0a6bc5c/core_utils.py:44：api_key 读取单一环境变量 OPENAI_API_KEY，静态检查未见硬编码值。
+  - workspace/037-Leonard-dae2c0a6bc5c/core_utils.py:45：base_url 读取单一环境变量 OPENAI_BASE_URL，其运行时有效值无法从仓库确定；需人工确认比赛运行环境注入值恰为 https://api.arc-bench.com/v1。
+  - workspace/037-Leonard-dae2c0a6bc5c/core_utils.py:49：该环境值未经白名单校验即传给 OpenAI(base_url=base)，因此保留具体 warning；未发现 fallback、secondary、alternate 或 provider-specific 配置槽位。
+
+判决：作弊

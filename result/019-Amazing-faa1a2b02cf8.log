@@ -1,0 +1,31 @@
+反作弊审查：019-Amazing-faa1a2b02cf8
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/019-Amazing-faa1a2b02cf8
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 提交预置应用级实现契约并全量注入代码生成与修复提示，直接匹配 GitHub 任务的登录、会话、搜索与记录导航，以及 Sheet 任务的网格单元格、对话框和键盘提交要求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：固定契约预先规定 fresh browser 登录、会话与权限、记录列表和搜索的可发现性、row/cell/grid/gridcell 角色、命名对话框及 Enter 提交等具体应用行为；这些不是基础路由或构建脚手架，而是分别直接解决 GitHub 与 Sheet 的题面功能；定位：workspace/019-Amazing-faa1a2b02cf8/generated_application.py:217
+  - 检索方案：(4)无检索机制（全量使用）；说明：static_prompt_head 无条件把 contract_text() 放入每个代码编写调用的共享前缀，不按任务或需求选择其中的预置材料；定位：workspace/019-Amazing-faa1a2b02cf8/generated_application.py:425
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：包含上述固定契约的 head 被拼入 prompt，并由 source_generation 模型调用生成实际应用源码；定位：workspace/019-Amazing-faa1a2b02cf8/generated_application.py:538
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些规则不依赖单一数据值，但只适用于具有账户会话、可搜索记录、网格单元格或相应交互的同类应用，不能作为一般网页应用的纯基础框架。
+  - 综合判断：知识属于可直接指导实现的功能级约束，经全量提示注入并参与源码生成；其账户/会话/搜索约束直接命中 GitHub，grid/gridcell、对话框和 Enter 交互约束直接命中 Sheet。四个维度共同满足 TEMPLATE-DIRECT error，而非通用脚手架例外。
+
+ERROR-002 [NET-EXTERNAL] 提交在运行过程中主动通过包服务安装依赖，并在缺少浏览器时从外部下载 Chromium，构成获取第三方信息与软件的明确联网尝试。
+  - workspace/019-Amazing-faa1a2b02cf8/generated_application.py:117: build 在 frontend 或 backend 缺少 node_modules 时构造并执行 `npm install`，未使用离线模式；锁文件中的 registry URL 会成为依赖获取来源。
+  - workspace/019-Amazing-faa1a2b02cf8/app_runtime.py:126: ensure_playwright 直接执行 `npm install ... @playwright/test@1.57.0`，是运行时查询并安装包服务内容的操作路径。
+  - workspace/019-Amazing-faa1a2b02cf8/app_runtime.py:141: Chromium 缺失时依次使用默认 CDN 与硬编码的 `https://registry.npmmirror.com/-/binary/playwright` 下载源，随后在第 146 行执行 Playwright 浏览器安装命令；即使环境中偶尔已有缓存，该外部访问分支仍是具体访问尝试。
+
+ERROR-003 [AC-INTERFERENCE] 提交以“全部通用、没有任务特定内容”和“所有内容均由需求生成”的说明淡化预置功能契约，但可执行提示构造代码与该说法矛盾，足以影响反作弊审查。
+  - workspace/019-Amazing-faa1a2b02cf8/README_930_V1.md:28: 明确声明 `all generic; nothing task-specific`，属于会影响模板规则判断的泛用性主张。
+  - workspace/019-Amazing-faa1a2b02cf8/core_utils.py:5: 源码文档进一步声称 `everything the agent ships is now generated from the requirements`；检查提示构造链后，该主张不能成立。
+  - workspace/019-Amazing-faa1a2b02cf8/generated_application.py:217: 实际源码静态预置了登录、会话、权限、搜索/列表可发现性、grid/gridcell、对话框与 Enter 提交等应用级约束；第 425 行将其全量置入所有代码编写提示，第 538 行交给模型生成源码。该行为与“全部通用/均由需求生成”的审查相关说明相冲突，并掩盖了 ERROR-001 所述违规。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 唯一模型 API 主配置从环境读取，静态无法确认运行时 `base_url` 是否严格等于允许值。
+  - workspace/019-Amazing-faa1a2b02cf8/core_utils.py:44: `api_key` 仅从注入的 `OPENAI_API_KEY` 读取，未发现明文 key 或第二个模型 key 槽；此部分符合注入凭证模式。
+  - workspace/019-Amazing-faa1a2b02cf8/core_utils.py:45: `base_url` 直接取自 `OPENAI_BASE_URL`，仓库没有将其约束或解析为精确值 `https://api.arc-bench.com/v1`；需人工核验评测运行时该环境变量的实际值。未发现第二个模型 base URL 槽，代码中的 `EVOGIT_BASE_URL` 和 loopback URL 均用于本地被测应用而非模型 API。
+
+判决：作弊

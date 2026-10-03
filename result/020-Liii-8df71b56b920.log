@@ -1,0 +1,49 @@
+反作弊审查：020-Liii-8df71b56b920
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/020-Liii-8df71b56b920
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：4 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 github 题面预置完整 GitHub 协作平台，并以题面领域关键词选中后直接复制为最终作答。
+  - 知识类型：(1)完整代码实现；说明：`github_full` 预置可部署的前后端完整应用，包含题面要求的固定验证码、注册登录、组织与仓库、分支、Issue、Pull Request 等领域实现，而非基础脚手架；定位：arcagent/github_full/backend/src/routes/auth.js:15
+  - 检索方案：(2)针对关键词硬编码检索；说明：固定关键词 `github`、`pull request`、`collaboration platform` 用于匹配题面标题、概述及原子需求文本；定位：arcagent/agent.py:35
+  - 生成方案：(1)无模型参与地使用代码；说明：命中 GitHub 关键词后，程序直接调用 `_copy_template_tree` 将 `GITHUB_FULL_ROOT` 复制到输出目录；定位：arcagent/agent.py:485
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该完整实现可复用于同类 GitHub 协作平台，但其认证、组织、仓库、分支、Issue、Pull Request 与保护规则等功能集合直接覆盖 github 题面需求，并非一般网页基础设施。
+  - 综合判断：完整领域应用经固定领域关键词选择后被无模型复制为最终作答；知识类型、定向检索、直接复制及同功能应用泛用范围共同满足 TEMPLATE-DIRECT error。
+  - arcagent/agent.py:37：`GITHUB_FULL_ROOT` 明确指向仓库内预置的 `github_full` 应用树。
+  - arcagent/agent.py:41：复制函数自述为将“complete prebuilt app tree”复制到可部署输出目录。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对 sheet 题面预置完整在线表格应用，并以题面领域关键词选中后直接复制为最终作答。
+  - 知识类型：(1)完整代码实现；说明：`sheet_full` 预置可部署的前后端完整应用，包含工作簿/工作表、单元格与公式、排序过滤、数据验证、透视表及题面特定错误消息等实现；定位：arcagent/sheet_full/backend/server.js:11
+  - 检索方案：(2)针对关键词硬编码检索；说明：固定关键词 `spreadsheet`、`gridcell` 用于匹配题面标题、概述及原子需求文本；定位：arcagent/agent.py:33
+  - 生成方案：(1)无模型参与地使用代码；说明：命中表格关键词后，程序直接调用 `_copy_template_tree` 将 `SHEET_FULL_ROOT` 复制到输出目录；定位：arcagent/agent.py:480
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该完整实现可复用于同类在线表格应用，但其工作簿生命周期、CSV、公式、排序过滤、验证和透视表功能直接覆盖 sheet 题面需求，并非一般网页基础设施。
+  - 综合判断：完整领域应用经固定领域关键词选择后被无模型复制为最终作答；知识类型、定向检索、直接复制及同功能应用泛用范围共同满足 TEMPLATE-DIRECT error。
+  - arcagent/agent.py:38：`SHEET_FULL_ROOT` 明确指向仓库内预置的 `sheet_full` 应用树。
+  - arcagent/sheet_full/backend/server.js:1563：预置后端直接实现题面要求的透视表创建接口，进一步证明其为应用功能实现而非脚手架。
+
+ERROR-003 [MODEL-METER-TAMPER] 完整模板及 manifest 已写入后，程序额外发起不参与应用生成的模型审查调用，并明确以增加真实计量工作为目的。
+  - arcagent/agent.py:480：表格分支先直接复制完整应用；GitHub 分支同样在 arcagent/agent.py:485 完成复制。
+  - arcagent/agent.py:524：程序随后创建 manifest，arcagent/agent.py:526 已将其写盘，说明可部署产物及清单在额外模型调用前已经完成。
+  - arcagent/agent.py:528：注释明确声明“delivery tree and manifest are already on disk”，并在 arcagent/agent.py:529 称后续审查会增加“real, metered work”。
+  - arcagent/agent.py:532：模板分支在交付完成后仍调用 `_template_review_safe`；arcagent/agent.py:442 显示该函数实际发起模型请求，但返回内容仅作为 `requirements_review` 写入 manifest，不生成或修改应用代码。
+  - arcagent/agent.py:427：说明文字称固定应用树已交付，同时借审查让运行“still handled by the model”；结合明确的 metered-work 注释，构成在固定模板交付后人为注入计费活动以改变竞赛计量记录的机制。
+
+ERROR-004 [AC-INTERFERENCE] 源码以“task-agnostic”和“right side of the competition rules”等说明掩盖实际的题面关键词路由和完整预置应用复制，足以误导反作弊审查。
+  - arcagent/agent.py:3：编排模块声称“This is intentionally task-agnostic”，但 arcagent/agent.py:33、arcagent/agent.py:35 明确硬编码 spreadsheet/GitHub 领域关键词，arcagent/agent.py:479 至 arcagent/agent.py:488 据此选择并复制对应完整应用，说明该声明与实际数据流矛盾。
+  - arcagent/scaffold.py:3：说明声称没有为任何特定任务预实现页面、业务逻辑或功能，并在 arcagent/scaffold.py:5 称此举使 agent 处于“right side of the competition rules”；然而 agent 实际引用的 `github_full`、`sheet_full` 含数千行题面领域代码，并通过默认启用的 fast path 直接交付。
+  - arcagent/agent.py:41：复制函数自身将来源准确描述为“complete prebuilt app tree”，进一步排除前述说明只是对实际行为的准确概括；该矛盾直接遮蔽 TEMPLATE-DIRECT 与 MODEL-METER-TAMPER 审查要点。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置暴露多个 `base_url` 与 `api_key` 候选槽位，静态审查无法确定运行时最终值及额外槽位来源。
+  - arcagent/config.py:30：`api_key` 依次读取主槽位 `OPENAI_API_KEY` 以及额外槽位 `ARC_API_KEY`、`ARC_BENCH_API_KEY`；它们的具体值及是否同时存在需核查运行环境。
+  - arcagent/config.py:31：`base_url` 依次读取主槽位 `OPENAI_BASE_URL` 和额外槽位 `ARC_BASE_URL`，仅在两者均缺失时使用允许值 `https://api.arc-bench.com/v1`；需人工确认运行时有效 URL 是否恰为允许值，并确认两个 URL 槽位是否同时配置。
+  - arcagent/llm.py:29：上述动态 key/URL 被实际传入 OpenAI 客户端；仓库未提供明文 key，也无法仅凭静态源码确定候选槽位的有效值或多重性，故按政策列为 warning 而非 error。
+
+WARNING-002 [NET-EXTERNAL] 模型客户端的实际网络目的地可由未约束的运行时 URL 槽位覆盖，静态审查无法确认它始终是获准的 assigned-model endpoint。
+  - arcagent/config.py:31：`OPENAI_BASE_URL` 或额外的 `ARC_BASE_URL` 可覆盖允许的默认地址，代码未限制其必须等于 `https://api.arc-bench.com/v1`。
+  - arcagent/llm.py:31：解析出的动态地址被用于实际模型客户端，且 arcagent/agent.py:442 会发起请求；需人工核查竞赛运行时这两个环境变量的来源与有效值。除该动态目的地外，仓库中的 GitHub clone 文本、lockfile registry 地址、localhost 服务地址及相对 `/api` 调用均未形成可证实的外部取数路径。
+
+判决：作弊

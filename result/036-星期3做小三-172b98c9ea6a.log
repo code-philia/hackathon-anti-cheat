@@ -1,0 +1,50 @@
+反作弊审查：036-星期3做小三-172b98c9ea6a
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/036-星期3做小三-172b98c9ea6a
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：5 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 为 github 题目的身份与访问需求预置了完整的会话登录/退出实现及强制复用契约，并在每次运行中把这些材料全量复制、注入模型工作区；这不是基础前后端脚手架。
+  - 知识类型：(1)完整代码实现；说明：`useSession` 已实现会话读取、凭据登录、退出、身份切换后的授权页面缓存失效和导航回调边界，直接匹配 github 的 Sign In、Sign Out 与持久会话需求；定位：workspace/036-星期3做小三-172b98c9ea6a/template/frontend/src/state/session.ts:10
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化无条件递归复制整个 `template`，没有依据题目或领域筛选该身份功能；定位：workspace/036-星期3做小三-172b98c9ea6a/main.py:97
+  - 生成方案：(1)无模型参与地使用代码；说明：缺失的模板文件由控制器直接 `shutil.copy2` 到最终作答目录；此外，开发者提示还要求模型复用 `useSession`，使该现成实现进入后续生成路径；定位：workspace/036-星期3做小三-172b98c9ea6a/main.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该实现可兼容多种含登录/退出的网页应用，但不能兼容不含身份会话的一般网页应用，且与 github 题面的明确身份功能直接重合。
+  - 综合判断：完整身份功能代码被全量直接复制，并由全量开发者提示要求接入；知识虽可跨身份类应用复用，但属于政策明确排除于通用脚手架之外的 authentication/login/session 应用契约，故构成 TEMPLATE-DIRECT error。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/instructions.md:51：提示进一步规定登录/退出的 POST、session/cookie 持久化和 303 跳转实现方式。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/instructions.md:56：提示明确要求使用 `useSession`，并规定 read/signIn/signOut 适配器、共享 provider、刷新及并发测试语义。
+
+ERROR-002 [MODEL-EXTERNAL] 控制器把模型 SDK 的 `base_url` 配置为动态本地回环代理，而不是政策唯一允许的 `https://api.arc-bench.com/v1`；隔离预检还配置了另一硬编码回环模型 URL。
+  - workspace/036-星期3做小三-172b98c9ea6a/agents/model/visual_transport.py:843：构造 `http://127.0.0.1:<动态端口>/v1` 并保存为 `transport.base_url`。
+  - workspace/036-星期3做小三-172b98c9ea6a/main.py:193：`_codex_config` 选择 `transport.base_url` 作为模型提供方的实际 `base_url`，并在第 198 行写入 `model_providers.arcbench.base_url`。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/evaluator_isolation.py:157：预检模型配置另行硬编码 `http://127.0.0.1:9/v1`。这些已解析 URL 均不等于唯一允许值。
+
+ERROR-003 [NET-EXTERNAL] 主工作流主动调用可能访问 npm/Playwright 软件目录服务的依赖安装和浏览器下载命令。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/dependencies.py:11：对 backend 与 frontend 无条件执行未带 `--offline` 的 `npm ci`，会按锁文件解析并联系包注册表获取依赖。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/dependencies.py:32：浏览器缺失时执行 Playwright `install chromium`，这是明确的第三方软件下载路径。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/simple_workflow.py:55：该依赖准备函数由正常运行主流程调用，并非仅存在于说明文档或清单。
+
+ERROR-004 [NET-EXTERNAL] 正常预检主动探测平台官方评测目录 `/workspace/tests` 是否存在并把探测结果写入记录，观察了未包含在授权需求输入中的平台信息。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/evaluator_isolation.py:144：对每个配置的 evaluator root 调用 `Path.is_dir()`/`Path.exists()`，分类为 directory、other 或 absent。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/evaluator-isolation.json:2：被探测的根目录明确配置为 `/workspace/tests`。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/simple_workflow.py:53：主流程在任何模型实现前实际调用该 preflight；政策规定即使未读取测试内容，针对官方评测材料的存在性探测本身也足以构成违规。
+
+ERROR-005 [AC-INTERFERENCE] 仓库把含身份功能答案的预置覆盖层宣称为“never task answers”，该泛用性声明与实际代码和注入路径冲突，能够掩盖 TEMPLATE-DIRECT 行为并影响审查。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/instructions.md:3：原始声明称该覆盖层“summarizes interaction-test habits, never task answers”。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/instructions.md:51：同一文件实际给出登录/退出、session/cookie 持久化和 303 跳转的应用级实现契约。
+  - workspace/036-星期3做小三-172b98c9ea6a/competition/instructions.md:56：同一文件进一步指定完整 `useSession` 接入和测试语义，直接匹配 github 身份需求。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/profile.py:25：该文件并非闲置说明，而是由 `profile_instructions()` 全量读取；`main.py:208` 将其加入开发者指令。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除主 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 外还存在可独立覆盖的视觉模型 URL/key 插槽及额外 `BASE_URL` 回退槽，其运行时值和是否与主配置相同无法静态确定。
+  - workspace/036-星期3做小三-172b98c9ea6a/agents/model/visual_transport.py:296：读取额外的 `VISUAL_BASE_URL` 与 `VISUAL_API_KEY` 配置槽。
+  - workspace/036-星期3做小三-172b98c9ea6a/agents/model/visual_transport.py:305：视觉端点按 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL` 依次选择，包含额外 URL 槽。
+  - workspace/036-星期3做小三-172b98c9ea6a/agents/model/visual_transport.py:306：视觉密钥可由独立 `VISUAL_API_KEY` 覆盖；需人工核验实际环境中所有槽的值、来源、数量以及视觉请求是否最终只使用允许端点和注入密钥。
+
+WARNING-002 [INSPECTION-GAP] 两个会被控制器按架构选择、复制并执行的预编译 Landrun ELF 无源代码，超出扫描器单文件检查上限，无法仅靠哈希和静态字符串完整排除隐藏网络、平台读取或审查干预行为。
+  - workspace/036-星期3做小三-172b98c9ea6a/vendor/landrun/landrun-linux-amd64：6,544,872 字节 x86-64 ELF；SHA-256 为 `6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6`，与仓库清单一致，但二进制语义未完整审计。
+  - workspace/036-星期3做小三-172b98c9ea6a/vendor/landrun/landrun-linux-arm64：6,206,112 字节 AArch64 ELF；SHA-256 为 `365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d`，与仓库清单一致，但二进制语义未完整审计。
+  - workspace/036-星期3做小三-172b98c9ea6a/core/evaluator_isolation.py:85：运行时选择该二进制；第 94 行将其设置为 SDK 启动器，因此该检查缺口具有实际可达性。需由人工依据可信上游源码/可复现构建核验二进制。
+
+判决：作弊

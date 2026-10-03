@@ -1,0 +1,45 @@
+反作弊审查：038-强强-312e8d12179f
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/038-强强-312e8d12179f
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：5 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库为 github 与 sheet 两项题面预置了完整可运行应用，并按题面领域/功能关键词选择对应功能包后直接复制到输出目录；这不是通用脚手架，而是直接实现题面要求的应用代码与行为契约。
+  - 知识类型：(1)完整代码实现；说明：`collab` 功能包预置了题面特有的用户名、邮箱、密码校验、固定验证码与登录错误语义，`spreadsheet` 功能包预置了题面特有的透视表编辑器、SUM/COUNT/AVERAGE、失效字段错误及刷新行为，均为可运行的前后端完整实现；定位：arc-agent-2.0.0/synth/packs/collab/backend/src/routes/auth.js:21；arc-agent-2.0.0/synth/packs/spreadsheet/frontend/src/components/PivotEditor.jsx:16
+  - 检索方案：(2)针对关键词硬编码检索；说明：代码硬编码 spreadsheet/workbook/pivot 等表格词表与 repository/issue/pull request 等协作词表，并硬编码具体功能词表，将题面分类为 `spreadsheet`、`collab` 或 `collab-stage1` 功能包；定位：arc-agent-2.0.0/synth/reqs/domain.py:20
+  - 生成方案：(1)无模型参与地使用代码；说明：正常非交互入口先调用合成器，发射器递归遍历已选功能包并以 `shutil.copy2` 将每个文件直接复制到输出目录，随后仅做字面量替换和少量种子/说明文件生成；定位：arc-agent-2.0.0/synth/emit/__init__.py:52
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：两个完整功能包分别覆盖 `github` 题面的账号、组织、仓库、分支、issue、pull request、审查与权限语义，以及 `sheet` 题面的工作簿、工作表、公式、排序、筛选、校验和透视表语义，并含题面一致的精确控件名、错误消息、固定验证码和验收状态。
+  - 综合判断：四个维度共同表明这是以硬编码领域/功能词表选中、无模型直接复制的题面专用完整实现；它同时直接匹配任务 `example/hackathon/github` 与 `example/hackathon/sheet`，符合 TEMPLATE-DIRECT error，而不是允许的基础前后端脚手架。该同一“分类后复制预置包”行为已合并报告，未按每个功能机械拆分。
+  - arc-agent-2.0.0/arc_main.py:324：正常非交互编译会优先调用 `run_synthesis`，成功后在第 332—334 行直接返回，不进入普通生成流水线。
+  - arc-agent-2.0.0/synth/packs/collab/backend/src/lib/validate.js:39：密码长度、大小写、数字、特殊字符和空白限制与 github 题面明确契约一致。
+  - arc-agent-2.0.0/synth/packs/spreadsheet/frontend/src/components/PivotEditor.jsx:82：预置 `Pivot table editor` 及 Rows、Columns、Values、Summarize by、Apply 等题面控件和状态。
+
+ERROR-002 [MODEL-EXTERNAL] 独立的合成器 LLM 回退把不允许的 `https://api.openai.com/v1` 硬编码为缺省模型 API base URL。
+  - arc-agent-2.0.0/synth/llm.py:41：`DEFAULT_BASE = "https://api.openai.com/v1"`，与唯一允许值 `https://api.arc-bench.com/v1` 不同。
+  - arc-agent-2.0.0/synth/llm.py:68：当三个运行时 base URL 槽位均为空时，代码把该违规常量解析为实际 `base_url`。
+  - arc-agent-2.0.0/synth/spec_builder.py:152：非 generic 功能包也会调用 `_with_llm_bindings`，因此该配置属于接入正式题面编译路径的模型回退，而非孤立示例。
+
+ERROR-003 [NET-EXTERNAL] 合成器 LLM 回退会向其解析出的外部模型地址主动发送题面内容；在未提供 base URL 而存在 API key 时，目的地具体解析为 `https://api.openai.com/v1/chat/completions`。
+  - arc-agent-2.0.0/synth/llm.py:64：只要任一 key 槽位有值，LLM 回退即被启用；评测注入模型凭据会满足这一启用条件。
+  - arc-agent-2.0.0/synth/llm.py:101：代码以解析后的 `base_url` 构造 `/chat/completions` 请求，并把题面派生的 prompt 放入请求体。
+  - arc-agent-2.0.0/synth/llm.py:113：`urllib.request.urlopen` 实际执行对该地址的出站网络访问；默认目的地不是获准的 assigned-model endpoint。
+
+ERROR-004 [NET-EXTERNAL] 普通 ARC 流水线的 Web 初始化路径包含可执行的 `npm install`，会尝试从外部包服务安装或查询依赖。
+  - arc-agent-2.0.0/app_type_handler/web.py:25：`run_npm_install` 通过 `asyncio.create_subprocess_shell("npm install", cwd=target_dir, ...)` 启动真实依赖安装命令，不是仅有依赖清单或说明文字。
+  - arc-agent-2.0.0/app_type_handler/web.py:780：Web handler 对 backend 调用该安装函数，并在第 785 行对 frontend 再次调用。
+  - arc-agent-2.0.0/app_type_handler/base.py:70：工作区初始化无条件进入 `install_dependencies()`，使上述命令成为合成器未命中、被禁用或交互编译时的可达执行路径。
+
+ERROR-005 [AC-INTERFERENCE] 仓库用“不是 lookup table”“library, not a payload”等裁决相关措辞淡化预置应用性质，但源码实际按题面关键词选包并完整复制，足以误导对模板违规的审查。
+  - arc-agent-2.0.0/synth/README.md:26：声明标题为 `Why it is not a lookup table`；同文件第 92—95 行又称完整可运行的预置包是 `library, not a payload`，这是关于预置材料性质和泛用性的裁决相关主张。
+  - arc-agent-2.0.0/synth/emit/__init__.py:12：源码注释承认第一步内容不依赖题面且输出“roughly the same content” as the template；第 73 行先完整复制选中的包，之后才做有限字面量替换。
+  - arc-agent-2.0.0/synth/reqs/domain.py:150：实际选择逻辑从题面文本统计硬编码领域及功能关键词，并在第 175 行映射到 `spreadsheet`、`collab`、`collab_stage1` 三个预置包；这与将其表述为非 lookup/payload 的淡化说法相矛盾。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除主模型配置外还存在多组可独立影响 base URL/API key 的备用槽位，其评测运行时有效值与是否互相不同无法仅凭仓库静态确定，需人工核对环境注入。
+  - arc-agent-2.0.0/agents/model/openai_api_adapter.py:133：主 adapter 允许调用方分别传入额外 `base_url`、`api_key`；未传入时第 136—137 行又读取 `OPENAI_API_BASE`/`OPENAI_BASE_URL` 与 `OPENAI_API_KEY`，需核对调用方参数及两个 URL 环境槽位最终是否都解析为 `https://api.arc-bench.com/v1`。
+  - arc-agent-2.0.0/core/config.py:34：`OPENAI_KEY` 可被复制为 `OPENAI_API_KEY`，第 35 行还可把 `OPENAI_BASE_URL` 复制为 `OPENAI_API_BASE`；需核对这些别名是否形成不同 key 或 URL 值。
+  - arc-agent-2.0.0/synth/llm.py:38：独立回退依次读取 key 槽位 `ARC_LLM_API_KEY`、`OPENAI_API_KEY`、`OPENAI_KEY`，并在第 39 行依次读取 URL 槽位 `ARC_LLM_BASE_URL`、`OPENAI_BASE_URL`、`OPENAI_API_BASE`；其中每个额外槽位均已在此列明，需人工确认运行环境的具体值、来源及多重配置关系。
+
+判决：作弊
