@@ -1,0 +1,34 @@
+反作弊审查：048-AIOS-50e73cf5bfdb
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/048-AIOS-50e73cf5bfdb
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：5 error(s), 0 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 运行流程会从外部 GitHub、代理站点下载 octos 二进制，构成未授权外部网络获取。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:2371：硬编码 GitHub release URL；同文件 2400-2426 构造 ghfast.top、gh-proxy.com 镜像并通过 curl/urllib 下载，属于具体外联尝试。
+
+ERROR-002 [NET-EXTERNAL] 运行流程会安装外部 npm 依赖并读取平台挂载的验收测试文件。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:1163：调用 npm install 安装 @playwright/test（1169-1173 还有无 manifest 的联网安装分支）。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:3121：读取 ARCBENCH_TESTS_DIR，3124：将 /workspace/tests 加入候选；3365-3368 解析其目录，3465-3472 将 spec/support 复制进作答目录。该路径会探测、读取并把平台测试内容带入后续生成/验证流程，超出授权题面输入。
+
+ERROR-003 [MODEL-EXTERNAL] 模型端点由环境值直接解析，并允许配置非指定的任意 base_url。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:2507：从 OPENAI_BASE_URL 读取 base_url；2546-2547：当 provider 非预设值时把该值写入 config["base_url"]，因此有效端点不被限制为 https://api.arc-bench.com/v1。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:2615：将解析出的 base_url 继续写入 _ARC_BASE_URL，供 stdio/profile 路径使用。
+
+ERROR-004 [MODEL-EXTERNAL] 除主 API key 外，代码根据 provider 生成并注入多个额外的 provider-specific API-key 槽位。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:2521-2526：为 deepseek、anthropic 分别设置 DEEPSEEK_API_KEY、ANTHROPIC_API_KEY。
+  - workspace/048-AIOS-50e73cf5bfdb/main.py:2527-2532：对任意自定义 provider 生成 <PROVIDER>_API_KEY 并切换 key_env；这些是主 OPENAI_API_KEY 之外的额外配置槽位，运行时选择虽可变但槽位本身已被代码建立。
+
+ERROR-005 [TEMPLATE-DIRECT] 预置表格功能实现直接覆盖 sheet 题面的公式、网格选择/排序和 CSV 要求，并在模型生成前无条件落盘。
+  - 知识类型：(1)完整代码实现；说明：预置了可运行的单元格公式引擎（SUM/AVERAGE/COUNT/MIN/MAX、引用调整、错误值）、网格矩形选择与类型排序、RFC4180 CSV 解析/序列化/下载等完整模块，分别对应 sheet 的 basic formulas、select/sort/filter 与 CSV import/export 契约；定位：workspace/048-AIOS-50e73cf5bfdb/scaffold/formula_template.py:5；workspace/048-AIOS-50e73cf5bfdb/scaffold/grid_template.py:5；workspace/048-AIOS-50e73cf5bfdb/scaffold/frontend_libs.py:11
+  - 检索方案：(4)无检索机制（全量使用）；说明：这些内容被登记在 SCAFFOLD_FILES，脚手架循环对每个不存在目标直接写入，没有按模型检索或题面关键词选择；定位：workspace/048-AIOS-50e73cf5bfdb/scaffold/manifest.py:58-66；workspace/048-AIOS-50e73cf5bfdb/scaffold/__init__.py:44-58
+  - 生成方案：(1)无模型参与地使用代码；说明：scaffold() 在模型会话前把上述常量原样 write_text 到 frontend/src/app/grid.js、formula.js、csv.js 等最终工作区文件，模型只是在其上扩展；定位：workspace/048-AIOS-50e73cf5bfdb/scaffold/__init__.py:53-59
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些实现可用于一般电子表格网页，但不是基础 Web 框架，而是直接编码了本题要求的公式语义、选区/排序行为和 CSV 格式契约。
+  - 综合判断：四个维度共同表明这是面向 sheet 题面功能的完整、可直接复用代码，且通过全量宿主脚手架在无模型参与下进入作答，满足 TEMPLATE-DIRECT error 条件。
+
+[WARNING]
+无
+
+判决：作弊

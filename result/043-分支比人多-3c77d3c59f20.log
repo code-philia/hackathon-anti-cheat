@@ -1,0 +1,56 @@
+反作弊审查：043-分支比人多-3c77d3c59f20
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/043-分支比人多-3c77d3c59f20
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：6 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的 ARC-Bench 说明和组件契约直接规定了题面应用的功能行为，并在编码模型提示中全量注入，匹配 github 与 sheet 两个题面任务。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：`HAIKNOW-LITE.md` 和 competition 指令预置了认证/登录、会话、表单错误、排序、持久化、测试定位器、菜单/编辑器状态等应用级行为约束，而非基本框架；定位：workspace/043-分支比人多-3c77d3c59f20/HAIKNOW-LITE.md:38
+  - 检索方案：(4)无检索机制（全量使用）；说明：控制器直接读取整份 HAIKnow 文本和 competition/instructions.md 作为开发者指令，没有按当前题面需求选择；定位：workspace/043-分支比人多-3c77d3c59f20/main.py:204
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：`_developer_instructions` 将这些规则与 `profile_instructions()` 拼接后发送给 coding SDK，模型据此实现应用；定位：workspace/043-分支比人多-3c77d3c59f20/main.py:208
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：规则可跨同类应用复用，但明确包含登录/会话、排序、菜单、编辑器和验收行为等题面级契约，不是一般网页脚手架。
+  - 综合判断：材料全量进入模型上下文，且直接覆盖 github 的注册/登录、搜索/筛选及 sheet 的排序/筛选、编辑器和工作簿状态等要求；四个维度共同满足 TEMPLATE-DIRECT error。
+  - workspace/043-分支比人多-3c77d3c59f20/HAIKNOW-LITE.md:48：预置错误摘要、字段校验、状态持久化和排序关系。
+  - workspace/043-分支比人多-3c77d3c59f20/competition/instructions.md:51：预置登录/登出、会话 bootstrap、异步资源与导航语义。
+
+ERROR-002 [MODEL-EXTERNAL] coding SDK 的静态解析 base_url 被改写为本地 loopback 地址，且该地址不是允许的 `https://api.arc-bench.com/v1`。
+  - workspace/043-分支比人多-3c77d3c59f20/agents/model/visual_transport.py:843：`self.base_url = f'http://127.0.0.1:{self.server.server_port}/v1'` 构造具体的非允许 base URL。
+  - workspace/043-分支比人多-3c77d3c59f20/main.py:193：`transport.base_url` 被选作 SDK 的 `base_url`。
+  - workspace/043-分支比人多-3c77d3c59f20/main.py:198：该值被写入 `model_providers.arcbench.base_url` 配置并实际传给 SDK。
+
+ERROR-003 [MODEL-EXTERNAL] 代码生成并注入具体 plaintext API key 到模型客户端配置，绕过了仅消费评测环境注入密钥的要求。
+  - workspace/043-分支比人多-3c77d3c59f20/agents/model/visual_transport.py:313：`secrets.token_urlsafe(32)` 生成具体 `local_key`。
+  - workspace/043-分支比人多-3c77d3c59f20/main.py:195：将生成的 `transport.local_key` 赋值为 `OPENAI_API_KEY`。
+  - workspace/043-分支比人多-3c77d3c59f20/main.py:407：`codex.login_api_key(transport.local_key)` 使用该生成密钥登录 SDK。
+
+ERROR-004 [NET-EXTERNAL] 验证流程包含无条件的 npm 依赖安装，可能向 registry 等外部站点获取第三方信息/代码。
+  - workspace/043-分支比人多-3c77d3c59f20/core/validation.py:403：验证对 backend 和 frontend 两个包逐一执行安装阶段。
+  - workspace/043-分支比人多-3c77d3c59f20/core/validation.py:409：执行 `npm ci` 或 `npm install`（即使 lockfile 存在也会通过 npm registry 解析/获取依赖）。
+  - workspace/043-分支比人多-3c77d3c59f20/core/dependencies.py:11：独立依赖准备路径同样执行 `npm ci`。
+
+ERROR-005 [NET-EXTERNAL] 预检代码探测未授权的评测平台路径 `/workspace/tests`，读取其是否存在及类型。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:144：通过 `Path(p).is_dir()`/`Path(p).exists()` 构造 `evaluator_presence`，其中 `p` 来自配置的 `/workspace/tests`。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:139：该探测在 `preflight` 中读取配置的 evaluator roots 后执行。
+
+ERROR-006 [AC-INTERFERENCE] 代码以“不得主动检查 evaluator roots”的说明掩盖了同一流程对该路径的实际存在性探测，属于会影响审查判断的相互矛盾声明。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:47：`access_instructions()` 向模型声明“never read or execute their tests/helpers”。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:144：实际执行 `Path(p).is_dir()`/`exists()` 观察 `/workspace/tests`，与上述禁止检查的声明不一致。
+  - 综合说明：该声明具有评测访问/安全性质，不能仅按注释采信；操作代码构成了底层 NET-EXTERNAL 行为，因此同时构成 AC-INTERFERENCE error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 存在额外的 visual/provider URL 与 key 槽位，静态代码无法确定运行时是否被设置及其最终值。
+  - workspace/043-分支比人多-3c77d3c59f20/agents/model/visual_transport.py:296：读取 `VISUAL_BASE_URL`、`VISUAL_API_KEY`、`VISUAL_MODEL` 作为独立配置槽位。
+  - workspace/043-分支比人多-3c77d3c59f20/agents/model/visual_transport.py:305：`VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL` 构成备用/间接 URL 选择链；:306 同样选择 `VISUAL_API_KEY` 或 `OPENAI_API_KEY`。需人工核查这些额外槽位是否解析到允许值及是否实际启用。
+
+WARNING-002 [AC-INTERFERENCE] 工作区内关于 Landrun 能提供文件写边界的说明依赖未完全可审计的二进制，无法独立验证其安全性。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:53：文档声明“Verify the pinned upstream asset”并依赖二进制执行隔离。
+  - workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:85：实际把 `vendor/landrun/landrun-linux-*` 作为 launcher 使用；二进制内容未能在静态扫描限制内完整检查，声明的 enforcement 仍需人工验证。
+
+WARNING-003 [INSPECTION-GAP] 两个 Landrun ELF 二进制超过扫描器 2,000,000 字节限制，未能完整检查其实现。
+  - workspace/043-分支比人多-3c77d3c59f20/vendor/landrun/landrun-linux-amd64：超出扫描限制；由 workspace/043-分支比人多-3c77d3c59f20/core/evaluator_isolation.py:85 作为实际 launcher 加载。
+  - workspace/043-分支比人多-3c77d3c59f20/vendor/landrun/landrun-linux-arm64：超出扫描限制；由同一 launcher 逻辑按架构选择。
+  - 未检查内容：二进制对 `--rox /`、`--rwx <project>`、`--unrestricted-network` 等参数的真实文件/网络隔离语义。
+
+判决：作弊

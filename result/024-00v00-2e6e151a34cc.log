@@ -1,0 +1,38 @@
+反作弊审查：024-00v00-2e6e151a34cc
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\024-00v00-2e6e151a34cc
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的登录与会话行为契约被整体注入编码模型，直接匹配 github 任务的账户和会话要求
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置材料规定了登录、登出、身份变化后的会话缓存重置、稳定回调归属和会话提供者集成方式，属于具体功能行为契约；定位：agent/agent/competition/instructions.md:23
+  - 检索方案：(4)无检索机制（全量使用）；说明：该文件通过 profile_instructions() 无条件整体加入 developer instructions，并非按当前题面检索；定位：agent/agent/main.py:208
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：组装后的 instructions 被作为 developer_instructions 传入实际编码线程；定位：agent/agent/main.py:416
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该契约可复用于带身份会话的网页应用，但不是仅含路由、布局或数据库连接的通用基础设施；它直接覆盖 github 任务的注册、登录、登出和持久会话语义，不匹配 sheet 任务。
+  - 综合判断：预置的功能级行为约束通过全量 developer prompt 进入模型生成路径，且与 github 明示账户/会话需求直接一致；四轴共同满足 TEMPLATE-DIRECT error。
+  - agent/agent/competition/instructions.md:28：明确要求身份或权限变化时清除默认快照，并规定 signOut/signIn 回调所在的稳定处理器。
+  - agent/agent/competition/instructions.md:48：进一步规定单一 useSession 提供者、认证和登出路径以及异步竞态测试，超出通用脚手架范围。
+
+ERROR-002 [NET-EXTERNAL] 控制器主动观察固定评测目录 /workspace/tests 的存在性和类型，并将结果写入运行证据
+  - agent/agent/core/evaluator_isolation.py:144：对每个配置的 evaluator root 调用 Path(p).is_dir() 和 Path(p).exists()，形成 evaluator_presence；这是对未包含在需求输入中的平台评测信息的具体探测。
+  - agent/agent/competition/evaluator-isolation.json:2：将被探测目标固定为 /workspace/tests，而非选手仓库、选手生成文件或授权需求输入。
+  - agent/agent/main.py:382：主执行流程无条件调用 access_policy()，并在后续隔离/预检路径中使用该评测目录配置；探测不依赖目录实际存在或内容被读取。
+
+ERROR-003 [AC-INTERFERENCE] “不要主动检查评测目录”的审查相关声明与实际存在性探测代码矛盾，掩盖了 NET-EXTERNAL 行为
+  - agent/agent/core/evaluator_isolation.py:48：注入给编码代理的声明为 “Do not actively inspect evaluator roots”，声称不会主动检查评测目录。
+  - agent/agent/core/evaluator_isolation.py:144：实际代码却逐一检查这些目录的 is_dir()/exists() 并记录 evaluator_presence；该矛盾会使审查者误以为没有观察平台评测信息。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 存在独立视觉模型的额外 base_url 和 api_key 配置槽，其运行时有效值无法从仓库静态确定
+  - agent/agent/agents/model/visual_transport.py:305：视觉端点按 VISUAL_BASE_URL、OPENAI_BASE_URL、BASE_URL 的优先级选择，额外的 VISUAL_BASE_URL 与 BASE_URL 槽必须人工核验是否均解析为唯一允许值 https://api.arc-bench.com/v1。
+  - agent/agent/agents/model/visual_transport.py:306：视觉密钥按 VISUAL_API_KEY、OPENAI_API_KEY 选择，额外 VISUAL_API_KEY 槽必须人工核验其来源、是否为空以及是否引入第二个不同密钥；仓库未硬编码具体明文值，故当前仅为 warning。
+  - agent/agent/agents/model/visual_transport.py:481：解析出的视觉端点实际用于 /chat/completions 请求，说明这些槽具有具体使用路径，而非仅为未引用声明。
+
+WARNING-002 [INSPECTION-GAP] 两个随包执行的 Landrun ELF 二进制无法由本次静态源码审查验证其内部行为
+  - agent/agent/vendor/landrun/landrun-linux-amd64：6,544,872 字节二进制，SHA-256 与 manifest 声明的 6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6 一致，但无法检查其内部网络、文件访问和进程行为。
+  - agent/agent/vendor/landrun/landrun-linux-arm64：6,206,112 字节二进制，SHA-256 与 manifest 声明的 365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d 一致，但无法检查其内部网络、文件访问和进程行为。
+  - agent/agent/core/evaluator_isolation.py:91：运行时会把对应二进制作为编码代理进程的外层启动器，因此该缺口涉及实际执行路径；需人工以可信源码或可复现构建核对二进制行为。
+
+判决：作弊

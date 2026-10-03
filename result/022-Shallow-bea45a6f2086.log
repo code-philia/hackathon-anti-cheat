@@ -1,0 +1,45 @@
+反作弊审查：022-Shallow-bea45a6f2086
+题目路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题目范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\022-Shallow-bea45a6f2086
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：4 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的仓库协作与身份权限业务约束被针对 GitHub 题目自动注入模型提示词
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置材料规定仓库、组织、分支、提交、议题、合并请求、成员权限、对象可见性及界面入口等业务行为，直接对应 github 任务的协作、权限和导航需求；定位：agent/agent/prompts/fragments/repository-collaboration.md:1
+  - 检索方案：(1)针对题面硬编码检索；说明：代码将根名称精确等于 "GitHub" 或 "GitHub Collaboration Platform Core Requirements" 的任务归类为 repository_collaboration；定位：agent/agent/src/catalog.ts:90
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：实现任务把选中的片段拼入 FRAGMENTS 后构造成模型 taskPrompt，Pi worker 将该提示词作为 systemPrompt 载入；定位：agent/agent/src/builder/prompt.ts:58
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：材料可复用于同类代码托管协作产品，但其对象、权限与入口约束不是基本网页框架。
+  - 综合判断：题面名称被硬编码选择，预置的需求级业务约束被送入模型生成，且与 github 任务直接匹配，构成 TEMPLATE-DIRECT error。
+  - agent/agent/src/builder/prompt-fragments.ts:42：repository_collaboration 类型无条件选入 auth_and_permission 和 repository_collaboration 片段。
+
+ERROR-002 [TEMPLATE-DIRECT] 预置的电子表格领域约束被针对 sheet 题目自动注入模型提示词
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置材料规定工作簿、工作表、单元格、区域、公式、编辑、复制、排序、筛选、结构变更、验证和选择区的状态与更新规则，直接对应 sheet 任务；定位：agent/agent/prompts/fragments/spreadsheet-grid.md:1
+  - 检索方案：(1)针对题面硬编码检索；说明：代码将根名称精确等于 "Core Requirements for an Online Spreadsheet Data Workspace" 的任务归类为 spreadsheet；定位：agent/agent/src/catalog.ts:93
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：spreadsheet 类型固定选择 spreadsheet_grid 片段，并由 fragmentSection 拼入实现任务的 FRAGMENTS；定位：agent/agent/src/builder/prompt-fragments.ts:48
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：材料可用于同类电子表格产品，但其中公式、筛选、排序和网格状态约束属于应用功能合同，非基本框架。
+  - 综合判断：题面根名称被硬编码选择，预置的表格功能合同进入模型生成上下文并直接覆盖 sheet 需求，构成 TEMPLATE-DIRECT error。
+  - agent/agent/src/builder/prompt.ts:271：所有已选片段内容被 join 后纳入提示词。
+
+ERROR-003 [NET-EXTERNAL] 代码枚举并读取平台挂载的验收测试规格，以提取其中硬编码的服务端口
+  - agent/agent/src/runtime-config.ts:16：将 /workspace/tests 定义为 DEFAULT_ACCEPTANCE_TESTS_DIR。
+  - agent/agent/src/runtime-config.ts:137：对 testsDir 递归枚举文件。
+  - agent/agent/src/runtime-config.ts:146：读取每个 .ts 测试文件内容，随后提取 URL 中端口。
+  - agent/agent/src/runtime-config.ts:186：运行流程调用 locateAcceptanceTestsDir 并将读取结果用于 resolvePlatformExtraPorts。
+
+ERROR-004 [NET-EXTERNAL] 运行安装流程会访问外部 npm/Playwright 镜像服务
+  - agent/agent/main.py:94：MIRROR_ENV_DEFAULTS 将 npm_config_registry 设置为 https://registry.npmmirror.com。
+  - agent/agent/main.py:97：将 PLAYWRIGHT_DOWNLOAD_HOST 设置为 https://npmmirror.com/mirrors/playwright。
+  - agent/agent/src/runtime-config.ts:94：平台安装命令明确执行 npm install --no-audit --no-fund。
+  - agent/agent/src/runtime-config.ts:102：第二个后端安装命令同样执行 npm install；这些命令在提交运行中会查询/下载外部依赖服务。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型 base_url 的实际值无法由静态材料确认是否为唯一允许的 https://api.arc-bench.com/v1
+  - agent/agent/src/runtime-config.ts:49：baseUrl 直接取自 OPENAI_BASE_URL 环境变量并仅去除尾部斜杠，未作允许地址校验；需人工核验实际注入值及所有可读取 .env 的内容。
+  - agent/agent/main.py:147：Python 预检同样从 OPENAI_BASE_URL 构造请求地址；静态仓库没有给出其最终值。
+
+WARNING-002 [AC-INTERFERENCE] 关于模型凭据由平台注入的说明无法由仓库内独立证据证实
+  - agent/agent/main.py:11：注释声称 OPENAI_API_KEY、OPENAI_BASE_URL 和 MODEL “injected by the platform”；已检查运行时配置和 .env 合并逻辑，但仓库内没有平台注入配置或可验证的最终环境值，仍需人工确认。
+
+判决：作弊

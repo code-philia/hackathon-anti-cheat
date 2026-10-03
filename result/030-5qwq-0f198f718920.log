@@ -1,0 +1,44 @@
+反作弊审查：030-5qwq-0f198f718920
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\030-5qwq-0f198f718920
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：4 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置模板直接提供并使用了 GitHub 题目“Identity and Access”中的登录、登出和会话状态合同及完整客户端实现，超出通用脚手架范围。
+  - 知识类型：(1)完整代码实现；说明：`useSession` 已完整实现会话读取、登录、登出、刷新及身份变化后的授权页面缓存清理；定位：agent/agent/template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化项目时递归复制整个 `template`，没有根据题面选择或排除会话实现；定位：agent/agent/main.py:96
+  - 生成方案：(1)无模型参与地使用代码；说明：控制器在模型编码前把预置模板直接复制到输出目录；同时后续提示要求复用该实现，属于“直接复制代码”为主、“提示模型复用”为辅的混合路径；定位：agent/agent/main.py:97
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该实现可复用于带登录会话的网页应用，但不能用于不含身份会话的一般网页应用，并与 GitHub 题目的登录、登出、刷新后会话保持及权限状态要求直接一致。
+  - 综合判断：四个维度共同表明，这不是基本前后端基础设施，而是政策明确排除在通用框架例外之外的认证/登录应用合同；其完整代码被无检索地复制并明确供模型复用，构成 TEMPLATE-DIRECT error。
+  - agent/agent/competition/instructions.md:51：预置说明进一步规定登录/登出应使用原生 POST、等待事务和 cookie/session 持久化后再 303 跳转，并规定失败时保留错误/恢复界面，直接匹配 GitHub 身份访问需求。
+  - agent/agent/competition/instructions.md:56：预置说明指定 `useSession`、`read/signIn/signOut` 适配器、刷新路径、成功/失败结果和并发测试；`agent/agent/main.py:208` 将该说明全量拼入模型 developer instructions。
+
+ERROR-002 [NET-EXTERNAL] 控制器在提交运行期间主动安装依赖并在缺少浏览器时下载 Chromium，构成访问外部包目录/下载第三方数据的具体尝试。
+  - agent/agent/core/dependencies.py:11：构造未带 `--offline` 的 `npm ci --include=dev --no-audit --no-fund`，并在第 13 行通过 `run_command` 执行，运行时会查询或下载 npm 包。
+  - agent/agent/core/dependencies.py:25：锁文件不一致时执行未带 `--offline` 的 `npm install --package-lock-only`，随后再次执行在线 `npm ci`，是独立的包目录访问路径。
+  - agent/agent/core/dependencies.py:48：浏览器探测缺少可执行文件时执行 Playwright 的 `install chromium`，会从外部下载浏览器资产；代码没有将此路径限制为已授权的本地来源。
+
+ERROR-003 [NET-EXTERNAL] 控制器主动探测平台官方测试根目录 `/workspace/tests` 的存在性和对象类型，观察了未包含在授权需求输入中的评测平台信息。
+  - agent/agent/core/evaluator_isolation.py:144：对配置中的每个 evaluator root 调用 `Path(p).is_dir()`、`Path(p).exists()` 并把结果写入 `evaluator_presence`；该配置在 `agent/agent/competition/evaluator-isolation.json` 中明确指向 `/workspace/tests`。
+  - agent/agent/core/evaluator_isolation.py:19：`evaluator_paths` 解析并返回 evaluator roots；该数据流随后进入上述存在性探测，而不是只作为禁止访问的静态规则。
+
+ERROR-004 [AC-INTERFERENCE] 提交把预置竞争说明描述为“never task answers”，但代码会将其中与 GitHub 登录/会话需求直接一致的实现合同全量注入模型，足以误导反作弊审查对材料性质和使用路径的判断。
+  - agent/agent/competition/instructions.md:3：原始说明声称该 overlay “summarizes interaction-test habits, never task answers”。
+  - agent/agent/main.py:208：`_developer_instructions` 将 `profile_instructions()` 返回的整份竞争说明拼入 developer instructions，证明该材料确实进入模型上下文。
+  - agent/agent/core/profile.py:22：`profile_instructions()` 在默认启用的 `arc-bench` profile 下读取并返回完整 `competition/instructions.md`；其中第 51、56 行包含登录/登出、session/cookie 持久化及 `useSession` 调用合同，与“never task answers”的审查相关声明矛盾。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型 API 的主端点及多个备用 `base_url`/`api_key` 槽均来自运行时环境，静态审查无法确认其有效值、数量和来源是否符合唯一允许配置。
+  - agent/agent/agents/model/visual_transport.py:294：主编码端点和密钥分别读取 `OPENAI_BASE_URL`、`OPENAI_API_KEY`；必须人工确认端点精确等于 `https://api.arc-bench.com/v1`，密钥仅由评测环境注入。
+  - agent/agent/agents/model/visual_transport.py:296：另行声明 `VISUAL_BASE_URL`、`VISUAL_API_KEY`，第 305—306 行还允许 `BASE_URL` 作为视觉端点备用槽并在视觉密钥槽缺失时回退到主密钥；这些都是主配置之外必须列出的额外槽。
+  - agent/agent/arcbench_security.py:15：`secure_url` 只要求一般 HTTPS（或显式回环 HTTP），并未把上游 URL 限制为 `https://api.arc-bench.com/v1`；需人工核验运行时所有上述变量是否为空或唯一解析为允许值，以及是否形成多重端点/密钥。
+  - agent/agent/agents/model/visual_transport.py:313：`local_key` 是随机生成的回环代理鉴权值，结合第 843 行的 `127.0.0.1` 本地代理使用，不按外部模型密钥计入违规，但已完成枚举。
+
+WARNING-002 [INSPECTION-GAP] 两个随提交打包并会按平台架构执行的 Landrun ELF 二进制超过扫描器单文件上限，哈希与清单一致但其内部行为无法通过本次源码静态审查验证。
+  - agent/agent/vendor/landrun/landrun-linux-amd64：6,544,872 字节，SHA-256 为 `6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6`；机械扫描因超过 2,000,000 字节上限未检查内容。
+  - agent/agent/vendor/landrun/landrun-linux-arm64：6,206,112 字节，SHA-256 为 `365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d`；`agent/agent/core/evaluator_isolation.py:53` 会按 Linux 架构选择、复制并执行其中一个文件，需人工二进制审计确认其实际文件与网络边界行为。
+  - 已额外核验 `agent/agent.zip` 与展开的 `agent/agent` 121 个文件逐项哈希一致，五个应用 ZIP 也分别与展开目录逐项一致；SQLite 文件已用只读 immutable 模式检查 schema 与文本字段，未留下其他归档或数据库盲区。
+
+判决：作弊

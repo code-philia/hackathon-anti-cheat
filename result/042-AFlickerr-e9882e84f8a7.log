@@ -1,0 +1,33 @@
+反作弊审查：042-AFlickerr-e9882e84f8a7
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/042-AFlickerr-e9882e84f8a7
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 固定生成合同预置了账户种子、登录、会话持久化和权限等应用级行为，并全量注入源码生成调用，直接匹配 github 任务的 Identity and Access、注册、登录、会话保持及权限需求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：固定合同要求在初始化时创建账户记录，规定需要用户时从首页通过 UI 登录、刷新后保持数据，并预置“随机 token + HttpOnly cookie + sessions.json”的会话实现；这些不是基础路由或数据库连接脚手架，而是 github 题面明确要求的账户/会话功能合同；定位：generated_application.py:184
+  - 检索方案：(4)无检索机制（全量使用）；说明：static_prompt_head 无条件拼接 contract_text()，没有依据任务是否包含认证功能来选择该材料，因而每个源码生成阶段都会全量取得固定合同；定位：generated_application.py:368
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：包含固定合同的 head 与当前单元任务共同组成 prompt，并作为 source_generation 调用的输入，由模型据此产生写入最终作答的源码块；定位：generated_application.py:459
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该材料可复用于其他带账户登录和持久会话的网页应用，但不适用于一般网页应用；它与 github 任务的注册、登录、会话持久化和权限语义直接一致。
+  - 综合判断：材料属于可直接指导实现的应用级约束，经无检索的固定提示路径进入源码生成；知识虽可复用于同类认证应用，却直接覆盖 github 题面的明确功能，因此满足 TEMPLATE-DIRECT error，而非通用框架例外。
+
+ERROR-002 [NET-EXTERNAL] 主执行路径会主动从包服务和浏览器下载服务获取第三方依赖及 Chromium，属于运行期间的外部站点访问尝试。
+  - generated_application.py:90: build() 在 node_modules 不存在或 install=True 时构造并执行 `npm install`；generate() 以 install=True 调用该路径（generated_application.py:409），因此不是仅存在于依赖清单中的静态 URL。
+  - app_runtime.py:126: ensure_playwright() 会执行 `npm install ... @playwright/test@1.57.0`；AcceptanceLoop.start 经 SuiteRunner.__init__ 调用该函数（tdd_loop.py:163、acceptance.py:228）。
+  - app_runtime.py:141: 浏览器缺失时依次使用默认 CDN 和硬编码的 `https://registry.npmmirror.com/-/binary/playwright`，并在 app_runtime.py:146 执行 Playwright 的浏览器安装命令；这是明确的外部下载机制。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 唯一模型配置槽从环境变量取得 `OPENAI_BASE_URL`，静态审查无法确认其运行时值是否严格等于唯一允许值 `https://api.arc-bench.com/v1`。
+  - core_utils.py:44: `OPENAI_API_KEY` 仅从注入环境读取，未发现仓库提供明文密钥或第二个 key 槽；该方式本身允许。
+  - core_utils.py:45: `OPENAI_BASE_URL` 的有效值完全由运行环境决定，core_utils.py:49 未校验其等于允许端点；需人工核对竞赛运行环境的实际注入值。全仓未发现第二个模型 `base_url`/`api_key` 配置槽。
+
+WARNING-002 [AC-INTERFERENCE] 关于旧版预置应用“从未用于 hackathon 任务”的裁决相关历史声明无法由当前仓库独立验证。
+  - core_utils.py:3: 注释称旧版引擎曾包含其他 benchmark 的预置应用，并在 core_utils.py:4 声称 “Those were never used for the hackathon tasks”；已检查当前仓库清单、模板、生成入口和提示数据流，当前版本未包含所称 434 KB 旧引擎或完整任务应用，但仓库也没有旧版运行记录或可复核证据，无法判断历史材料当时的可达性及实际使用情况，需人工核验该声明。
+
+WARNING-003 [AC-INTERFERENCE] 关于“官方运行”的得分、成本、token 构成及由此推导的评分公式属于计量/评分相关说明，但仓库未附可独立复核的原始记录。
+  - budget_policy.py:3: 注释把多组通过率、成本和分数称为 “three official runs”，并在 budget_policy.py:10 推导评分公式；已检查模型 usage 的采集与内部预算数据流，未发现隐藏、删除、改写平台计量记录的机制，但仓库中没有这些历史官方运行的原始 meter/评分产物，故其来源、数值和公式仍需人工核验。
+  - model_transport.py:7: 注释进一步声称旧运行的 reasoning token 数及成本占比；当前代码会保存服务端 usage（model_transport.py:277），服务端不返回 usage 时仅为内部状态估算（model_transport.py:271），但这些实现不能证实注释所述历史数字。
+
+判决：作弊

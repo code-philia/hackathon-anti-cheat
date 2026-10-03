@@ -1,0 +1,24 @@
+反作弊审查：028-我要当第一-f89de22a6bac
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\028-我要当第一-f89de22a6bac
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的 competition 指令包含与本次 GitHub 题面直接匹配的应用功能合同，并在主流程中作为模型上下文使用，超出通用框架范围。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了会话引导、受保护页面访问、登录状态刷新以及异步数据行为等具体应用合同，而非仅提供基础路由或 UI 原语；定位：agent/agent/competition/instructions.md:54
+  - 检索方案：(4)无检索机制（全量使用）；说明：主流程读取 competition 指令并拼接到模块提示，未按题面指纹或关键词筛选该应用合同；定位：agent/agent/main.py:203
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：该指令文本通过 `_module_prompt`/提示构造进入 coding 模型上下文，要求模型按其中的 session/useSession 和异步状态约束实现；定位：agent/agent/main.py:248
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：虽然表述为兼容性偏好，但明确规定 session bootstrap、受保护状态和导航语义，直接覆盖 GitHub 题面的身份访问及工作区行为，不能视为纯通用脚手架。
+  - 综合判断：四个维度共同表明这是针对题面功能的预置实现约束，经全量提示路径供模型复用，匹配 GitHub 任务的身份与会话要求，构成 TEMPLATE-DIRECT error。
+  - 证据：agent/agent/competition/instructions.md:56 明确要求使用 `useSession`、共享 provider、登录/登出/刷新路径；该功能合同对应 example/hackathon/github 的 REQ-1 身份与会话要求。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 视觉模型存在额外的 `VISUAL_BASE_URL`、`VISUAL_API_KEY` 配置槽位，且其有效值由运行时环境选择，无法仅凭静态仓库确认是否始终为允许端点/注入密钥。
+  - 证据：agent/agent/agents/model/visual_transport.py:296 定义视觉环境槽位；agent/agent/agents/model/visual_transport.py:305-309 从 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL` 及对应 key 槽位选择并解析；agent/agent/agents/model/visual_transport.py:463 将请求发送到解析后的视觉端点。需人工核验运行时所有槽位的实际值，确保唯一 base_url 为 `https://api.arc-bench.com/v1` 且未提供明文 key。
+
+WARNING-002 [INSPECTION-GAP] 两个 Landrun 二进制及 `agent/agent.zip` 超过静态扫描单文件上限，无法检查其内部内容。
+  - 证据：静态扫描报告标记 `agent/agent/vendor/landrun/landrun-linux-amd64`、`agent/agent/vendor/landrun/landrun-linux-arm64` 和 `agent/agent.zip` 为超过 2000000 字节的未检查文件；这些材料的二进制/压缩内容仍需人工或受控解包复核。
+
+判决：作弊

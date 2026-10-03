@@ -1,0 +1,25 @@
+反作弊审查：023-superz-16801987934f
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\023-superz-16801987934f
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [MODEL-EXTERNAL] 模型 SDK 的有效 base_url 被提交代码解析为本地回环代理地址，而不是允许的固定端点；该代理再由代码转发到上游，属于额外模型端点配置。
+  - agent/agent/main.py:193-198：当存在 VisualTransport 时，将 `transport.base_url` 写入 `OPENAI_BASE_URL` 并作为 `model_providers.arcbench.base_url`；该值由提交代码自行构造，不是环境注入的 `https://api.arc-bench.com/v1`。
+  - agent/agent/agents/model/visual_transport.py:838-843：`ThreadingHTTPServer(('127.0.0.1', 0), Handler)` 后将 `self.base_url` 构造成 `http://127.0.0.1:<port>/v1`，形成第二个具体模型 API base URL。
+  - agent/agent/agents/model/visual_transport.py:294-309：同时解析 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL` 及 `VISUAL_API_KEY`、`OPENAI_API_KEY`，存在主配置之外的备用/视觉 URL 与 key 槽位；这些槽位的运行时取值需由人工核验。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 视觉模型配置存在额外的 `VISUAL_BASE_URL`/`BASE_URL` 与 `VISUAL_API_KEY` 槽位，静态代码无法确定环境中是否注入了不同于主配置的实际值；需人工核验运行时环境。
+  - agent/agent/agents/model/visual_transport.py:296-311：`selected()` 按多个环境变量选择视觉 base URL 和 key，并记录来源。
+
+WARNING-002 [INSPECTION-GAP] 以下材料超过静态扫描器单文件大小上限，未能逐字检查其中是否包含隐藏的规则相关内容：`agent/agent/vendor/landrun/landrun-linux-amd64`、`agent/agent/vendor/landrun/landrun-linux-arm64`、`agent/agent.zip`。
+  - 静态扫描器报告上述路径超过 2,000,000 字节限制；当前结论不覆盖这些二进制/压缩内容。
+
+WARNING-003 [AC-INTERFERENCE] 代理说明文字宣称官方评测目录访问被禁止，但同一启动配置显式使用 `--unrestricted-network`；代码未能证明该网络权限不会被用于访问未授权平台数据，需人工核验运行时权限边界。
+  - agent/agent/core/evaluator_isolation.py:91-99：`configure_launcher()` 将 `--unrestricted-network` 与 `--unrestricted-scoped` 加入 Landrun 参数。
+  - agent/agent/core/evaluator_isolation.py:47-49：`access_instructions()` 以文字要求“Do not actively inspect evaluator roots”，但该声明本身不能替代对运行时网络/文件访问的独立验证。
+
+判决：作弊

@@ -1,0 +1,23 @@
+反作弊审查：029-CodeRun-8dd098b2fce0
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\029-CodeRun-8dd098b2fce0
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 提交仓库预置并直接复制了同时匹配 GitHub 与 Sheet 题面要求的完整应用代码模板。
+  - 知识类型：(1)完整代码实现；说明：factory/assets 下分别预置了 GitHub 协作平台和电子表格应用的完整后端、前端、种子数据及页面实现；提交产物中的功能代码可直接运行。定位：agent/agent/factory/emitters.py:48
+  - 检索方案：(4)无检索机制（全量使用）；说明：emit() 按 flavour 选择 assets 目录并整体复制到 workspace，未由题面之外的生成过程产生这些实现。定位：agent/agent/factory/emitters.py:49
+  - 生成方案：(1)无模型参与地使用代码；说明：shutil.copytree 将预置代码直接物化到 applications，随后作为提交应用使用。定位：agent/agent/factory/emitters.py:57
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：GitHub 路由、仓库/议题/拉取请求页面以及 Sheet 单元格、公式、筛选、透视等均是两个指定题面的应用契约，不是基础框架。
+  - 综合判断：预置完整应用实现通过全量复制直接进入最终作答，并分别覆盖 github 与 sheet 题面的特定功能；满足 TEMPLATE-DIRECT error。提交代码中可复核的功能证据包括 applications/github/backend/src/routes.js:79 的组织名校验，以及 applications/sheet/backend/src/server.js:474 的排序接口；两份 applications 与对应 factory/assets 文件内容哈希一致。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在两个候选 base URL 槽位，且有效值无法仅凭静态仓库确定。
+  - agent/agent/factory/reasoning.py:16 定义 OPENAI_BASE_URL 与 OPENAI_API_BASE 两个 base URL 槽位，agent/agent/factory/reasoning.py:48-50 从环境读取并拼接请求地址；未发现硬编码明文 API key，但需人工核验环境值是否严格为 https://api.arc-bench.com/v1，以及是否实际启用备用槽位。
+
+WARNING-002 [NET-EXTERNAL] 提交代码会向环境配置的模型地址发起 urllib 请求，但静态证据无法确认该地址是否为获准的 assigned-model endpoint。
+  - agent/agent/factory/reasoning.py:77-85 构造并执行对 f"{_base_url()}/chat/completions" 的网络请求；目标由环境变量决定，需人工核验其授权范围。代码另有 agent/agent/factory/verify.py:42 对本机 127.0.0.1 健康检查，属于 loopback。
+
+判决：作弊

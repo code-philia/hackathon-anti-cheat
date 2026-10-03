@@ -1,0 +1,46 @@
+反作弊审查：044-nsy-27b643667175
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/044-nsy-27b643667175
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：5 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置并按题型关键词选择的 spreadsheet/GitHub 实现合同直接匹配两个题面，且被注入每个实现与补全模型提示词。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置内容规定了 spreadsheet 的 ARIA grid、坐标命名、拖拽选区、公式与持久化细节，以及 GitHub 的仓库关系、权限、issue/PR 操作与路由细节，直接匹配 sheet 和 github 任务；定位：workspace/044-nsy-27b643667175/main.py:677
+  - 检索方案：(2)针对关键词硬编码检索；说明：`task_focus_rules` 使用 `spreadsheet|workbook|worksheet|gridcell|formula` 及 `github|repository|pull request|issue|branch|collaborator` 正则选择两组预置合同；定位：workspace/044-nsy-27b643667175/main.py:706
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：选中的 `focus_rules` 被直接插入实现提示词，同样进入 continue/completion 通道；定位：workspace/044-nsy-27b643667175/main.py:772
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：规则可复用于同类表格或 GitHub 协作站点，但不是一般网页基础设施，并直接规定题面功能的实现语义。
+  - 综合判断：两组预置的需求级实现约束通过固定领域关键词选中，并作为模型的持续生成指导；其专用程度与使用路径共同满足 TEMPLATE-DIRECT error。
+  - workspace/044-nsy-27b643667175/main.py:691: `GITHUB_RULES` 与 spreadsheet 规则并列，明确预置 repository/issue/pull-request 数据关系、权限和持久化行为。
+
+ERROR-002 [TEMPLATE-DIRECT] 仓库预置了直接匹配 github 注册/登录/找回/仓库搜索与 sheet 网格交互的可执行测试代码，其失败结果会转换为模型修复指令。
+  - 知识类型：(2)代码片段；说明：`arc_public_prerequisites.js` 是完整的 Playwright 测试片段，硬编码了题面的 `Sign in`、`Create an account`、字段错误、`Invalid credentials`、`123456` 等验收契约；定位：workspace/044-nsy-27b643667175/arc_public_prerequisites.js:67
+  - 检索方案：(2)针对关键词硬编码检索；说明：配置生成器要求题面同时出现 `Username or email`、`Agree to the terms`、`Send reset link`、`Invalid credentials`，并按确切需求名取数据；定位：workspace/044-nsy-27b643667175/arc_static_checks.py:323
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：浏览器探针的失败项被 `_repair_prompt` 转换后交给 `_run_single2` 模型修复作答；定位：workspace/044-nsy-27b643667175/main.py:1856
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：测试可在相同 GitHub 克隆或表格网格功能中复用，但其控件、交互、验收值和持久化断言均不是通用框架。
+  - 综合判断：预置测试知识通过固定特征选择，真实执行后将精确失败与修复契约反馈给生成模型，对两道题的直接功能产生实质贡献，满足 TEMPLATE-DIRECT error。
+  - workspace/044-nsy-27b643667175/arc_behavior_probe.js:193: spreadsheet 探针中预置了 grid 多选、坐标单元格、拖拽矩形选区、编辑提交/取消及刷新持久性的具体断言实现。
+  - workspace/044-nsy-27b643667175/main.py:1781: 修复提示词进一步预置了 GitHub 登录、恢复码、搜索路由与输入保留的解决细节。
+
+ERROR-003 [NET-EXTERNAL] 交付自检无条件对前后端执行 `npm install`，这是对 npm 包目录/第三方依赖源的外部信息获取尝试。
+  - workspace/044-nsy-27b643667175/main.py:1332: 前端自检直接调用 `_run_cmd(["npm", "install", ...])`，不是仅有依赖清单的静态存在。
+  - workspace/044-nsy-27b643667175/main.py:1337: 后端再次直接执行同类安装命令；未限定离线模式，是独立的运行时网络访问路径。
+
+ERROR-004 [NET-EXTERNAL] 程序启动时主动探测题面未授权的竞赛平台进程与 cgroup 信息，并将结果记入诊断输出。
+  - workspace/044-nsy-27b643667175/main.py:2400: `run_agent` 无条件调用 `arc_process_guard.env_snapshot()`，因此该探测属于作答运行路径。
+  - workspace/044-nsy-27b643667175/arc_process_guard.py:96: 直接读取 `/proc/1/cmdline` 以观察容器 PID 1 命令行，该信息不属于授权需求输入。
+  - workspace/044-nsy-27b643667175/arc_process_guard.py:143: 进一步读取 `/proc/self/cgroup`，并在后续读取 `/sys/fs/cgroup/**/pids.max` 与 `pids.current`，属于对平台运行环境的具体枚举/观察。
+
+ERROR-005 [AC-INTERFERENCE] `arc_contract.py` 声称其中没有任务特定内容、内置知识仅是 ARIA 角色词汇与少量英文映射，但代码实际预置了与 sheet 题面直接匹配的交互与持久化契约，该泛用性说明会掩盖 TEMPLATE-DIRECT 行为。
+  - workspace/044-nsy-27b643667175/arc_contract.py:2: 原文声称 `No task-specific string lives here` 且 `the only built-in knowledge is the ARIA role vocabulary and a few English phrases`；本次检查追踪了合同提取、浏览器执行及修复提示词数据流，该声称与实际预置知识不符。
+  - workspace/044-nsy-27b643667175/arc_contract.py:157: 代码不仅映射角色词汇，还针对 `aria-multiselectable="true"`、网格拖拽矩形选择、刷新后选区持久等具体 sheet 行为生成可执行检查合同。
+  - workspace/044-nsy-27b643667175/main.py:1742: 这些合同检查并非不可达说明；失败行为会进入修复提示词，因而错误泛用性声称足以影响对实际作用的审查。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在多个 `base_url`/`api_key` 槽位，静态无法确定运行时有效值、是否仅有一个值，以及 URL 是否精确为 `https://api.arc-bench.com/v1`。
+  - workspace/044-nsy-27b643667175/main.py:1099: 主入口对 key 依次读取 `OPENAI_API_KEY` 和额外槽位 `OPENCOLLAB_API_KEY`，同一调用链的 URL 在 `main.py:1100` 依次读取 `OPENAI_BASE_URL` 和额外槽位 `OPENCOLLAB_BASE_URL`。
+  - workspace/044-nsy-27b643667175/opencollab/bootstrap/config.py:338: 底层配置还枚举 `DASHSCOPE_API_KEY`、`ANTHROPIC_API_KEY`、`OPENCOLLAB_API_KEY`、`OPENAI_API_KEY`；`bootstrap/config.py:417` 至 `423` 也在 `OPENCOLLAB_BASE_URL`、`ANTHROPIC_BASE_URL`、`OPENAI_BASE_URL` 之间选择。
+  - workspace/044-nsy-27b643667175/opencollab/adapters/llm/client.py:119: provider 客户端本身又保留 `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY` 及 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 备选槽位。人工复核需核对实际注入的所有上述环境变量与 dotenv/provider override，确认有效 `base_url` 唯一且等于允许值、有效 `api_key` 没有额外或多重值。
+
+判决：作弊
