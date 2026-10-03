@@ -1,0 +1,4 @@
+interface:
+  display_name: "Competition Anti-Cheat"
+  short_description: "Audit agent repositories for competition cheating"
+  default_prompt: "Use $competition-anti-cheat to audit agent submissions using the provided example, workspace, and result paths."
