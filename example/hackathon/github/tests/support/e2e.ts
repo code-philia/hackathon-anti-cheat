@@ -1,4 +1,4 @@
-import { expect, Page, TestInfo } from '@playwright/test';
+import { expect, Locator, Page, TestInfo } from '@playwright/test';
 
 export type VerifiedAccount = {
   username: string;
@@ -12,8 +12,12 @@ const SEEDED_ACCOUNTS: Record<string, string> = {
   LOGIN: 'alice-dev',
   LOGIN_EMAIL: 'alice-dev',
   SIGN_OUT: 'alice-dev',
-  PASSWORD_CHANGE: 'alice-dev',
-  PASSWORD_CHANGE_REQUIRED: 'alice-dev',
+  PASSWORD_CHANGE_SUCCESS: 'password-change-success',
+  PASSWORD_CHANGE_INVALID_CURRENT: 'password-change-invalid',
+  PASSWORD_CHANGE_REQUIRED: 'password-change-required',
+  RECOVERY_VISIBILITY: 'recovery-visibility',
+  RECOVERY_INVALID_CODE: 'recovery-invalid-code',
+  RECOVERY_SUCCESS: 'recovery-success',
   ORGANIZATION_OWNER: 'org-owner',
   ORGANIZATION_NEW_MEMBER: 'new-member',
   ORGANIZATION_EXISTING_MEMBER: 'existing-member',
@@ -46,8 +50,12 @@ const SEEDED_EMAILS: Record<string, string> = {
   LOGIN: 'alice.dev@example.test',
   LOGIN_EMAIL: 'alice.dev@example.test',
   SIGN_OUT: 'alice.dev@example.test',
-  PASSWORD_CHANGE: 'alice.dev@example.test',
-  PASSWORD_CHANGE_REQUIRED: 'alice.dev@example.test',
+  PASSWORD_CHANGE_SUCCESS: 'password-change-success@example.test',
+  PASSWORD_CHANGE_INVALID_CURRENT: 'password-change-invalid@example.test',
+  PASSWORD_CHANGE_REQUIRED: 'password-change-required@example.test',
+  RECOVERY_VISIBILITY: 'recovery-visibility@example.test',
+  RECOVERY_INVALID_CODE: 'recovery-invalid-code@example.test',
+  RECOVERY_SUCCESS: 'recovery-success@example.test',
 };
 
 /**
@@ -66,11 +74,13 @@ export function seedValue(_testInfo: TestInfo, name: string): string {
   const key = name;
   const values: Record<string, string> = {
     PUBLIC_REPOSITORY_NAME: 'acme-docs',
-    VISIBILITY_REPOSITORY_NAME: 'secret-research',
+    VISIBILITY_REPOSITORY_NAME: 'visibility-demo',
     PUBLIC_ORGANIZATION_REPOSITORY: 'acme-docs',
     PRIVATE_REPOSITORY_NAME: 'secret-research',
+    UNKNOWN_REPOSITORY_QUERY: 'no-such-repository',
     PRIVATE_ORGANIZATION_REPOSITORY: 'secret-research',
     EXISTING_ORGANIZATION: 'Acme Demo',
+    EXISTING_ORGANIZATION_IDENTIFIER: 'acme-demo',
     EXISTING_OWNED_REPOSITORY: 'acme-docs',
     CODE_DIRECTORY: 'src',
     CODE_FILE_NAME: 'README.md',
@@ -102,15 +112,16 @@ export function seedValue(_testInfo: TestInfo, name: string): string {
     ISSUE_MILESTONE: 'v1.0',
     ISSUE_ASSIGNEE: 'bob-reviewer',
     OPEN_PULL_REQUEST_TITLE: 'Improve onboarding',
-    PULL_REQUEST_TITLE: 'Improve onboarding',
+    PULL_REQUEST_TITLE: 'Overview onboarding PR',
     DRAFT_PULL_REQUEST_TITLE: 'Draft onboarding update',
     REQUESTED_REVIEWER: 'bob-reviewer',
     TEAM_CANDIDATE_USERNAME: 'bob-reviewer',
     ORGANIZATION_MEMBER_TO_REMOVE: 'existing-member',
+    ORGANIZATION_MEMBER_FOR_NON_OWNER: 'protected-member',
     PASSWORD_CHANGE_NEW_PASSWORD: 'New-password-456!',
     PASSWORD_CHANGE_REQUIRED_NEW_PASSWORD: 'Required-password-789!',
     ACCESS_TEAM_NAME: 'frontend-team',
-    ACCESS_ROLE_CHANGE_TEAM_NAME: 'frontend-team',
+    ACCESS_ROLE_CHANGE_TEAM_NAME: 'access-role-team',
     FORK_SOURCE_REPOSITORY_NAME: 'acme-docs',
     EXISTING_FORK_NAME: 'acme-docs-fork',
     CYCLIC_TEAM_DESCENDANT: 'frontend-child',
@@ -118,35 +129,35 @@ export function seedValue(_testInfo: TestInfo, name: string): string {
     // Navigation targets are visible labels, never application URLs.
     PUBLIC_REPOSITORY_ENTRY: 'acme-docs',
     FORK_SOURCE_REPOSITORY_ENTRY: 'acme-docs',
-    VISIBILITY_REPOSITORY_ENTRY: 'secret-research',
+    VISIBILITY_REPOSITORY_ENTRY: 'visibility-demo',
     CODE_REPOSITORY_ENTRY: 'acme-docs',
-    BRANCH_REPOSITORY_ENTRY: 'acme-docs',
-    DEFAULT_BRANCH_REPOSITORY_ENTRY: 'acme-docs',
-    FILE_REPOSITORY_ENTRY: 'acme-docs',
-    PROTECTION_REPOSITORY_ENTRY: 'acme-docs',
+    BRANCH_REPOSITORY_ENTRY: 'branch-switch-demo',
+    DEFAULT_BRANCH_REPOSITORY_ENTRY: 'default-branch-demo',
+    FILE_REPOSITORY_ENTRY: 'file-management-demo',
+    PROTECTION_REPOSITORY_ENTRY: 'branch-protection-demo',
     ISSUE_ENTRY: 'Improve onboarding',
-    CLOSABLE_ISSUE_ENTRY: 'Improve onboarding',
-    PROTECTED_ISSUE_ENTRY: 'Improve onboarding',
-    COMMENTABLE_ISSUE_ENTRY: 'Improve onboarding',
-    COMMENT_VALIDATION_ISSUE_ENTRY: 'Improve onboarding',
-    MILESTONE_ISSUE_ENTRY: 'Improve onboarding',
-    LABELABLE_ISSUE_ENTRY: 'Improve onboarding',
-    EDITABLE_ISSUE_ENTRY: 'Improve onboarding',
+    CLOSABLE_ISSUE_ENTRY: 'Closable onboarding issue',
+    PROTECTED_ISSUE_ENTRY: 'Protected onboarding issue',
+    COMMENTABLE_ISSUE_ENTRY: 'Commentable onboarding issue',
+    COMMENT_VALIDATION_ISSUE_ENTRY: 'Comment validation issue',
+    MILESTONE_ISSUE_ENTRY: 'Milestone onboarding issue',
+    LABELABLE_ISSUE_ENTRY: 'Labelable onboarding issue',
+    EDITABLE_ISSUE_ENTRY: 'Editable onboarding issue',
     INVALID_EDIT_ISSUE_ENTRY: 'Original issue title',
-    ASSIGNABLE_ISSUE_ENTRY: 'Improve onboarding',
+    ASSIGNABLE_ISSUE_ENTRY: 'Assignable onboarding issue',
     ISSUES_ENTRY: 'Issues',
     PULL_REQUESTS_ENTRY: 'Pull requests',
-    PULL_REQUEST_ENTRY: 'Improve onboarding',
-    PUBLIC_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    REVIEWABLE_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    PENDING_REVIEW_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    ASSIGNABLE_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    MERGEABLE_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    UNMERGEABLE_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    CLOSABLE_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    PROTECTED_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    CHANGE_REQUEST_PULL_REQUEST_ENTRY: 'Improve onboarding',
-    PROTECTION_PULL_REQUEST_ENTRY: 'Improve onboarding',
+    PULL_REQUEST_ENTRY: 'Overview onboarding PR',
+    PUBLIC_PULL_REQUEST_ENTRY: 'Public onboarding PR',
+    REVIEWABLE_PULL_REQUEST_ENTRY: 'Reviewable onboarding PR',
+    PENDING_REVIEW_PULL_REQUEST_ENTRY: 'Pending review onboarding PR',
+    ASSIGNABLE_PULL_REQUEST_ENTRY: 'Reviewer request onboarding PR',
+    MERGEABLE_PULL_REQUEST_ENTRY: 'Mergeable onboarding PR',
+    UNMERGEABLE_PULL_REQUEST_ENTRY: 'Blocked onboarding PR',
+    CLOSABLE_PULL_REQUEST_ENTRY: 'Closable onboarding PR',
+    PROTECTED_PULL_REQUEST_ENTRY: 'Protected onboarding PR',
+    CHANGE_REQUEST_PULL_REQUEST_ENTRY: 'Change request onboarding PR',
+    PROTECTION_PULL_REQUEST_ENTRY: 'Protection status onboarding PR',
     DRAFT_PULL_REQUEST_ENTRY: 'Draft onboarding update',
     COMPARE_ENTRY: 'Compare',
     VALID_COMPARE_ENTRY: 'Compare',
@@ -157,46 +168,66 @@ export function seedValue(_testInfo: TestInfo, name: string): string {
 }
 
 export async function openVisibleOrganization(page: Page, name: string): Promise<void> {
-  let link = page.getByRole('link', { name, exact: true }).first();
-  if (!(await link.count())) {
-    await page.goto(baseUrl());
-    link = page.getByRole('link', { name, exact: true }).first();
-  }
-  await expect(link).toBeVisible();
-  await link.click();
+  await clickVisibleTarget(page, name);
 }
 
 export async function openVisibleRepository(page: Page, name: string): Promise<void> {
-  let link = page.getByRole('link', { name, exact: true }).first();
-  if (!(await link.count())) {
-    await page.goto(baseUrl());
-    link = page.getByRole('link', { name, exact: true }).first();
-  }
-  await expect(link).toBeVisible();
-  await link.click();
+  await clickVisibleTarget(page, name);
 }
 
-/** Open a seeded object only through a link or text already rendered by the UI. */
-export async function openVisibleTarget(page: Page, name: string): Promise<void> {
-  let link = page.getByRole('link', { name, exact: true }).first();
-  if (await link.count()) {
-    await link.click();
-    return;
-  }
-  let text = page.getByText(name, { exact: true }).first();
-  if (!(await text.count())) {
-    // Return to the application entry point, then continue through a visible
-    // link or text entry. This keeps navigation independent of business URLs.
-    await page.goto(baseUrl());
-    link = page.getByRole('link', { name, exact: true }).first();
-    if (await link.count()) {
-      await link.click();
+/**
+ * Click a visible navigation target without assuming that the application
+ * has already chosen the ideal HTML element.  Production implementations may
+ * expose a target as a link, button, or clickable text while the behavior is
+ * otherwise identical.
+ */
+export async function clickVisibleTarget(page: Page, name: string): Promise<void> {
+  const candidates = [
+    page.getByRole('link', { name, exact: true }).first(),
+    page.getByRole('button', { name, exact: true }).first(),
+    page.getByText(name, { exact: true }).first(),
+  ];
+
+  for (const candidate of candidates) {
+    if ((await candidate.count()) > 0 && (await candidate.isVisible())) {
+      await candidate.click();
       return;
     }
-    text = page.getByText(name, { exact: true }).first();
   }
-  await expect(text).toBeVisible();
-  await text.click();
+
+  // Retry from the application entry point when the caller is on a page that
+  // does not render the navigation target until it is opened from the root.
+  await page.goto(baseUrl());
+  const rootCandidates = [
+    page.getByRole('link', { name, exact: true }).first(),
+    page.getByRole('button', { name, exact: true }).first(),
+    page.getByText(name, { exact: true }).first(),
+  ];
+  for (const candidate of rootCandidates) {
+    if ((await candidate.count()) > 0 && (await candidate.isVisible())) {
+      await candidate.click();
+      return;
+    }
+  }
+
+  throw new Error(`Could not find a visible navigation target named "${name}"`);
+}
+
+/** Resolve both semantic dialogs and legacy `.dialog` containers. */
+export async function visibleDialog(page: Page, name: string): Promise<Locator> {
+  const semanticDialog = page.getByRole('dialog', { name, exact: true }).first();
+  if ((await semanticDialog.count()) > 0) {
+    return semanticDialog;
+  }
+
+  const legacyDialog = page.locator('.dialog').filter({ hasText: name }).first();
+  await expect(legacyDialog).toBeVisible();
+  return legacyDialog;
+}
+
+/** Open a seeded object through whichever accessible/rendered target exists. */
+export async function openVisibleTarget(page: Page, name: string): Promise<void> {
+  await clickVisibleTarget(page, name);
 }
 
 export function baseUrl(): string {
@@ -215,7 +246,10 @@ export async function signIn(page: Page, account: VerifiedAccount): Promise<void
   await page.getByLabel('Username or email', { exact: true }).fill(account.username);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  // The signed-in username may be rendered both in the page heading and in
+  // the account menu.  Use an exact match and assert against the first match
+  // so Playwright does not enter strict-mode when both are present.
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 }
 
 export function uniqueAccount(): VerifiedAccount {
@@ -231,6 +265,6 @@ export function uniqueAccount(): VerifiedAccount {
 
 export async function openPasswordSettings(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
-  await page.getByRole('link', { name: 'Password and authentication', exact: true }).click();
+  await clickVisibleTarget(page, 'Settings');
+  await clickVisibleTarget(page, 'Password and authentication');
 }

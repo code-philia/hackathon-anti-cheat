@@ -61,7 +61,7 @@ test('REQ-6-1: Protect Branches with Review and Status-Check Requirements - Scen
   await page.getByRole('button', { name: /save|update/i }).click();
 
   await expect(page.getByText(/test.*success|success.*test/i)).toBeVisible();
-  await expect(page.getByText(administrator.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(administrator.username, { exact: true }).first()).toBeVisible();
   await page.reload();
   await expect(page.getByText(/test.*success|success.*test/i)).toBeVisible();
 });

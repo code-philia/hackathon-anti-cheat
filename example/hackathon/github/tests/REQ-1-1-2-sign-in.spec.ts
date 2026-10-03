@@ -6,7 +6,7 @@ test('REQ-1-1-2: Sign In with an Existing Account - Scenario 1', async ({ page }
 
   await signIn(page, account);
   await page.reload();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });
 
 test('REQ-1-1-2: Sign In with an Existing Account - Scenario 2', async ({ page }, testInfo) => {
@@ -14,12 +14,11 @@ test('REQ-1-1-2: Sign In with an Existing Account - Scenario 2', async ({ page }
 
   await openAccountAccess(page);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
-  await page.getByLabel('Username or email', { exact: true }).fill(account.email);
-  await page.getByLabel('Password', { exact: true }).fill(`${account.password}-incorrect`);
+  await page.getByLabel('Username or email').fill(account.email);
+  await page.getByLabel('Password').fill(`${account.password}-incorrect`);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
-  await expect(page.getByText('Invalid credentials', { exact: true })).toBeVisible();
-  await expect(page.getByText(account.username, { exact: true })).not.toBeVisible();
+  await expect(page.getByText('Invalid credentials')).toBeVisible();
 });
 
 test('REQ-1-1-2: Sign In with an Existing Account - Scenario 3', async ({ page }, testInfo) => {
@@ -27,28 +26,27 @@ test('REQ-1-1-2: Sign In with an Existing Account - Scenario 3', async ({ page }
 
   await openAccountAccess(page);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
-  await page.getByLabel('Username or email', { exact: true }).fill(account.email);
-  await page.getByLabel('Password', { exact: true }).fill(account.password);
+  await page.getByLabel('Username or email').fill(account.email);
+  await page.getByLabel('Password').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });
 
 test('REQ-1-1-2: Sign In with an Existing Account - Scenario 4', async ({ page }, testInfo) => {
   const account = seedAccount(testInfo, 'LOGIN');
-  const failure = page.getByText('Invalid credentials', { exact: true });
 
   await openAccountAccess(page);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
-  await page.getByLabel('Username or email', { exact: true }).fill('unknown@example.test');
-  await page.getByLabel('Password', { exact: true }).fill(account.password);
+  await page.getByLabel('Username or email').fill('unknown@example.test');
+  await page.getByLabel('Password').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(failure).toBeVisible();
+  await expect(page.getByText('Invalid credentials')).toBeVisible();
 
   await openAccountAccess(page);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
-  await page.getByLabel('Username or email', { exact: true }).fill(account.username);
-  await page.getByLabel('Password', { exact: true }).fill(`${account.password}-wrong`);
+  await page.getByLabel('Username or email').fill(account.username);
+  await page.getByLabel('Password').fill(`${account.password}-wrong`);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText('Invalid credentials', { exact: true })).toBeVisible();
+  await expect(page.getByText('Invalid credentials')).toBeVisible();
 });

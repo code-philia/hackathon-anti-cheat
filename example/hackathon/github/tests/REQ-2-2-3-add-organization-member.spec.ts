@@ -1,6 +1,6 @@
 import { baseUrl } from './support/e2e';
 import { expect, test } from '@playwright/test';
-import { seedValue, signIn, seedAccount, openVisibleOrganization } from './support/e2e';
+import { seedValue, signIn, seedAccount, openVisibleOrganization, clickVisibleTarget } from './support/e2e';
 
 async function openPeople(page: import('@playwright/test').Page, organizationName: string): Promise<void> {
   await openVisibleOrganization(page, organizationName);
@@ -39,7 +39,7 @@ test('REQ-2-2-3: Directly Add a User as an Organization Member - Scenario 1', as
   await memberPage.getByRole('button', { name: 'Account menu', exact: true }).click();
   await memberPage.getByRole('link', { name: 'Your organizations', exact: true }).click();
   await expect(memberPage.getByText(organizationName, { exact: true })).toBeVisible();
-  await memberPage.getByRole('link', { name: organizationName, exact: true }).click();
+  await clickVisibleTarget(memberPage, organizationName);
   await memberPage.getByRole('link', { name: 'Repositories', exact: true }).click();
   await expect(memberPage.getByText('Access denied', { exact: true })).toBeVisible();
   await memberContext.close();

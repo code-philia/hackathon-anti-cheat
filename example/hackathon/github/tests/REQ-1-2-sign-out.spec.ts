@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { signIn, seedAccount } from './support/e2e';
+import { signIn, seedAccount, clickVisibleTarget, visibleDialog } from './support/e2e';
 
 test('REQ-1-2: Sign Out and End the Current Web Session - Scenario 1', async ({ page }, testInfo) => {
   const account = seedAccount(testInfo, 'SIGN_OUT');
   await signIn(page, account);
 
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
-  await page.getByRole('link', { name: 'Sign out', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Sign out', exact: true });
+  await clickVisibleTarget(page, 'Sign out');
+  const dialog = await visibleDialog(page, 'Sign out');
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Confirm sign out', exact: true }).click();
 
@@ -20,10 +20,10 @@ test('REQ-1-2: Sign Out and End the Current Web Session - Scenario 2', async ({ 
   const account = seedAccount(testInfo, 'SIGN_OUT');
   await signIn(page, account);
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await clickVisibleTarget(page, 'Settings');
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
-  await page.getByRole('link', { name: 'Sign out', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Sign out', exact: true });
+  await clickVisibleTarget(page, 'Sign out');
+  const dialog = await visibleDialog(page, 'Sign out');
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Confirm sign out', exact: true }).click();
 

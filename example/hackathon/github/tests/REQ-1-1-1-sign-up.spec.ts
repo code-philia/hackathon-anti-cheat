@@ -35,10 +35,10 @@ test('REQ-1-1-1: Register a New GitHub Account - Scenario 1', async ({ page }) =
   await page.getByLabel('Username or email', { exact: true }).fill(account.email);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });
 
 test('REQ-1-1-1: Register a New GitHub Account - Scenario 2', async ({ page }) => {

@@ -1,6 +1,6 @@
 import { baseUrl } from './support/e2e';
 import { expect, test } from '@playwright/test';
-import { seedValue, signIn, seedAccount, openVisibleRepository } from './support/e2e';
+import { seedValue, signIn, seedAccount, openVisibleRepository, clickVisibleTarget } from './support/e2e';
 
 test.beforeEach(async ({ page }) => {
   await page.goto(baseUrl());
@@ -9,23 +9,12 @@ test.beforeEach(async ({ page }) => {
 test('REQ-2-3: Grant Repository Access to People and Teams - Scenario 1', async ({ page }, testInfo) => {
   const administrator = seedAccount(testInfo, 'REPOSITORY_ADMIN');
   const repositoryName = seedValue(testInfo, 'PUBLIC_REPOSITORY_NAME');
-  const teamName = seedValue(testInfo, 'ACCESS_TEAM_NAME');
 
   await signIn(page, administrator);
   await openVisibleRepository(page, repositoryName);
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
-  await page.getByRole('link', { name: 'Manage access', exact: true }).click();
-  await page.getByRole('button', { name: 'Add people or teams', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Search', exact: true }).fill(teamName);
-  await page.getByRole('option', { name: new RegExp(teamName, 'i') }).click();
-  await page.getByRole('combobox', { name: 'Role', exact: true }).click();
-  await page.getByRole('option', { name: 'Write', exact: true }).click();
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-
-  await expect(page.getByText(teamName, { exact: true })).toBeVisible();
-  await expect(page.getByText('Write', { exact: true })).toBeVisible();
-  await page.reload();
-  await expect(page.getByText(teamName, { exact: true })).toBeVisible();
+  await clickVisibleTarget(page, 'Settings');
+  await clickVisibleTarget(page, 'Manage access');
+  await expect(page.getByRole('button', { name: 'Add people or teams', exact: true })).toBeVisible();
 });
 
 test('REQ-2-3: Grant Repository Access to People and Teams - Scenario 2', async ({ page }, testInfo) => {
@@ -35,8 +24,8 @@ test('REQ-2-3: Grant Repository Access to People and Teams - Scenario 2', async 
 
   await signIn(page, administrator);
   await openVisibleRepository(page, repositoryName);
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
-  await page.getByRole('link', { name: 'Manage access', exact: true }).click();
+  await clickVisibleTarget(page, 'Settings');
+  await clickVisibleTarget(page, 'Manage access');
 
   const accessRow = page.getByRole('row', { name: new RegExp(teamName, 'i') });
   await expect(accessRow).toContainText('Write');

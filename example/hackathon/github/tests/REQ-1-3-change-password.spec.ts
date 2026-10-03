@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { openAccountAccess, openPasswordSettings, seedValue, signIn, seedAccount } from './support/e2e';
 
 test('REQ-1-3: Change Account Password - Scenario 1', async ({ page }, testInfo) => {
-  const account = seedAccount(testInfo, 'PASSWORD_CHANGE');
+  const account = seedAccount(testInfo, 'PASSWORD_CHANGE_SUCCESS');
   const newPassword = seedValue(testInfo, 'PASSWORD_CHANGE_NEW_PASSWORD');
   await signIn(page, account);
   await openPasswordSettings(page);
@@ -18,11 +18,11 @@ test('REQ-1-3: Change Account Password - Scenario 1', async ({ page }, testInfo)
   await page.getByLabel('Username or email', { exact: true }).fill(account.email);
   await page.getByLabel('Password', { exact: true }).fill(newPassword);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });
 
 test('REQ-1-3: Change Account Password - Scenario 2', async ({ page }, testInfo) => {
-  const account = seedAccount(testInfo, 'PASSWORD_CHANGE');
+  const account = seedAccount(testInfo, 'PASSWORD_CHANGE_INVALID_CURRENT');
   await signIn(page, account);
   await openPasswordSettings(page);
 
@@ -37,7 +37,7 @@ test('REQ-1-3: Change Account Password - Scenario 2', async ({ page }, testInfo)
   await page.getByLabel('Username or email', { exact: true }).fill(account.email);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });
 
 test('REQ-1-3: Change Account Password - Scenario 3', async ({ page }, testInfo) => {
@@ -56,5 +56,5 @@ test('REQ-1-3: Change Account Password - Scenario 3', async ({ page }, testInfo)
   await page.getByLabel('Username or email', { exact: true }).fill(account.email);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(account.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(account.username, { exact: true }).first()).toBeVisible();
 });

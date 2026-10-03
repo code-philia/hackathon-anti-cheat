@@ -27,7 +27,7 @@ test('REQ-2-2-4: Remove a Member from an Organization - Scenario 1', async ({ pa
 
 test('REQ-2-2-4: Remove a Member from an Organization - Scenario 2', async ({ page }, testInfo) => {
   const nonOwner = seedAccount(testInfo, 'ORGANIZATION_NON_OWNER');
-  const member = seedValue(testInfo, 'ORGANIZATION_MEMBER_TO_REMOVE');
+  const member = seedValue(testInfo, 'ORGANIZATION_MEMBER_FOR_NON_OWNER');
 
   await signIn(page, nonOwner);
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();

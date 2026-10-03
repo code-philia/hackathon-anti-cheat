@@ -1,6 +1,6 @@
 import { baseUrl } from './support/e2e';
 import { expect, test } from '@playwright/test';
-import { seedValue, signIn, seedAccount, openVisibleOrganization } from './support/e2e';
+import { seedValue, signIn, seedAccount, openVisibleOrganization, clickVisibleTarget } from './support/e2e';
 
 test.beforeEach(async ({ page }) => {
   await page.goto(baseUrl());
@@ -14,8 +14,8 @@ test('REQ-2-2-2: Manage Organization Team Members and Hierarchy - Scenario 1', a
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
   await page.getByRole('link', { name: 'Your organizations', exact: true }).click();
   await openVisibleOrganization(page, seedValue(testInfo, 'EXISTING_ORGANIZATION'));
-  await page.getByRole('link', { name: 'Teams', exact: true }).click();
-  await page.getByRole('link', { name: 'frontend-team', exact: true }).click();
+  await clickVisibleTarget(page, 'Teams');
+  await clickVisibleTarget(page, 'frontend-team');
   await page.getByRole('link', { name: 'Members', exact: true }).click();
   await page.getByRole('button', { name: 'Add member', exact: true }).click();
   await page.getByRole('textbox', { name: 'Username', exact: true }).fill(member);
@@ -37,9 +37,9 @@ test('REQ-2-2-2: Manage Organization Team Members and Hierarchy - Scenario 2', a
   await page.getByRole('button', { name: 'Account menu', exact: true }).click();
   await page.getByRole('link', { name: 'Your organizations', exact: true }).click();
   await openVisibleOrganization(page, seedValue(testInfo, 'EXISTING_ORGANIZATION'));
-  await page.getByRole('link', { name: 'Teams', exact: true }).click();
-  await page.getByRole('link', { name: 'frontend-team', exact: true }).click();
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await clickVisibleTarget(page, 'Teams');
+  await clickVisibleTarget(page, 'frontend-team');
+  await clickVisibleTarget(page, 'Settings');
   await page.getByRole('combobox', { name: 'Parent team', exact: true }).selectOption({
     label: descendantTeam,
   });

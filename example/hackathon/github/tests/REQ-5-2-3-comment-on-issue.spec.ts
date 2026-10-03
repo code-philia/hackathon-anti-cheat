@@ -17,7 +17,7 @@ test('REQ-5-2-3: Comment on an Issue Discussion - Scenario 1', async ({ page }, 
   await page.getByLabel(/comment/i).fill(comment);
   await page.getByRole('button', { name: /^comment$/i }).click();
   await expect(page.getByText(comment, { exact: true })).toBeVisible();
-  await expect(page.getByText(commenter.username, { exact: true })).toBeVisible();
+  await expect(page.getByText(commenter.username, { exact: true }).first()).toBeVisible();
   await page.reload();
   await expect(page.getByText(comment, { exact: true })).toBeVisible();
 });
