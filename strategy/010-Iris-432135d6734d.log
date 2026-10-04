@@ -1,0 +1,94 @@
+核心策略分析：010-Iris-432135d6734d
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\010-Iris-432135d6734d
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+该提交的主链路是“结构化需求解析/压缩上下文 → 能力信号匹配并安装预制蓝图 → Pi 单模型分包实现 → 构建、单测、隔离数据库与浏览器验证 → 失败修复和 Git/运行时追踪”。RAG/RETRIEVAL：在已检查的静态内容中未发现向量库、embedding 或外部语料检索；存在基于需求文件目录、测试摘要和正则能力信号的确定性选择，属于上下文筛选而非语义 RAG。CODE-REUSE：confirmed，blueprints 目录中的预制文件可按能力复制到输出，GitHub/表格完整 starter 也可覆盖空脚手架；这是直接文件复用并由模型审计适配。模型调用通过环境配置的单一兼容端点路由，重试/repair 使用新会话或共享修复会话。输出为应用源代码、验证日志、traceability 表及 Git 检查点。
+
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 需求与验收上下文压缩
+  - 状态：
+    1. 具体说明：confirmed；`contextBuilder` 枚举需求目录，优先读取 requirements.yaml/task.md/README.md/prompt.txt 等文本，按 32k/48k/86k 字符预算裁剪，并把结构化节点、场景和验收条件生成 implementation brief。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:29；agent/agent/src/context/contextBuilder.ts:67；agent/agent/src/context/contextBuilder.ts:154；agent/agent/index.ts:299
+    3. 详细解释：这些函数实际从输入需求目录读取文本而非执行其中代码；brief 随后放入 node prompt，证明这是生成前准备知识和上下文压缩机制。
+  - 作用：
+    1. 具体说明：将题面和测试契约转换为每个工作节点可消费的短上下文，减少模型一次性处理全部文件的负担。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:193；agent/agent/src/context/contextBuilder.ts:214；agent/agent/src/orchestration/nodeRunner.ts:23
+    3. 详细解释：测试文件被压缩为 acceptance spec contract，随后与 requirementSummary、nodeList 一起传给编排器，连接题面输入与代码生成提示。
+  - 输入/知识源：
+    1. 具体说明：输入是 requirements 目录中的 yaml/md/txt/json 及发现的 spec/test 文件，另有解析后的 RequirementSet 节点描述、依赖、场景和 acceptanceCriteria。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:12；agent/agent/src/context/contextBuilder.ts:79；agent/agent/src/context/contextBuilder.ts:154
+    3. 详细解释：候选文件按扩展名和首选文件名排序后读入；结构化解析结果逐节点写入 brief，形成模型可见的预先准备知识。
+  - 选择/检索：
+    1. 具体说明：confirmed；采用目录遍历、首选文件排序、字符预算截断和节点正则抽取，没有向量或关键词倒排检索。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:68；agent/agent/src/context/contextBuilder.ts:71；agent/agent/src/context/contextBuilder.ts:106
+    3. 详细解释：`slice(0,120)`、preferred 排序和 `clipWithNotice` 决定进入提示的内容；这是确定性上下文选择，RAG 状态应记为“未发现”。
+  - 生成/使用：
+    1. 具体说明：把每个节点的名称、类型、依赖、描述、场景和验收条件拼成文本，再注入 `buildNodePrompt` 的实现任务。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:155；agent/agent/src/orchestration/nodeRunner.ts:23；agent/agent/src/orchestration/nodeScheduler.ts:171
+    3. 详细解释：调度器按节点调用 prompt，模型据此编辑输出目录；上下文不会直接生成文件，而是作为生成输入。
+  - 输出：
+    1. 具体说明：输出为 requirementSummary、testSummary、implementation brief 和节点目录字符串，供 Pi 会话消费。
+    2. 代码/文档定位：agent/agent/src/context/contextBuilder.ts:227；agent/agent/index.ts:463
+    3. 详细解释：这些字符串进入 `promptContext`，并与模型产生的文件修改共同形成最终应用；没有持久化外部知识库。
+
+STRATEGY-002 [CODE-REUSE] 能力目录与预制蓝图安装
+  - 状态：
+    1. 具体说明：confirmed；catalog 用需求文本的正则信号累计分数，达到阈值后选中 web-kernel、auth、GitHub collaboration 或 spreadsheet starter 等能力；installer 从 blueprints/<id>/files 复制文件。
+    2. 代码/文档定位：agent/agent/src/blueprints/catalog.ts:36；agent/agent/src/blueprints/catalog.ts:133；agent/agent/src/blueprints/installer.ts:61；agent/agent/index.ts:260
+    3. 详细解释：能力定义和安装调用链均可静态检查，说明复用文件直接进入输出目录；模型随后在已安装基线之上审计或扩展。
+  - 作用：
+    1. 具体说明：为常见 Web、认证、权限、版本控制、评论和表格功能提供可复用实现，缩短从空脚手架到可验证应用的路径。
+    2. 代码/文档定位：agent/agent/src/blueprints/catalog.ts:38；agent/agent/src/blueprints/catalog.ts:147；agent/agent/src/blueprints/installer.ts:103
+    3. 详细解释：definition 的 dependencies 和 overwriteBundledScaffold 控制能力组合；完整 starter 被选中时作为审计对象而非重新生成全部基础设施。
+  - 输入/知识源：
+    1. 具体说明：输入是解析后的 RequirementSet 文本特征和 agent/agent/blueprints 下预先存放的源码、package 文件及 README。
+    2. 代码/文档定位：agent/agent/src/blueprints/catalog.ts:160；agent/agent/src/blueprints/installer.ts:72；agent/agent/blueprints/README.md:1
+    3. 详细解释：catalog 只读取需求节点，installer 使用本地 blueprint files；未发现网络下载或运行时 URL 获取。
+  - 选择/检索：
+    1. 具体说明：confirmed；每个 capability 的 signals 正则按权重累加，score >= threshold 且依赖满足时选中，并按依赖关系安装；不是向量 RAG。
+    2. 代码/文档定位：agent/agent/src/blueprints/catalog.ts:34；agent/agent/src/blueprints/catalog.ts:160；agent/agent/src/blueprints/installer.ts:82
+    3. 详细解释：例如 repository/branch/issue/pull request 信号触发 github-collaboration-starter；选择结果直接决定复制哪些本地文件。
+  - 生成/使用：
+    1. 具体说明：installer 将 blueprint 文件复制到 outputDir，并生成 prepared capability manifest；node prompt 明确要求在 prepared application 上做审计和小范围修复。
+    2. 代码/文档定位：agent/agent/src/blueprints/installer.ts:84；agent/agent/src/orchestration/nodeRunner.ts:49
+    3. 详细解释：复制是直接代码复用，模型通过搜索现有实现后修改；这构成从预制代码到最终应用的主支撑路径。
+  - 输出：
+    1. 具体说明：输出包括复制后的 backend/frontend 源码、依赖文件、能力清单以及 `application_seeded` 标记。
+    2. 代码/文档定位：agent/agent/src/blueprints/installer.ts:90；agent/agent/index.ts:269；agent/agent/index.ts:291
+    3. 详细解释：该标记改变会话数量和模型策略，复制的源文件则成为后续生成和验证的被测产品。
+
+STRATEGY-003 [PROMPT-ORCHESTRATION] 分包模型生成、模型路由与修复验证闭环
+  - 状态：
+    1. 具体说明：confirmed；`runNodeSchedule` 为依赖图节点创建会话并发送 node prompt，完成后发送 completion prompt；失败可恢复检查点并重试，最终再跑 repair session。
+    2. 代码/文档定位：agent/agent/src/orchestration/nodeScheduler.ts:164；agent/agent/src/orchestration/nodeScheduler.ts:187；agent/agent/src/orchestration/nodeScheduler.ts:206；agent/agent/index.ts:501
+    3. 详细解释：这是端到端实际执行的阶段式工作流，模型写文件、调度器收集 handoff、验证器反馈错误，修复会话继续改写。
+  - 作用：
+    1. 具体说明：把大任务拆成按依赖顺序的实现包，给模型提供角色约束、禁止/允许工具规则，并将验证错误变成下一轮修复指令。
+    2. 代码/文档定位：agent/agent/src/orchestration/nodeRunner.ts:49；agent/agent/src/orchestration/nodeScheduler.ts:154；agent/agent/src/orchestration/repairRunner.ts:34
+    3. 详细解释：prepared 模式要求审计现有应用；普通模式要求实现节点；repairRunner 读取 failure digest 后发起针对性修改。
+  - 输入/知识源：
+    1. 具体说明：输入包含需求 brief、测试摘要、节点依赖 handoff、starter snapshot、prepared capability context、全局契约和生成合同测试状态。
+    2. 代码/文档定位：agent/agent/index.ts:463；agent/agent/src/orchestration/nodeRunner.ts:23；agent/agent/src/context/handoffStore.ts:37
+    3. 详细解释：调度器把前序节点 handoff 和当前 promptContext 组合，形成模型每次调用的工作上下文；handoff 从 `.arc/work-nodes` 持久化读取。
+  - 选择/检索：
+    1. 具体说明：confirmed；节点按 work graph 依赖调度，模型工具集合由 `PI_TOOLS` 环境变量控制；模型提供商按 deepseek、openai、arcbench 顺序查找配置。
+    2. 代码/文档定位：agent/agent/src/requirements/workGraph.ts:1；agent/agent/src/orchestration/nodeScheduler.ts:154；agent/agent/index.ts:71；agent/agent/index.ts:179
+    3. 详细解释：路由选择只涉及节点顺序、工具白名单和兼容端点候选，不是基于检索相似度；未发现第二模型并行合并策略。
+  - 生成/使用：
+    1. 具体说明：Pi session 使用 `createAgentSession`，以环境中的 API key/base URL/model 建立兼容调用；模型用 read/edit/write/bash 等工具修改 outputDir，随后 completion prompt 要求结构化交接。
+    2. 代码/文档定位：agent/agent/index.ts:338；agent/agent/index.ts:380；agent/agent/src/orchestration/nodeRunner.ts:110
+    3. 详细解释：模型输出既包括工具动作导致的源码变更，也包括 handoff 摘要；调度器把摘要传给后续节点并供 runtime traceability 登记。
+  - 输出：
+    1. 具体说明：输出为应用文件、NodeHandoff（创建/修改文件、接口、测试、已知问题）、验证结果、修复后的文件和运行状态事件。
+    2. 代码/文档定位：agent/agent/src/context/handoffStore.ts:37；agent/agent/src/runtime/runtimeReporter.ts:109；agent/agent/src/validation/validator.ts:99
+    3. 详细解释：handoff 被保存供依赖节点消费；验证器运行 build/unit/E2E 并把 failure digest 交给 repair prompt，最终产品和追踪数据同时落盘。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的提交静态内容中未发现 embedding、向量索引、外部语料库或语义检索；仅确认了需求文件筛选与正则能力匹配。
+- CODE-REUSE：已确认本地 blueprint/starter 的直接文件复用；无法仅凭静态阅读确认每个 blueprint 在所有运行分支都被实际安装，但安装调用链和条件已明确。
+- MODEL-ROUTING：未发现多模型并行投票或结果融合；provider 候选回退和单模型 Pi 会话已确认。
+- TOOLS/EXECUTION：模型工具白名单和验证器的 npm/build/playwright/HTTP 执行路径已检查，但本次分析未执行选手代码。
+- STATE/PERSISTENCE：`.arc/work-nodes` handoff、Git checkpoint、runtime traceability 和 validation-db 均有代码证据；跨任务长期记忆或学习型缓存未发现。
+分析完成

@@ -1,0 +1,145 @@
+﻿核心策略分析：039-xinyurun-8226eeb412bc
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\039-xinyurun-8226eeb412bc
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+确认的主流程是：宿主读取 requirements.yaml，将模块、原子需求和依赖整理进分阶段提示词；先由模型在隔离临时目录生成 Playwright 检查脚本，再由模型按模块实现代码，宿主执行构建、启动、冻结脚本观察并保存检查点。通用模板、三套 ARC 技能和工程记忆提供预置知识。RAG：在已检查的选手静态内容中未发现向量/关键词检索或动态语料库检索；仅有按需求模块选择上下文。代码复用：确认复制内置模板、技能和检查点源码，未发现从示例任务复制实现代码的路径。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求分模块提示词驱动的应用生成与验收
+  - 状态：
+    1. 具体说明：confirmed；main.py 构造开发者指令、模块提示词和独立观察规划提示词，形成“需求读取—实现—观察—修复”的提示链。
+    2. 代码/文档定位：agent/main.py:800；agent/main.py:865；agent/main.py:1160
+    3. 详细解释：800 行定义全局实现约束，865 行把模块编号、ROOT 约束、已完成模块、依赖和原子索引注入模型，1160 行另行要求每个原子需求生成独立 Playwright 检查；这些提示分别控制代码生成和验收脚本生成。
+  - 作用：
+    1. 具体说明：把大型题面拆为有序 ROOT 子树，并让模型只修改当前子树，同时保持共享接口和依赖一致。
+    2. 代码/文档定位：agent/main.py:811；agent/main.py:899；agent/main.py:925
+    3. 详细解释：提示明确当前 subtree、ROOT-wide constraints 和原子索引，要求阅读真实调用者、实现用户流程并写 implementation.json，从而把上游需求映射到代码和可追踪声明。
+  - 输入/知识源：
+    1. 具体说明：requirements.yaml 原文、reference 图片、TEMPLATE_GUIDE.md、三套 arcbench 技能、工程记忆提示和先前问题。
+    2. 代码/文档定位：agent/main.py:879；agent/main.py:917；agent/main.py:893
+    3. 详细解释：模块提示携带 requirements_dir、skills_dir、root_context、pending_issues 和 memory_hints；这些是预先准备或宿主收集的上下文，不是运行时互联网检索。
+  - 选择/检索：
+    1. 具体说明：按 module.node_id、模块顺序和 completed_ids 选择上下文；观察脚本按原子 ID 一一生成，未发现语义检索。
+    2. 代码/文档定位：agent/main.py:877；agent/main.py:904；agent/main.py:1165
+    3. 详细解释：选择规则是确定性的模块/原子索引和依赖顺序，随后将选中的 subtree 传给模型；没有向量库、倒排索引或相似度排序证据，因此 RAG 为未发现。
+  - 生成/使用：
+    1. 具体说明：模型先输出 checks.spec.js，随后在目标目录实现模块并留下 implementation.json；失败时使用一次集中修复提示。
+    2. 代码/文档定位：agent/main.py:1150；agent/main.py:1166；agent/main.py:1320
+    3. 详细解释：观察规划线程被限制只能写检查脚本；修复提示要求保留断言和动作字节，仅允许补 import、闭合符或 await，体现受约束的提示编排。
+  - 输出：
+    1. 具体说明：模块源码、module-observations/<id>/checks.spec.js、implementation.json、观察 result.json/stderr/stdout 和检查点。
+    2. 代码/文档定位：agent/main.py:937；agent/main.py:1201；agent/main.py:1749
+    3. 详细解释：模型产物进入模块观察目录，宿主随后执行并汇总原子结果；最终源码和观察证据由检查点持久化，供后续模块和交付判定消费。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 模板、技能包与工程记忆的预置知识复用
+  - 状态：
+    1. 具体说明：confirmed；内置 template、.codex/skills 和可选 engineering memory 在模型调用前复制或读取。
+    2. 代码/文档定位：agent/main.py:672；agent/main.py:251；agent/main.py:800
+    3. 详细解释：技能复制函数把 bundled skills 放入输出工作区，memory loader 读取 JSON 提示，开发者指令要求优先阅读模板指南；这是准备知识注入链。
+  - 作用：
+    1. 具体说明：提供通用前端/后端起始工程、ARC 运行信号/检查点/可追踪性规范及历史工程提示，减少模型从零设计基础设施。
+    2. 代码/文档定位：agent/main.py:76；agent/main.py:672；agent/main.py:893
+    3. 详细解释：模板复制建立初始应用，技能目录作为工作区能力说明，memory_hints 作为 advisory context，三者共同约束生成行为。
+  - 输入/知识源：
+    1. 具体说明：agent/template、agent/skills、输出目录 .arc/engineering/memory.json。
+    2. 代码/文档定位：agent/main.py:801；agent/main.py:251；agent/main.py:263
+    3. 详细解释：来源均为选手归档内预置文件或先前运行产生的本地记忆；没有访问 URL 或外部知识库的证据。
+  - 选择/检索：
+    1. 具体说明：模板按目录整体复制，技能按目录整体复制，记忆按 source_sha256/module_id 过滤；不是相似度检索。
+    2. 代码/文档定位：agent/main.py:88；agent/main.py:676；agent/main.py:273
+    3. 详细解释：复制逻辑使用固定路径和排除规则，memory 条目按源哈希与模块匹配后形成 hints，选择结果直接进入模块提示。
+  - 生成/使用：
+    1. 具体说明：模型在 starter application 上增量修改，并按指南复用既有工具和接口。
+    2. 代码/文档定位：agent/main.py:804；agent/main.py:809；agent/main.py:831
+    3. 详细解释：提示要求保留正确代码、检查真实 callers 并复用 documented utilities，预置材料因此影响实现结构而非直接产出业务代码。
+  - 输出：
+    1. 具体说明：可运行的模板派生源码、复制到输出的 .codex/skills、以及写回 .arc/engineering/memory.json 的生命周期记录。
+    2. 代码/文档定位：agent/main.py:263；agent/main.py:281；agent/main.py:676
+    3. 详细解释：模板和技能成为生成工作区的一部分，memory 记录 action/status/events，后续模块可读取其提示但不取代当前需求和可信检查点。
+
+STRATEGY-003 [MODEL-ROUTING] 单一编码模型加隔离观察模型线程与受限修复调用
+  - 状态：
+    1. 具体说明：confirmed；Codex thread 按阶段调用，编码、观察规划和脚本纠错使用不同阶段配置。
+    2. 代码/文档定位：agent/main.py:1149；agent/main.py:1150；agent/main.py:1320
+    3. 详细解释：观察规划创建独立 thread 并 deny_all；普通模块调用和纠错调用通过阶段参数记录，形成角色隔离与失败分支。
+  - 作用：
+    1. 具体说明：把实现模型与验收脚本模型的权限、上下文和责任边界分开，避免观察规划读取应用源码。
+    2. 代码/文档定位：agent/main.py:1152；agent/main.py:1158；agent/main.py:1010
+    3. 详细解释：隔离线程只可读取 requirements/reference 并只能写 checks.spec.js；run_model_turn 统一处理阶段调用和超时，保证路由行为可控。
+  - 输入/知识源：
+    1. 具体说明：模型名来自 MODEL 环境变量，视觉模型来自 VISUAL_MODEL，OPENAI_BASE_URL 仅形成身份配置；阶段提示提供实际上下文。
+    2. 代码/文档定位：agent/main.py:160；agent/main.py:170；agent/main.py:1146
+    3. 详细解释：配置被纳入 identity，模型请求本身接收阶段专用 prompt；未发现多个供应商或按任务语义动态挑选模型。
+  - 选择/检索：
+    1. 具体说明：按 stage（implementation、observation_planning、observation_script_correction）选择提示和限制，模型名称主要由环境固定。
+    2. 代码/文档定位：agent/main.py:993；agent/main.py:1068；agent/main.py:1150
+    3. 详细解释：阶段函数决定软硬超时和重试语义，未见基于质量分数的模型切换；因此路由是阶段路由而非检索式路由。
+  - 生成/使用：
+    1. 具体说明：编码调用产生源码，观察调用产生冻结测试，纠错调用只生成受限 corrected.spec.js。
+    2. 代码/文档定位：agent/main.py:1024；agent/main.py:1194；agent/main.py:1328
+    3. 详细解释：不同调用的输出目录和写入白名单不同，纠错后还校验应用摘要与受保护文件，防止模型越权改动产品。
+  - 输出：
+    1. 具体说明：源码变更、checks.spec.js/frozen-v2.spec.js、阶段错误记录和最终 preflight/checkpoint 元数据。
+    2. 代码/文档定位：agent/main.py:1357；agent/main.py:1364；agent/main.py:1441
+    3. 详细解释：脚本版本与哈希进入 receipt，纠错失败会恢复可信检查点并写 correction-failure.json，供后续流程消费。
+
+STRATEGY-004 [TOOLS/EXECUTION] 宿主受控构建、启动、Playwright 观察与文件完整性保护
+  - 状态：
+    1. 具体说明：confirmed；宿主执行依赖准备、服务启动、原子 Playwright 测试、结果解析和完整性校验。
+    2. 代码/文档定位：agent/main.py:534；agent/main.py:620；agent/main.py:1807
+    3. 详细解释：subprocess 被用于项目命令和服务，观察阶段复制冻结脚本到临时目录并运行 Playwright；这些均是宿主动作，不是本次分析执行选手代码。
+  - 作用：
+    1. 具体说明：把模型声明转换为可执行的浏览器证据，同时限制端口、数据库和脚本修改范围。
+    2. 代码/文档定位：agent/main.py:840；agent/main.py:1818；agent/main.py:1332
+    3. 详细解释：正式流程使用临时数据库和随机本地端口，纠错前后比较 application_digest 与 protected_bytes，形成执行护栏。
+  - 输入/知识源：
+    1. 具体说明：冻结检查脚本、backend 项目、模块原子 ID、临时 SQLite 路径和环境变量 PORT/ARC_DB_FILE。
+    2. 代码/文档定位：agent/main.py:1785；agent/main.py:1796；agent/main.py:1829
+    3. 详细解释：脚本和原子标题来自宿主冻结数据，运行时只把它们与后端启动参数组合，输出 JSON 报告。
+  - 选择/检索：
+    1. 具体说明：按原子 ID 逐项运行，先 discovery 校验标题，再运行对应检查；没有网络检索。
+    2. 代码/文档定位：agent/main.py:1720；agent/main.py:1832；agent/main.py:1840
+    3. 详细解释：run_module_observation 遍历 titles，Playwright --list 验证发现链，随后结果按原子汇总，选择依据是源需求 ID。
+  - 生成/使用：
+    1. 具体说明：生成临时 runner-checks.spec.js 并注入 test.step 未完成护栏，启动应用后采集 result/stdout/stderr。
+    2. 代码/文档定位：agent/main.py:1755；agent/main.py:1813；agent/main.py:1823
+    3. 详细解释：step guard 追踪异步步骤，配置固定 baseURL、超时和 JSON reporter，测试输出随后由 parse_observation_report 分类。
+  - 输出：
+    1. 具体说明：每个模块的 result.json、stdout.txt、stderr.txt、原子状态及 delivered/frozen 脚本哈希。
+    2. 代码/文档定位：agent/main.py:1729；agent/main.py:1749；agent/main.py:1801
+    3. 详细解释：宿主聚合运行状态并写证据文件，结果可用于判断通过、失败、配置错误和后续修复资格。
+
+STRATEGY-005 [ITERATION/EVALUATION] 检查点恢复、失败反馈与单次受限修复循环
+  - 状态：
+    1. 具体说明：confirmed；每模块保存 working/trusted checkpoint，模型失败、脚本失败和完整性异常分别分类。
+    2. 代码/文档定位：agent/main.py:403；agent/main.py:433；agent/main.py:1391
+    3. 详细解释：save_checkpoint/save_working_checkpoint 写入源码快照和身份，失败路径恢复可信状态并记录错误，不把模型声明当证据。
+  - 作用：
+    1. 具体说明：允许按模块续作并把测试反馈回传下一次提示，同时阻止无限重试和不可信状态扩散。
+    2. 代码/文档定位：agent/main.py:888；agent/main.py:930；agent/main.py:1429
+    3. 详细解释：pending issues 进入后续模块提示；纠错失败写 terminal receipt 并停止后续模型请求，形成有限反馈闭环。
+  - 输入/知识源：
+    1. 具体说明：上一轮 observations、失败错误、完成 ID、源码哈希和 checkpoint identity。
+    2. 代码/文档定位：agent/main.py:888；agent/main.py:466；agent/main.py:1500
+    3. 详细解释：恢复逻辑要求 identity/source_sha256/finished 一致，错误记录和已完成模块才可作为后续上下文。
+  - 选择/检索：
+    1. 具体说明：按最新可信 checkpoint、模块依赖顺序和错误类型选择继续、修复或停止。
+    2. 代码/文档定位：agent/main.py:476；agent/main.py:1503；agent/main.py:1392
+    3. 详细解释：不匹配的恢复状态被拒绝；blocked 或 integrity stop 分支直接终止后续请求，避免盲目重跑。
+  - 生成/使用：
+    1. 具体说明：测试失败反馈触发一次集中修复提示，修复结果须通过字节保持规则和完整性检查后才冻结为 v2。
+    2. 代码/文档定位：agent/main.py:1320；agent/main.py:1354；agent/main.py:1365
+    3. 详细解释：修复仅允许导入、闭合符或 await 这类窄变更，成功后保存新检查点；业务代码不会被脚本纠错模型随意改写。
+  - 输出：
+    1. 具体说明：最新 checkpoint、preflight receipt、correction-failure.json、模块观察状态和 engineering memory。
+    2. 代码/文档定位：agent/main.py:1416；agent/main.py:1438；agent/main.py:355
+    3. 详细解释：这些工件记录完成 ID、脚本版本、错误和记忆摘要，支持跨模块恢复及最终交付审计。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent/main.py、engineering.py、模板、技能和归档任务内容中未发现向量数据库、嵌入、关键词检索或外部语料查询；模块索引选择属于确定性上下文编排。
+- CODE-REUSE：确认存在模板/技能/检查点源码复制（agent/main.py:76、672、466）；在已检查静态内容中未发现按示例任务复制 github/sheet 实现或从 URL 下载代码，因此任务代码复用未发现。
+- MODEL-ROUTING：未解决 VISUAL_MODEL 是否在运行时参与调用；静态证据仅显示其进入 identity 配置（agent/main.py:170）。
+- 选手归档中的应用和测试 ZIP 仅作为静态证据读取，未执行其中代码、未安装依赖、未访问其中 URL。
+分析完成

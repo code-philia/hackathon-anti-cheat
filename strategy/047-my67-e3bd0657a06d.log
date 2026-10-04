@@ -1,0 +1,92 @@
+核心策略分析：002-Orchestro-47b4793effa5
+题面路径：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon
+题面范围：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon\\github；E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon\\sheet
+作答路径：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\workspace\\002-Orchestro-47b4793effa5
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+主要生成管线是“需求树摘要/种子事实 -> 工程师系统提示 -> LLM 多轮工具调用 -> 模板与补丁写入 -> 定向或全量检查 -> checkpoint/摘要后继续”。预置知识来自 rules、sop、技能文档和 React+Express 模板；代码复用明确存在，主要是复制模板并在后续阶段复用既有应用。未发现向量库或语义检索；需求工具属于按 ID 的确定性读取，不构成 RAG。模型路由以环境变量指定的主模型为主，视觉模型为图像输入的辅助回退。RAG=在已检查的提交静态内容中未发现；准备知识和模板代码复用=确认存在。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求驱动的工程师单会话编排
+  - 状态：
+    1. 具体说明：confirmed；`Builder.task()` 把 PLAN、模板代码地图、技能清单、需求大纲和种子事实拼成初始任务，`REFRESH_TASK` 在继续时注入计划与代码地图。
+    2. 代码/文档定位：agent/agent/main.py:71；agent/agent/main.py:77；agent/agent/roles.py:105；agent/agent/roles.py:144
+    3. 详细解释：入口先把结构化需求转为可分阶段执行的提示，再由同一工程师会话持续处理；刷新提示避免只依赖旧上下文，直接连接需求输入和后续代码生成。
+  - 作用：
+    1. 具体说明：将多功能题面拆为先规划、共享底座、按区域实现、最终全套检查的顺序，并把每个区域的决定写入 PLAN.md。
+    2. 代码/文档定位：agent/agent/roles.py:105；agent/agent/roles.py:111；agent/agent/roles.py:115；agent/agent/roles.py:119
+    3. 详细解释：提示要求模型先写架构计划、按 atomic requirement 取卡片，再以小切片实现并在完成时检查，形成从题面到工程任务的控制骨架。
+  - 输入/知识源：
+    1. 具体说明：输入是 `spec.outline(tree)`、`spec.seed_facts(tree)`、模板文件列表、`rules.md`、`sop.md` 和技能摘要。
+    2. 代码/文档定位：agent/agent/main.py:72；agent/agent/main.py:74；agent/agent/roles.py:18；agent/agent/roles.py:174
+    3. 详细解释：这些内容在模型首轮前由本地代码读取并嵌入系统/用户提示，既包含通用工程规则，也包含当前题面的结构化事实。
+  - 选择/检索：
+    1. 具体说明：confirmed；需求按 `spec.load` 解析成 Node 树，模型通过 requirement 工具按区域/ID 请求文本；没有向量或关键词排名检索。
+    2. 代码/文档定位：agent/agent/spec.py:37；agent/agent/roles.py:111；agent/agent/tools.py:73
+    3. 详细解释：选择规则是需求树和模型明确给出的 requirement 调用，而非相似度检索；命中文本随后进入会话上下文。
+  - 生成/使用：
+    1. 具体说明：模型依据系统角色和任务提示调用 `apply_patch`、`bash`、`view_image`、`check`、`subagent`，以工具结果为下一轮上下文。
+    2. 代码/文档定位：agent/agent/roles.py:23；agent/agent/loop.py:175；agent/agent/loop.py:211
+    3. 详细解释：循环把模型工具调用执行结果追加到 messages，再次请求模型；补丁实际改变工作区，检查结果反馈给同一编排链。
+  - 输出：
+    1. 具体说明：输出是 PLAN.md、前后端源文件、测试文件、检查报告以及最终 `done` 摘要。
+    2. 代码/文档定位：agent/agent/main.py:87；agent/agent/loop.py:19；agent/agent/roles.py:119
+    3. 详细解释：工程会话以文件修改为主要产物，`done` 仅在全套检查完成或无法继续时结束，产物随后被阶段应用消费。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 模板、规则、技能与阶段应用的代码复用
+  - 状态：
+    1. 具体说明：confirmed；启动时把 `agent/template` 复制到输出根目录，并把技能目录复制到 `.agent/skills`；后续阶段通过 `EARLIER_WORK` 明确要求扩展旧应用。
+    2. 代码/文档定位：agent/agent/main.py:41；agent/agent/main.py:48；agent/agent/roles.py:132
+    3. 详细解释：模板和技能是生成前已准备的知识/代码，阶段提示把既有数据模型、页面、组件和测试助手作为后续生成输入，属于直接复用与适配。
+  - 作用：
+    1. 具体说明：提供固定的 React/Vite 前端、Express/SQLite 后端、数据库初始化、测试约定和 UI/数据规则，降低每个任务从零搭建成本。
+    2. 代码/文档定位：agent/agent/roles.py:23；agent/agent/rules.md:43；agent/agent/main.py:42
+    3. 详细解释：系统提示锁定技术栈和持久化/验证约束，模板复制把这些约束落成可编辑代码，模型只需在其上增量实现需求。
+  - 输入/知识源：
+    1. 具体说明：来源包括 `template/backend`、`template/frontend`、六个领域技能 SKILL.md、`rules.md`、`sop.md`，以及 earlier stage 的 PLAN 和数据库。
+    2. 代码/文档定位：agent/agent/main.py:41；agent/agent/roles.py:159；agent/agent/roles.py:132
+    3. 详细解释：这些文件在当前任务开始前已经存在并被读取或复制；应用目录中的多阶段结果进一步成为下一阶段的输入。
+  - 选择/检索：
+    1. 具体说明：confirmed；模板按目录全量复制，技能按名称列出后由模型依据描述读取；阶段复用由 `.agent/run.json` 和 `PLAN-earlier.md` 是否存在决定。
+    2. 代码/文档定位：agent/agent/main.py:42；agent/agent/roles.py:174；agent/agent/checkpoint.py:95
+    3. 详细解释：没有相似度选择器；选择是固定模板全量注入、技能按适用性读取和 earlier 标记分支，随后作为提示或文件基线参与生成。
+  - 生成/使用：
+    1. 具体说明：模型在复制出的模板上通过补丁修改源文件，并按阶段要求保留既有页面、数据和测试；技能文本作为操作规范约束修改。
+    2. 代码/文档定位：agent/agent/tools.py:134；agent/agent/roles.py:136；agent/agent/roles.py:180
+    3. 详细解释：`apply_patch` 是实际写入路径，`EARLIER_WORK` 将复用策略传给模型；因此复用既有代码是模型编辑的直接前置条件。
+  - 输出：
+    1. 具体说明：输出为每个 stage 的完整前后端应用、Playwright 测试、PLAN.md/PLAN-earlier.md 及 `.agent` 技能副本和运行记录。
+    2. 代码/文档定位：agent/agent/main.py:46；agent/agent/main.py:49；agent/agent/main.py:122
+    3. 详细解释：复制的模板和技能成为工作区文件，生成修改进入 applications 下的阶段产物；运行报告记录模型调用但不直接生成产品功能。
+
+STRATEGY-003 [TOOLS/EXECUTION] 受限工具循环、模型路由、检查反馈与持久化
+  - 状态：
+    1. 具体说明：confirmed；`loop.run` 驱动模型直到 `done` 或步数上限；工具层限制写入根目录，lead 会话禁止手工启动服务，检查工具统一执行构建与 E2E。
+    2. 代码/文档定位：agent/agent/loop.py:120；agent/agent/tools.py:103；agent/agent/tools.py:172；agent/agent/roles.py:23
+    3. 详细解释：权限边界和步数护栏把模型行为收敛到文件编辑/只读检查；生成结果必须经过框架定义的执行路径。
+  - 作用：
+    1. 具体说明：工具协作完成读文件、补丁写入、图像理解、需求读取、子代理委派和自动验证；检查失败会回到模型上下文供修复。
+    2. 代码/文档定位：agent/agent/tools.py:64；agent/agent/loop.py:211；agent/agent/checks.py:294
+    3. 详细解释：`loop` 将每个调用结果追加消息，`check` 负责 build/server/Playwright/static gate，形成生成到反馈的闭环。
+  - 输入/知识源：
+    1. 具体说明：工具输入是模型生成的 JSON 参数、当前工作区文件、需求目录和参考图片；模型默认使用环境变量 `MODEL` 或 `glm-5.3-flash`。
+    2. 代码/文档定位：agent/agent/tools.py:103；agent/agent/spec.py:37；agent/agent/llm.py:118；agent/agent/loop.py:37
+    3. 详细解释：工作区与需求目录是工具可读数据源，图片可送视觉模型；模型配置来自环境变量而非任务内容检索。
+  - 选择/检索：
+    1. 具体说明：confirmed；只读 shell 调用可并行预取，工具名称按模型调用分派；模型路由主模型固定，图像不支持时转 `VISUAL_MODEL`，错误时退避重试并降低 reasoning effort。
+    2. 代码/文档定位：agent/agent/loop.py:79；agent/agent/llm.py:250；agent/agent/llm.py:313；agent/agent/llm.py:319
+    3. 详细解释：预取只针对前置只读调用，视觉模型只处理图片，LLM 层按超时/失败条件重试；这是运行时路由，不是知识库检索。
+  - 生成/使用：
+    1. 具体说明：模型文本被转为工具调用；`apply_patch` 原子写入文件，`check` 可在同一步执行指定 spec pattern，测试报告再作为下一轮提示。
+    2. 代码/文档定位：agent/agent/tools.py:134；agent/agent/loop.py:216；agent/agent/checks.py:172
+    3. 详细解释：补丁和检查共享一次会话步，减少盲改；失败报告包含失败测试、浏览器错误和页面快照信息，支持模型定向修复。
+  - 输出：
+    1. 具体说明：输出包括修改后的代码、测试/构建结果、`.agent/<label>.jsonl` transcript、checkpoint commit、usage.jsonl 和 usage-report.txt。
+    2. 代码/文档定位：agent/agent/checkpoint.py:41；agent/agent/checkpoint.py:47；agent/agent/main.py:122；agent/agent/llm.py:340
+    3. 详细解释：每步消息和提交可恢复，模型调用用量单独记录；这些状态使长任务可以从最近检查点继续而不丢失生成上下文。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent 代码、技能、模板和阶段产物静态内容中未发现向量索引、embedding、文档 chunk 检索或相似度排序；`requirement` 是按需求 ID 的确定性读取。
+- CODE-REUSE 的边界：确认模板复制和 earlier stage 增量复用；未把应用源码与题面示例的相似文本单独解释为生成策略，静态扫描中的少量长行重合不足以证明运行时复制。
+- 大文件检查：部分 `.agent/*.jsonl` 与 zip 超过扫描器上限，无法据此确认其中所有会话细节；核心执行代码和可读阶段文件已直接检查。
+分析完成

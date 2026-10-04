@@ -1,0 +1,231 @@
+核心策略分析：043-分支比人多-3c77d3c59f20
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\043-分支比人多-3c77d3c59f20
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+主策略是“确定性编译需求与依赖顺序 + 同一 Codex 编码线程逐 ROOT 模块实现 + 静态检查反馈 + 最终冷拷贝验证与有限修复”。main.py 进入 run_simple，而不是多代理任务图；编码模型由 MODEL 环境变量选择。控制器把 ROOT 约束、当前完整子树、场景索引和种子事实交给模型，模型通过 SDK 工具修改 React/Vite、Express/SQLite 应用并生成单元、API、Playwright 测试。后一模块收到前一模块的静态问题；最终失败日志摘要重新进入同一线程，最多配置八轮业务修复。
+RAG/检索结论：confirmed 存在本地需求结构化检索与上下文选择，按模块 ID、依赖闭包和祖先筛选原始需求、场景与初始状态；它是任务内源文件检索辅助，并非外部知识库或向量 RAG。在已检查静态内容中未发现嵌入模型、向量索引、语义召回或联网解决方案检索。代码复用结论：confirmed 存在预置通用脚手架直接复制，以及已有应用保留后由模型增量修改；未发现按题目匹配后解包整套预写 GitHub/Sheet 答案的生成分支。applications 下的三个 ZIP 是应用产物证据，不能仅凭其存在推断它们是控制器的答案库。
+差异机制集中在源需求保真索引、冻结上下文、连续线程、模块后轻量检查、开发检查缓存与最终冷验证分离、已有数据库保留及重新验证。SDK、协议代理、Git 快照和 npm 脚本是支撑设施。视觉文本抽取有条件分支，但 reference-images.json 默认关闭，三个应用的 visual-text.json 均为空；不能声称视觉模型已参与这些产物生成。
+本次仅静态只读分析。扫描器因大小跳过 agent.zip 的正文，随后直接在内存中读取 ZIP 成员，不解压、不导入或执行选手模块。引用格式 archive.zip!/member:line 表示原始压缩成员的文本行号。题面两项分别是 GitHub 协作平台与工作簿/电子表格应用，包含精确可访问名称、交互、种子数据与持久化要求；题面用于理解任务，未据相似度作结论。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 依赖排序后同一编码线程逐完整模块实现
+  - 状态：
+    1. 具体说明：confirmed，实际入口调用 simple 工作流，并在一个线程上顺序执行 ROOT 模块和修复。
+    2. 代码/文档定位：agent/agent.zip!/main.py:629；agent/agent.zip!/main.py:413；agent/agent.zip!/main.py:488
+    3. 详细解释：入口导入 run_simple，implement_modules 仅创建一次 coding thread，模块循环反复调用 turn，最终修复仍使用该闭包；静态调用链支持连续线程编排，不依赖文档中的角色宣称。
+  - 作用：
+    1. 具体说明：保持跨模块接口和已完成修改的上下文，同时按需求依赖安排实施顺序。
+    2. 代码/文档定位：agent/agent.zip!/main.py:135；agent/agent.zip!/core/requirements.py:98；agent/agent.zip!/main.py:263
+    3. 详细解释：需求编译器先排序叶子与模块，模块投影出现循环时保留原顺序并提示共享前置能力；最后一模块提示补全跨模块集成，将分阶段生成重新连接为完整应用。
+  - 输入/知识源：
+    1. 具体说明：原始 requirements.yaml、ROOT 全局字段、当前完整子树、验收场景索引及 completed_ids。
+    2. 代码/文档定位：agent/agent.zip!/main.py:107；agent/agent.zip!/main.py:139；agent/agent.zip!/main.py:250
+    3. 详细解释：YAML 由 safe_load 解析，ROOT 去掉 children 后作为全局上下文；当前 subtree 原样 JSON 化并附上 controller 编译索引，模型接收真实场景而非单独的功能标题。
+  - 选择/检索：
+    1. 具体说明：首模块注入全局约束，后续模块注入已实现 ID，每次全量使用当前子树。
+    2. 代码/文档定位：agent/agent.zip!/main.py:230；agent/agent.zip!/main.py:246；agent/agent.zip!/main.py:491
+    3. 详细解释：completed_ids 是否为空决定首轮与续轮提示分支；控制器循环当前 RequirementModule 并构造 prompt，减少重复 ROOT 内容但不按关键词截断当前模块的需求与场景。
+  - 生成/使用：
+    1. 具体说明：开发者规则与模块提示协作，thread.run 驱动工具编辑，前轮静态问题拼入下一轮。
+    2. 代码/文档定位：agent/agent.zip!/main.py:408；agent/agent.zip!/main.py:437；agent/agent.zip!/main.py:493
+    3. 详细解释：线程建立时固定 developer_instructions，之后每轮使用模块 prompt；pending_checks 来源于真实 checkpoint 返回消息，使已观察到的问题与下一模块开发共享一个生成上下文。
+  - 输出：
+    1. 具体说明：持续修改的应用目录、每轮响应摘要、模块完成事件和 feat Git 快照。
+    2. 代码/文档定位：agent/agent.zip!/main.py:461；agent/agent.zip!/main.py:500；applications/github.zip!/backend/src/app.js:38
+    3. 详细解释：控制器记录 response 与 usage 并在模块结束提交快照；最终 GitHub app 挂载 auth/orgs/repos/issues/pulls 路由，证明产物具有任务模块边界，但不单凭路由存在认定功能全部验证。
+
+STRATEGY-002 [RAG/RETRIEVAL] 原始需求按模块、祖先和依赖闭包生成可查询上下文
+  - 状态：
+    1. 具体说明：confirmed，存在确定性的本地结构化上下文检索；实际工具调用频率 unresolved。
+    2. 代码/文档定位：agent/agent.zip!/core/module_context.py:18；agent/agent.zip!/template/scripts/contract_context.py:23；agent/agent.zip!/main.py:258
+    3. 详细解释：模块视图构建器、按 ID 加载查询器和明确的提示调用入口同时存在，构成可用检索链；提交未包含完整 SDK 工具轨迹，不能证明每轮都执行过 query。
+  - 作用：
+    1. 具体说明：需要额外祖先约束、跨模块前置能力或初始数据时，补回与当前模块相关的源事实。
+    2. 代码/文档定位：agent/agent.zip!/core/module_context.py:24；agent/agent.zip!/main.py:258
+    3. 详细解释：依赖递归扩展后补入祖先，查询提示把它定义为原始 YAML 的辅助而非替代；因此检索解决编码上下文不足，不另行生成压缩后的权威需求。
+  - 输入/知识源：
+    1. 具体说明：当前题面的 acceptance requirements/cases/dependencies/references 与 initial_state。
+    2. 代码/文档定位：agent/agent.zip!/core/requirements.py:51；agent/agent.zip!/core/requirements.py:59；agent/agent.zip!/core/module_context.py:48
+    3. 详细解释：编译器 deepcopy 保留字段和场景，模块视图再从同一 acceptance 取数据；语料是这次任务的需求源，不是预存竞赛答案、互联网材料或历史模型总结。
+  - 选择/检索：
+    1. 具体说明：模块归属集合扩展叶子依赖闭包与 ancestors，再按 --kind 返回字段子集。
+    2. 代码/文档定位：agent/agent.zip!/core/module_context.py:22；agent/agent.zip!/core/module_context.py:33；agent/agent.zip!/template/scripts/contract_context.py:155
+    3. 详细解释：集合 membership 控制需求、场景与引用的范围，requirements/initial 等 kind 决定导出字段；没有相似度排序、向量 top-k 或模型语义召回步骤。
+  - 生成/使用：
+    1. 具体说明：生成冻结 JSON 模块视图，工具校验 SHA256 后打印选定事实供编码模型阅读。
+    2. 代码/文档定位：agent/agent.zip!/core/module_context.py:85；agent/agent.zip!/template/scripts/contract_context.py:32；agent/agent.zip!/template/scripts/contract_context.py:168
+    3. 详细解释：写入时记录视图哈希，加载时检查内容与模块身份，query 输出 JSON 可进入 shell 工具结果；生成影响来自模型读到的源事实，而不是检索器自身改写产品代码。
+  - 输出：
+    1. 具体说明：.haiknow/modules/index.json、按模块 ID 哈希命名的源视图，以及 query JSON。
+    2. 代码/文档定位：agent/agent.zip!/core/module_context.py:12；agent/agent.zip!/core/module_context.py:89；agent/agent.zip!/template/scripts/contract_context.py:159
+    3. 详细解释：index 连接原始模块 ID 与文件路径及哈希，requirements 查询包含需求、场景、依赖与引用；输出是编码辅助上下文，明确不是浏览器验证结果或通过证明。
+
+STRATEGY-003 [PREPARED-KNOWLEDGE] 通用交付规则、技能与访问性契约注入编码上下文
+  - 状态：
+    1. 具体说明：confirmed，随 agent 打包的 HAIKNOW-LITE.md 和三个 ARC 技能进入编码工作区。
+    2. 代码/文档定位：agent/agent.zip!/main.py:204；agent/agent.zip!/main.py:87；agent/agent.zip!/core/simple_workflow.py:39
+    3. 详细解释：控制器直接读取固定规则文件并复制白名单技能，不只是 README 推荐；其代码路径在线程创建前执行，构成预置知识的可达载入链路。
+  - 作用：
+    1. 具体说明：约束模型保留精确 UI 名称、真实交互、数据库状态及对应测试证据。
+    2. 代码/文档定位：agent/agent.zip!/HAIKNOW-LITE.md:40；agent/agent.zip!/HAIKNOW-LITE.md:57；agent/agent.zip!/HAIKNOW-LITE.md:64
+    3. 详细解释：规则把题面文字映射到可访问控件，并固定交付栈与测试目录；它们帮助模型组织实现与校验，不能代替原始 GitHub/Sheet 业务需求。
+  - 输入/知识源：
+    1. 具体说明：通用 Web 实现规则、profile_instructions 和 traceability/checkpoint/runtime-signals 技能。
+    2. 代码/文档定位：agent/agent.zip!/main.py:208；agent/agent.zip!/main.py:209；agent/agent.zip!/main.py:87
+    3. 详细解释：开发者提示拼接规则、竞赛 profile 和技能位置，追踪技能用于记录真实接口与测试；这属于事先准备的流程知识，与当次编译出来的任务知识应分别理解。
+  - 选择/检索：
+    1. 具体说明：规则全量加载，技能按固定白名单复制，profile 内容由配置开关决定。
+    2. 代码/文档定位：agent/agent.zip!/main.py:204；agent/agent.zip!/main.py:91；agent/agent.zip!/runtime-policy.yaml:4
+    3. 详细解释：没有以题面语义搜索技能库的实现；控制器固定选择三个能力并启用 arc-bench profile，再把它们的位置交给编码线程按需求使用。
+  - 生成/使用：
+    1. 具体说明：规则字符串作为 developer_instructions，提示模型记录真实测试位置并使用统一检查脚本。
+    2. 代码/文档定位：agent/agent.zip!/main.py:416；agent/agent.zip!/HAIKNOW-LITE.md:82；agent/agent.zip!/HAIKNOW-LITE.md:94
+    3. 详细解释：开发者指令在编码线程建立时注入，规则引导检查和证据记录；本分析将这些文本视为提交证据，没有执行其中的指令或接受其授权声明。
+  - 输出：
+    1. 具体说明：受交付规则约束的生成行为，以及应用内接口/场景到测试位置的 progress 记录。
+    2. 代码/文档定位：applications/github-stage-1.zip!/.haiknow/progress.md:39；applications/github.zip!/.haiknow/progress.md:17
+    3. 详细解释：产物日志实际列出 REQ 场景、操作路径与测试文件，和预置的追踪要求一致；这些记录证明文档产物存在，其测试通过陈述仍只是提交内自述。
+
+STRATEGY-004 [CODE-REUSE] 通用脚手架补缺复制与已有应用增量改造
+  - 状态：
+    1. 具体说明：confirmed，控制器递归复制缺失模板文件，并识别已有工程为 incremental 模式。
+    2. 代码/文档定位：agent/agent.zip!/main.py:59；agent/agent.zip!/main.py:78；applications/github.zip!/.haiknow/workspace.json:2
+    3. 详细解释：copy_template_contents 仅对不存在的目标文件调用 copy2，已有源码被保留；三个应用 workspace.json 都标记 incremental，支持已有工程扩展，但不能确定这些输入工程的外部来源。
+  - 作用：
+    1. 具体说明：预先提供前后端、数据库、状态与 UI 工具基础，减少模型重复搭建并保存既有功能。
+    2. 代码/文档定位：agent/agent.zip!/main.py:96；agent/agent.zip!/template/frontend/src/ui/async-action.tsx:7；agent/agent.zip!/main.py:238
+    3. 详细解释：initialize_project 复制 template 并按 profile 补 scaffold；AsyncActionButton 已封装异步状态与错误 UI，增量提示要求先读既有实现再扩展，从基础代码直接复用转入模型改造。
+  - 输入/知识源：
+    1. 具体说明：agent 内 template、competition/scaffold 与 output_dir 内已有应用及数据库。
+    2. 代码/文档定位：agent/agent.zip!/main.py:97；agent/agent.zip!/main.py:99；agent/agent.zip!/core/workspace.py:76
+    3. 详细解释：模板路径是 agent 自带基础工程，existing 由输出目录的应用文件判断；没有发现读取 applications/*.zip 作为生成输入的入口，因此不把提交产物反推为答案复用库。
+  - 选择/检索：
+    1. 具体说明：模板按固定路径全树补缺，跳过依赖、构建、Git、环境文件；增量分支由 workspace.mode 决定。
+    2. 代码/文档定位：agent/agent.zip!/main.py:67；agent/agent.zip!/main.py:78；agent/agent.zip!/main.py:237
+    3. 详细解释：选择依据是文件是否存在和 profile/mode 配置，不是题名检索或相似答案排名；保留目标文件的行为让同一生成链可在已有代码上实施新需求。
+  - 生成/使用：
+    1. 具体说明：先 copy2 初始化，然后模型在原工程内实现模块，并保留数据、旧测试与兼容接口。
+    2. 代码/文档定位：agent/agent.zip!/main.py:79；agent/agent.zip!/main.py:239；agent/agent.zip!/main.py:241
+    3. 详细解释：复制是确定性直接代码复用，后续提示要求数据保留迁移与回归，属于模型参与的增量适配；不应将两者混成从零生成或整套预写业务答案复制。
+  - 输出：
+    1. 具体说明：在通用 app 基础上加入 GitHub 业务路由，或加入工作簿 API 的完整应用源码。
+    2. 代码/文档定位：applications/github.zip!/backend/src/app.js:11；applications/github.zip!/backend/src/app.js:38；applications/sheet.zip!/backend/src/app.js:41
+    3. 详细解释：两份产物保留 Express/page-data 结构并接入不同业务路由，说明基础设施复用后形成题目特定扩展；仅依据这些结构不判断各个业务功能的正确性或代码作者来源。
+
+STRATEGY-005 [MODEL-ROUTING] 环境指定编码模型、协议适配和默认关闭的视觉旁路
+  - 状态：
+    1. 具体说明：confirmed，编码 MODEL 单选与视觉模型旁路均有实现；本次产物实际视觉调用 unresolved，默认关闭。
+    2. 代码/文档定位：agent/agent.zip!/core/runtime_config.py:60；agent/agent.zip!/agents/model/visual_transport.py:304；agent/agent.zip!/competition/reference-images.json:2
+    3. 详细解释：编码模型从 policy/env 解析，视觉候选实际构造成单元素元组，配置默认不解析图片；不能从 fallback 日志分支推断多视觉候选已启用。
+  - 作用：
+    1. 具体说明：让 SDK 编码请求适应平台协议；仅对文本明确委托的图片功能信息进行独立抽取。
+    2. 代码/文档定位：agent/agent.zip!/agents/model/chat_adapter.py:87；agent/agent.zip!/core/references.py:24；agent/agent.zip!/agents/model/visual_analysis.py:7
+    3. 详细解释：ChatAdapter 转换 SDK 工具和消息协议，不承担业务规划；视觉提示限制抽取缺失的委托文字，避免截图全量 OCR 取代书面场景这一主要知识源。
+  - 输入/知识源：
+    1. 具体说明：平台 MODEL/OPENAI 配置、可选 VISUAL 配置、原始图片数据及绑定 REQ 上下文。
+    2. 代码/文档定位：agent/agent.zip!/agents/model/visual_transport.py:294；agent/agent.zip!/agents/model/visual_transport.py:296；agent/agent.zip!/agents/model/visual_transport.py:478
+    3. 详细解释：编码与视觉端点均由环境提供，视觉请求把原始场景上下文与图片一并发送；静态报告不记录密钥，也未访问这些端点，实际平台配置值仍不可知。
+  - 选择/检索：
+    1. 具体说明：按编码模型名选择 Responses/Chat 协议，视觉先要求开关开启且图片有明确委托映射。
+    2. 代码/文档定位：agent/agent.zip!/competition/coding-transport.json:2；agent/agent.zip!/competition/coding-transport.json:6；agent/agent.zip!/core/references.py:44
+    3. 详细解释：配置指定一个模型名使用 chat_completions，其他走默认 responses；图片映射通过委托模式和原需求归属构建，未匹配不产生视觉事实，不是依据图片风格自动切换模型。
+  - 生成/使用：
+    1. 具体说明：SDK 请求经本地代理转发，视觉 Chat 调用返回 JSON 后进行源归属验证并回填文本。
+    2. 代码/文档定位：agent/agent.zip!/main.py:400；agent/agent.zip!/main.py:404；agent/agent.zip!/agents/model/visual_transport.py:521
+    3. 详细解释：Codex 配置使用 transport 地址，视觉响应通过 parse_visual_facts 检查 req_id/kind/source_quote；只有验证后的 facts 可进入 supplement，故模型输出并不直接成为验收源文件。
+  - 输出：
+    1. 具体说明：编码生成响应，或按图片 SHA256 缓存的 scoped facts；提交视觉文件实际为空数组。
+    2. 代码/文档定位：agent/agent.zip!/agents/model/visual_transport.py:554；agent/agent.zip!/agents/model/visual_transport.py:557；applications/github.zip!/.haiknow/visual-text.json:1；applications/sheet.zip!/.haiknow/visual-text.json:1
+    3. 详细解释：可选视觉输出缓存供重复读取并写入补充事实文件，而应用 ZIP 中空数组未证明视觉增强实际发生；编码输出主要消费书面需求和本地工具反馈。
+
+STRATEGY-006 [TOOLS/EXECUTION] SDK 工具编辑与标准化检查脚本配合执行边界
+  - 状态：
+    1. 具体说明：confirmed，代码提供 shell、patch、图片读取等工具通路，并在编码前进行隔离预检。
+    2. 代码/文档定位：agent/agent.zip!/agents/model/visual_transport.py:41；agent/agent.zip!/core/simple_workflow.py:53；agent/agent.zip!/main.py:199
+    3. 详细解释：工具名集合和 SDK launcher 配置给出工具路径，workflow 在模型业务实现前运行 preflight；本次仅检查这段实现，没有运行任何预检、依赖准备或选手脚本。
+  - 作用：
+    1. 具体说明：使模型检查并编辑应用文件、运行受管理的本地测试，同时约束评测资源访问。
+    2. 代码/文档定位：agent/agent.zip!/main.py:165；agent/agent.zip!/main.py:268；agent/agent.zip!/HAIKNOW-LITE.md:35
+    3. 详细解释：SDK 配置交由 evaluator isolation launcher，提示引导 scripts/check.py 管理测试而非临时服务器脚本；文档权限规则只是提交内约束，是否成功隔离不能仅靠文字确认。
+  - 输入/知识源：
+    1. 具体说明：当前应用目录、SDK 环境、已安装依赖与 frontend/backend/e2e 检查目标。
+    2. 代码/文档定位：agent/agent.zip!/main.py:199；agent/agent.zip!/core/simple_workflow.py:55；agent/agent.zip!/template/scripts/check.py:25
+    3. 详细解释：cwd 指向 output_dir，workflow 的依赖准备发生在编码前，统一脚本接受固定测试目标；模型通过这些本地资源把自然语言方案转为实际代码与反馈。
+  - 选择/检索：
+    1. 具体说明：模型根据受影响代码选择测试目标及 --file，控制器禁用网络搜索、apps 与多代理功能。
+    2. 代码/文档定位：agent/agent.zip!/main.py:190；agent/agent.zip!/main.py:269；agent/agent.zip!/template/scripts/check.py:306
+    3. 详细解释：目标参数限定单套或多套检查，文件参数缩小受影响用例；SDK 配置关闭附加能力，支持主路径为本地代码工具，而非搜索外部成品后拼装。
+  - 生成/使用：
+    1. 具体说明：apply_patch/shell 由 SDK 执行；检查脚本启动临时双端口服务器并使用隔离数据库。
+    2. 代码/文档定位：agent/agent.zip!/agents/model/visual_transport.py:3；agent/agent.zip!/template/scripts/check.py:137；agent/agent.zip!/template/scripts/check.py:141
+    3. 详细解释：transport 注明工具执行归 SDK 所有，脚本为 E2E 设定 ARC_DB_FILE 和两个端口后启动 backend；生成线程从退出状态与报告读取反馈，代理本身不实现产品业务。
+  - 输出：
+    1. 具体说明：修改后的应用文件、带测试计数的本地报告，以及清理后的临时服务状态。
+    2. 代码/文档定位：agent/agent.zip!/template/scripts/check.py:283；agent/agent.zip!/template/scripts/check.py:286；applications/sheet.zip!/.haiknow/progress.md:305
+    3. 详细解释：脚本解析测试 JSON 并记录 passed、log、identity 等字段，产物 progress 记录检查和无遗留服务；该文档仅提供过程线索，不能作为分析者亲自执行测试的证据。
+
+STRATEGY-007 [ITERATION/EVALUATION] 轻量模块反馈、开发缓存与最终冷验证修复闭环
+  - 状态：
+    1. 具体说明：confirmed，存在模块静态 checkpoint、最终 verify_project 和配置八轮修复的可达循环。
+    2. 代码/文档定位：agent/agent.zip!/main.py:496；agent/agent.zip!/main.py:512；agent/agent.zip!/runtime-policy.yaml:15
+    3. 详细解释：主循环调用 checkpoint 后积累 findings，模块完成后进入验证 while 循环；提交 progress 还描述实际修复，但其通过计数未在本分析中复现。
+  - 作用：
+    1. 具体说明：提前发现名称/角色问题，最终暴露冷环境构建、持久化和浏览器交互失败并据此修改。
+    2. 代码/文档定位：agent/agent.zip!/core/checkpoints.py:48；agent/agent.zip!/core/validation.py:271；agent/agent.zip!/core/validation.py:282
+    3. 详细解释：checkpoint 分析源名称与语义，最终验证使用 DetachedSource 并检查保留数据库；不同检查提供不同反馈，静态名称检查不等于独立完整行为验收。
+  - 输入/知识源：
+    1. 具体说明：应用源码、模型生成测试、测试日志、源需求名称及冷拷贝中的数据库状态。
+    2. 代码/文档定位：agent/agent.zip!/core/checkpoints.py:43；agent/agent.zip!/core/validation.py:487；agent/agent.zip!/core/validation.py:506
+    3. 详细解释：名称审计读取源 acceptance，unit/API 和 Playwright 使用应用内测试；simple 模式关闭 manual_contract_checks，不能把模型自写测试通过扩张为全部官方需求已经独立验证。
+  - 选择/检索：
+    1. 具体说明：开发检查按源码/环境/测试目标身份复用成功缓存，最终控制器使用冷拷贝；失败摘要限定长度。
+    2. 代码/文档定位：agent/agent.zip!/template/scripts/check.py:248；agent/agent.zip!/template/scripts/check.py:262；agent/agent.zip!/main.py:279
+    3. 详细解释：开发缓存需校验证据哈希及计数，避免相同成功检查重复执行；最终 verify_project 不消费该缓存，失败摘录保留开头原因和尾部断言，完整日志按需补读进入修复。
+  - 生成/使用：
+    1. 具体说明：验证未通过时将真实 error 摘要和报告路径送回同一 thread，要求修复最小失败路径。
+    2. 代码/文档定位：agent/agent.zip!/main.py:548；agent/agent.zip!/main.py:550；applications/github.zip!/.haiknow/progress.md:444；applications/sheet.zip!/.haiknow/progress.md:297
+    3. 详细解释：失败 report 驱动下一 repair turn；GitHub 文档描述事务快照一致性修复，Sheet 文档描述冷环境数据库父目录修复，体现反馈可影响产品及测试基础设施，不能只理解为反复重写页面。
+  - 输出：
+    1. 具体说明：验证报告、修复后的源码与测试，或只满足构建启动的 completed_with_issues 交付状态。
+    2. 代码/文档定位：agent/agent.zip!/main.py:515；agent/agent.zip!/main.py:533；agent/agent.zip!/main.py:538；applications/github.zip!/.haiknow/progress.md:462
+    3. 详细解释：验证通过记录内部成功，修复耗尽后另做 delivery check 并显式保留未解决 error；提交声称测试全过不代表官方得分，也不能覆盖该降级交付分支的潜在失败。
+
+STRATEGY-008 [STATE/PERSISTENCE] 冻结任务上下文、增量历史隔离与真实进度证据
+  - 状态：
+    1. 具体说明：confirmed，存在 SHA256 冻结的源上下文、可写 progress、状态 JSON、Git 快照及旧元数据归档。
+    2. 代码/文档定位：agent/agent.zip!/main.py:330；agent/agent.zip!/main.py:349；agent/agent.zip!/core/workspace.py:12
+    3. 详细解释：控制器记录原需求和生成契约哈希并每轮校验，旧 .haiknow/.arc/.codex 元数据被归档；这区分当前执行证据与之前任务状态，不只是保存对话摘要。
+  - 作用：
+    1. 具体说明：上下文压缩后恢复源约束，并防止增量开发沿用旧通过声明或改写原需求。
+    2. 代码/文档定位：agent/agent.zip!/main.py:248；agent/agent.zip!/main.py:351；agent/agent.zip!/core/workspace.py:103
+    3. 详细解释：提示指向 contract/plan/progress 作为恢复入口，哈希保护源约束；workspace 声明仅继承前期需求描述，过去通过状态不作为新阶段的完成依据。
+  - 输入/知识源：
+    1. 具体说明：当前 YAML 哈希、模块顺序、已有 prior-acceptance、保留数据库文件与本轮 SDK 响应。
+    2. 代码/文档定位：agent/agent.zip!/main.py:308；agent/agent.zip!/core/workspace.py:61；agent/agent.zip!/core/database_delivery.py:80；agent/agent.zip!/main.py:461
+    3. 详细解释：源内容与代码进展分别进入冻结知识和运行证据，数据库文件组通过快照保留；这些状态连接多模块和增量阶段，但未发现从历史任务训练或学习新技能的实现。
+  - 选择/检索：
+    1. 具体说明：当前 REQ 替换同 ID 的旧案例，只归档 agent 元数据，应用源码保留；冻结文件按路径哈希检查。
+    2. 代码/文档定位：agent/agent.zip!/core/workspace.py:47；agent/agent.zip!/core/workspace.py:51；agent/agent.zip!/core/workspace.py:79；agent/agent.zip!/main.py:350
+    3. 详细解释：merge_requirement_sources 删除被当前需求替换的旧场景，防止来源混淆；归档列表不包含业务源码，配合补缺模板保留已有工程，输入完整性检查决定是否允许继续生成。
+  - 生成/使用：
+    1. 具体说明：控制器写 contract/plan/acceptance/state，模型维护 progress，模块完成后提交 Git 快照。
+    2. 代码/文档定位：agent/agent.zip!/main.py:310；agent/agent.zip!/main.py:321；agent/agent.zip!/main.py:468；agent/agent.zip!/main.py:502
+    3. 详细解释：冻结文件编码任务来源和顺序，progress 保存发现与证据，state 保存真实轮次结果；Git 快照由控制器完成，供持续开发记录版本，而非多分支候选竞争选择。
+  - 输出：
+    1. 具体说明：.haiknow 源契约与进度、.arc/haiknow/state.json、历史归档和已有数据库输入标识。
+    2. 代码/文档定位：agent/agent.zip!/main.py:393；applications/github.zip!/.haiknow/workspace.json:3；applications/sheet.zip!/.haiknow/workspace.json:6
+    3. 详细解释：提交 workspace 元数据包含归档路径与 database_input 哈希，说明产物保留增量阶段记录；完整 .arc 运行轨迹未随应用 ZIP 提供，记录存在不能替代全程运行证据。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的仓库静态内容中未发现向量数据库、embedding、语义 top-k、外部解决方案语料；已确认的是当前需求源的结构化选择和可查询上下文。应用内代码搜索或表格筛选属于产品业务，不作为生成系统的 RAG 证据。
+- PREPARED-KNOWLEDGE：预置知识主要是通用交付规则、技能、UI/状态模板说明及竞赛 profile；未发现独立预备的完整 GitHub/Sheet 业务解答语料。
+- CODE-REUSE：确认脚手架直接复用与增量工程修改；已有应用最初来源、跨三个 applications ZIP 的实际继承关系 unresolved。不能因为三个 workspace 的数据库输入标识相同就断言它们复用了相同完整业务代码。
+- PROMPT-ORCHESTRATION：入口为 simple 单编码线程；在已检查主调用链中未发现并行多代理、独立规划模型或候选答案投票。完整提示实际执行轨迹未提供。
+- MODEL-ROUTING：实际 MODEL、端点环境值与每轮调用数 unresolved；协议映射中的模型名称是选择条件，不是实际采用该模型的证明。视觉功能默认关闭，三个应用 visual-text.json 均为空，没有实际视觉事实产物证据。
+- TOOLS/EXECUTION：已追踪 SDK、工具集合、隔离 launcher 接入与本地检查脚本；没有执行选手代码、安装依赖或访问选手 URL，隔离在实际平台是否成功未做动态验证。解压目录读取返回拒绝访问，本次通过原始 ZIP 成员只读补足源码检查。
+- ITERATION/EVALUATION：progress 中的通过数量和原因诊断属于选手文档自述；源码与测试文件存在可检查，但完整 controller validation/state 原始运行报告未随 ZIP 提供。manual_contract_checks=False 明确关闭手工绑定的独立运行 UI/初始记录检查，不能引用其他默认开启分支来夸大 simple 模式覆盖。
+- STATE/PERSISTENCE：已确认当前任务冻结上下文、历史元数据隔离、数据库保留和 Git 快照机制；在已检查的仓库静态内容中未发现向历史任务学习策略、自动扩充技能或维护跨题语义知识库的实现。
+分析完成

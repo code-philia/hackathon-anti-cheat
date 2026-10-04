@@ -1,0 +1,122 @@
+﻿核心策略分析：011-sunhao-e19423e68321
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\011-sunhao-e19423e68321
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+已确认的端到端路径是“按公开 requirements 标题选择任务 -> 运行固定包装器 -> 进行独立的成本校准模型调用（响应明确丢弃）-> 用哈希清单复制预构建 Sheet/GitHub 应用 -> 做语法/构建检查并写生成证据”。主要生成能力来自随压缩包交付的预构建应用和版本化清单，而不是当前任务中的模型生成。RAG/RETRIEVAL：在已检查的选手静态内容中未发现索引、向量/词法检索或语料召回；仅有公开题面标题匹配。CODE-REUSE：confirmed，直接复制随包应用文件并按 manifest 校验哈希；未发现模型介导的代码复用。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 公开题面标题路由与双任务分派
+  - 状态：
+    1. 具体说明：confirmed；main.py 读取 requirements.yaml 等公开文档前若干标题，与 pair-manifest 中 public_root_name 精确匹配，并要求唯一任务。
+    2. 代码/文档定位：agent/agent.zip::main.py:12-42
+    3. 详细解释：该函数只把公开文档标题映射到 Sheet 或 GitHub entrypoint；没有把题面内容转换为生成提示词，因而是任务路由而非内容生成。
+  - 作用：
+    1. 具体说明：选择一个确定的组件入口，阻止未知或冲突题面继续请求。
+    2. 代码/文档定位：agent/agent.zip::main.py:31-41
+    3. 详细解释：matches 集合和冲突检查把上游题面变成单一 task，随后主程序加载对应 Python 模块，形成稳定的下游交付路径。
+  - 输入/知识源：
+    1. 具体说明：输入是 requirements.yaml/requirements.md/prerequisites.md 的公开标题及 pair-manifest.tasks。
+    2. 代码/文档定位：agent/agent.zip::main.py:12-32；agent/agent.zip::pair-manifest.json:7-21
+    3. 详细解释：知识源是题面名称和预先写入的任务配置（entrypoint、预算、基线哈希），未见任务语义全文进入模型上下文。
+  - 选择/检索：
+    1. 具体说明：采用大小写折叠后的完整标题相等匹配，不是 RAG 检索。
+    2. 代码/文档定位：agent/agent.zip::main.py:27-35
+    3. 详细解释：每个标题与 public_root_name 比较，命中集合必须恰为一个；没有排序、召回、相似度或索引。
+  - 生成/使用：
+    1. 具体说明：根据 manifest.entrypoint 动态加载 sheet/main.py 或 github/main.py，并把参数转交其 main。
+    2. 代码/文档定位：agent/agent.zip::main.py:58-70
+    3. 详细解释：路由结果只决定使用哪个既有包装器；它不生成代码或提示词，后续产物来自包装器的部署逻辑。
+  - 输出：
+    1. 具体说明：输出是 task_selected 事件及被选包装器的应用交付。
+    2. 代码/文档定位：agent/agent.zip::main.py:63-70
+    3. 详细解释：事件记录 task、预算和 runtime_generated/model_response_used_for_build 字段，随后入口负责写应用文件。
+
+STRATEGY-002 [CODE-REUSE] 哈希清单约束的预构建应用复制
+  - 状态：
+    1. 具体说明：confirmed；Sheet 和 GitHub 都声明 runtime_generated=false、model_response_used_for_build=false，并将应用源文件作为固定 baseline。
+    2. 代码/文档定位：agent/agent.zip::sheet/baseline-manifest.json:1-6；agent/agent.zip::github/manifest.json:1-5
+    3. 详细解释：清单把交付定义为 prebuilt application/diagnostic，说明核心产物在当前运行前已存在。
+  - 作用：
+    1. 具体说明：直接复用完整前后端文件，避免按当前题面重新生成业务代码。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:174-188；agent/agent.zip::github/main.py:177-196
+    3. 详细解释：代码读取 application/ 下文件，逐项校验 SHA-256 后写入输出目录；GitHub 还拼接固定 frontend 模块，复用路径清晰。
+  - 输入/知识源：
+    1. 具体说明：输入是压缩包内 application 文件及 baseline/manifest 的 application_files 哈希映射。
+    2. 代码/文档定位：agent/agent.zip::sheet/baseline-manifest.json:14-30；agent/agent.zip::github/manifest.json:6-43
+    3. 详细解释：哈希清单和版本说明（如 prebuilt-v17、prebuilt-diagnostic-v13）提供预备知识与源文件集合，而非外部检索结果。
+  - 选择/检索：
+    1. 具体说明：选择规则是遍历 manifest.application_files 全量复制并逐项哈希比对；无候选检索。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:175-183；agent/agent.zip::github/main.py:177-184
+    3. 详细解释：每个清单条目都被处理，哈希不一致即失败；这属于确定性代码复用和完整性检查。
+  - 生成/使用：
+    1. 具体说明：将已存在 JS/CJS/HTML/CSS/后端文件写入输出；GitHub 由固定模块拼接 app.js，Sheet 调用固定 build.cjs。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:181-187；agent/agent.zip::github/main.py:185-196
+    3. 详细解释：下游生成物是复制/拼接后的应用文件，未接收模型文本作为源码或补丁。
+  - 输出：
+    1. 具体说明：输出目录中的应用文件与 prebuilt-baseline-manifest.json 或 prebuilt-diagnostic-manifest.json。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:200-206；agent/agent.zip::github/main.py:213-220
+    3. 详细解释：完成事件列出 application_files，并明确 model_response_used_for_build=false，证明复用结果进入最终交付。
+
+STRATEGY-003 [MODEL-ROUTING] 隔离的成本校准模型调用
+  - 状态：
+    1. 具体说明：confirmed；调用使用固定 deepseek-v4-pro、短输出上限和合成数字负载，响应摘要哈希入账但不用于构建。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:36-45；agent/agent.zip::sheet/main.py:126-149
+    3. 详细解释：模型调用存在于成本实验分支，账本和事件反复声明 response_used_for_build=false，因此与应用生成解耦。
+  - 作用：
+    1. 具体说明：测量预算消耗并在达到容差、时间、调用次数或计费异常时停止。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:109-118；agent/agent.zip::sheet/main.py:150-170
+    3. 详细解释：该机制控制实验成本，不提供领域知识或代码变更；完成后才进入 deploy。
+  - 输入/知识源：
+    1. 具体说明：输入是 payload_for 生成的随机数字文本、固定成本说明和模型配置，不是 GitHub/Sheet 题面语料。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:77-92
+    3. 详细解释：消息要求模型写简短 Python 伪代码并不复用回答；随机数字仅构造计费负载。
+  - 选择/检索：
+    1. 具体说明：模型路由固定单一 endpoint（OPENAI_BASE_URL/chat/completions）和单一模型，无候选选择或检索。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:131-135；agent/agent.zip::sheet/main.py:36-43
+    3. 详细解释：每轮只按剩余预算计算 size，随后发送同一模型配置；异常不重试，避免多次付费 POST。
+  - 生成/使用：
+    1. 具体说明：模型产生短 completion，仅提取 usage、finish_reason 和 content 哈希用于账本。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:136-145
+    3. 详细解释：content 未传给 deploy 或文件写入函数，故没有模型介导的源码生成、提示链或补丁应用。
+  - 输出：
+    1. 具体说明：输出是 generation-evidence/cost-calibration-ledger.json 及 model_started/model_finished 事件。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:103-108；agent/agent.zip::sheet/main.py:144-170
+    3. 详细解释：账本记录成本、usage、响应哈希和停止原因；最终应用输出仍来自 STRATEGY-002。
+
+STRATEGY-004 [TOOLS/EXECUTION] 确定性校验、构建与证据持久化
+  - 状态：
+    1. 具体说明：confirmed；部署阶段执行源哈希校验、Node 语法检查和前端 build，属于工具链而非模型代理。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:174-188
+    3. 详细解释：工具调用只验证/打包已复用源码；未发现 shell 规划器、浏览器抓取或自动修复循环。
+  - 作用：
+    1. 具体说明：保证复制文件与清单一致，并产生可审计的部署状态。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:175-187；agent/agent.zip::github/main.py:178-196
+    3. 详细解释：失败即抛出异常，成功才写出构建产物；工具结果没有反馈给模型进行再生成。
+  - 输入/知识源：
+    1. 具体说明：输入是 manifest 哈希、输出目录和公开 requirement 路径。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:191-203；agent/agent.zip::github/main.py:167-214
+    3. 详细解释：公开题面仅被收集为 inventory（GitHub）或用于路由；应用源码来自压缩包固定目录。
+  - 选择/检索：
+    1. 具体说明：工具执行按清单顺序全量处理，Node 检查限定 .js/.cjs，随后运行固定 build.cjs；没有文件语义筛选。
+    2. 代码/文档定位：agent/agent.zip::sheet/main.py:184-187；agent/agent.zip::github/main.py:185-196
+    3. 详细解释：条件仅是扩展名和清单条目，结果不会被排序器或召回器消费，也不会改变后续源码选择；它只是按预定清单完成确定性检查。
+  - 生成/使用：
+    1. 具体说明：生成/使用表现为复制、拼接 app.js、镜像 dist 文件和写 manifest/evidence JSON。
+    2. 代码/文档定位：agent/agent.zip::github/main.py:192-214；agent/agent.zip::sheet/main.py:199-206
+    3. 详细解释：这些操作把固定源码转成评测可见目录，并保存生成证据；没有提示链或模型输出注入。
+  - 输出：
+    1. 具体说明：输出包括应用目录、dist 资源、生成证据清单和 delivery/generation_complete 事件。
+    2. 代码/文档定位：agent/agent.zip::github/main.py:197-220；agent/agent.zip::sheet/main.py:202-206
+    3. 详细解释：输出消费者是后续评测环境；证据记录 runtime_generated=false、模型响应未用于构建和验证范围。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent.zip 三个入口、manifest、README、应用清单和证据文件中未发现索引、向量库、词法检索、embedding 或检索结果注入生成；仅确认公开标题等值路由，不能据此推断运行时绝对不存在其他机制。
+- PREPARED-KNOWLEDGE：confirmed 存在 manifest、版本变更说明、固定应用源码和公开输入 inventory；未发现面向当前题面的额外提示模板/技能库。
+- PROMPT-ORCHESTRATION：未发现多阶段角色、上下文压缩、提示链或自我批评；模型只有成本实验的单消息请求，结论基于静态路径。
+- ITERATION/EVALUATION：存在成本循环和停止条件，但没有生成后测试失败再修复的闭环；清单中的历史 passed 数字是文档记录，未在本次运行执行。
+- STATE/PERSISTENCE：confirmed 有 cost-calibration-ledger.json、prebuilt manifests、哈希和输出证据持久化；未发现跨任务记忆或学习状态。
+- CODE-REUSE：confirmed 直接复制预构建应用；未发现“让模型复用代码”的调用。
+分析完成

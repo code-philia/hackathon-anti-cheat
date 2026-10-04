@@ -1,0 +1,36 @@
+﻿閺嶇绺剧粵鏍殣閸掑棙鐎介敍?020-Liii-8df71b56b920
+妫版﹢娼伴懠鍐ㄦ纯閿?example/hackathon/github閿?example/hackathon/sheet
+鍒嗘瀽瑕嗙洊锛歊AG/RETRIEVAL=宸叉鏌ワ紱PREPARED-KNOWLEDGE=宸叉鏌ワ紱CODE-REUSE=宸叉鏌ワ紱PROMPT-ORCHESTRATION=宸叉鏌ワ紱MODEL-ROUTING=宸叉鏌ワ紱TOOLS/EXECUTION=宸叉鏌ワ紱ITERATION/EVALUATION=宸叉鏌ワ紱STATE/PERSISTENCE=宸叉鏌?
+[核心结论]
+主流程为Brief解析、任务关键词模板路由或分阶段LLM生成，并以审查修复收尾。RAG=已检查静态内容未发现；代码复�?确认存在预置完整模板复制�?
+[绛栫暐娓呭崟]
+STRATEGY-001 [PROMPT-ORCHESTRATION] Brief涓庢ā鏉?妯″瀷鍗忎綔
+  - 鐘舵€侊細
+    1. 具体说明：confirmed；确认该策略由需求Brief驱动模板快速路径和后端前端审查流水线组�?
+    2. 代码/文档定位：agent/agent.py:457
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+  - 浣滅敤锛?
+    1. 具体说明：confirmed；通过结构化提示把需求和API契约传给各生成阶�?
+    2. 代码/文档定位：agent/agent.py:266
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+  - 杈撳叆/鐭ヨ瘑婧愶細
+    1. 具体说明：confirmed；requirements.yaml字段、预置模板和系统提示
+    2. 代码/文档定位：arcagent/spec.py:127
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+  - 选择/检索：
+    1. 具体说明：confirmed；固定关键词决定模板，否则进入LLM阶段
+    2. 代码/文档定位：agent/agent.py:64
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+  - 鐢熸垚/浣跨敤锛?
+    1. 具体说明：confirmed；模型返回JSON文件并由write_tree落盘
+    2. 代码/文档定位：agent/agent.py:243
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+  - 杈撳嚭锛?
+    1. 具体说明：confirmed；frontend/backend树及manifest交付
+    2. 代码/文档定位：agent/agent.py:524
+    3. 详细解释：该证据说明此维度如何连接输入、选择与最终生成，且支持端到端策略判断�?
+[鏈彂鐜版垨鏈В鍐砞
+- RAG/RETRIEVAL：在已检查静态源码中未发现索引或向量检索�?
+- CODE-REUSE：确认agent.py:41-61通过copytree复制预置模板�?
+- 鍏朵粬瑕嗙洊绫诲埆宸叉鏌ワ紝鏈墽琛屼唬鐮併€佹湭瀹夎渚濊禆銆佹湭璁块棶URL銆?
+- The final non-empty line must be `鍒嗘瀽瀹屾垚`.

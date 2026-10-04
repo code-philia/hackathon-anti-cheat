@@ -1,0 +1,172 @@
+核心策略分析：033-1648557528-e57442f4968a
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\033-1648557528-e57442f4968a
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+该提交的主链路是确定性工厂，而不是模型驱动生成：main.py 先复制 agent 内置的 template，再读取题面 requirements.yaml，通过关键词计分选择 github 或 sheet profile，合并预置 JSON seed fragments，写入 backend/config/pack.json，随后安装/构建前端、写 traceability 证据并运行 Playwright 自验证。最终应用是复制出的 React + Express + SQLite 模板，由 pack 配置在启动时选择路由和种子数据。RAG/RETRIEVAL：在已检查的 agent 源码、技能、模板和 profile 静态内容中未发现索引、向量/词法检索或运行时检索链路；题面仅用于整体解析和关键词分类。CODE-REUSE：确认存在，主要是直接复制 bundled template、skills、factory-suite，并合并 profiles 下的预置数据；不是让模型改写代码。模型调用、prompt chaining 和模型路由均未发现可执行实现。
+
+[策略清单]
+STRATEGY-001 [CODE-REUSE] 预置应用模板与 profile 片段拼装
+  - 状态：
+    1. 具体说明：confirmed；工厂把内置 template 目录复制到输出目录，并按选定 profile 读取 users、orgs、repos、issues、pulls 或 workbooks JSON 片段，合并为统一种子配置。
+    2. 代码/文档定位：main.py:181-202；factory/build.py:16-38；factory/compile.py:235-274；README.md:13-19,43-49
+    3. 详细解释：main.py 的 stage-template 和 compile-pack 是端到端入口；copy_template 使用 shutil.copytree/copy2 复用整套 React/Express 应用，compile_pack 再从 profiles/<profile> 装载并写出 pack.json。因此生成结果主要来自提交内已准备好的模板和数据，而不是当前任务的代码生成。
+  - 作用：
+    1. 具体说明：确定最终可运行产品的页面、API、数据库结构和初始实体，减少每题重新实现的工作。
+    2. 代码/文档定位：factory/build.py:23-37；factory/compile.py:235-258；template/backend/src/app.js:31-77
+    3. 详细解释：模板复制后，compile_pack 只改变 pack 配置；Express 根据 config.kind 挂载 github 或 sheet 路由，应用因此沿用同一套预制实现并切换任务数据。
+  - 输入/知识源：
+    1. 具体说明：agent.zip 内 template/**、profiles/github/*.json、profiles/sheet/workbooks.json，以及题面的 requirements.yaml。
+    2. 代码/文档定位：factory/compile.py:132-153,183-207,235-258；README.md:43-50
+    3. 详细解释：_load_*_fragments 读取 profile JSON；_load_keyed_fragments 和 _load_repo_fragments 按 username/name 或 owner/name 合并贡献；requirements.yaml 只提供任务树和 profile 判定输入。
+  - 选择/检索：
+    1. 具体说明：不是 RAG 检索；profile 由题面全文关键词计分选择，文件片段按固定 stem 和排序全量装载。
+    2. 代码/文档定位：factory/compile.py:23-34,73-77,141-153,235-243
+    3. 详细解释：_profile_from_text 统计 spreadsheet/worksheet 等与 github/repository 等关键词，得分高者决定 profile；_fragment_paths 取 stem.json 和 stem.*.json 后排序拼接，没有查询向量、相似度或候选排序。
+  - 生成/使用：
+    1. 具体说明：复制模板文件并将合并后的 seed 写成 backend/config/pack.json，由运行时数据库初始化消费。
+    2. 代码/文档定位：factory/build.py:27-35；factory/compile.py:248-274；template/backend/src/app.js:15-39
+    3. 详细解释：copy2/copytree 直接产生应用源文件；write_pack_config 序列化 profile、modules、seed；app.js 启动时 loadPackConfig/resetAndSeed，使预置实体进入 SQLite。
+  - 输出：
+    1. 具体说明：一个完整输出应用目录、backend/config/pack.json、frontend/dist，以及运行时种子数据库状态。
+    2. 代码/文档定位：main.py:181-214；factory/compile.py:271-275；template/backend/src/app.js:20-29
+    3. 详细解释：输出目录承载复制的前后端和构建产物，pack.json 是 profile 与 seed 的连接点，启动阶段 resetAndSeed 将其转成可被页面/API 使用的记录。
+
+STRATEGY-002 [PROMPT-ORCHESTRATION] 无模型提示编排，采用固定步骤编排
+  - 状态：
+    1. 具体说明：confirmed；未发现 system/user prompt、prompt 模板或 agent 间消息链；main.py 通过 Steps.run 顺序调度固定函数。
+    2. 代码/文档定位：main.py:4-13,85-113,171-214；README.md:3-5
+    3. 详细解释：文档和入口都把流程定义为 deterministic preset application/zero model calls；Steps.run 只记录函数执行，不构造或发送提示词。
+  - 作用：
+    1. 具体说明：把构建、编译、证据和验证拆成可记录的阶段，并在单步失败时继续收集报告。
+    2. 代码/文档定位：main.py:85-113,181-214,244-247
+    3. 详细解释：每阶段由 name/function 参数驱动，异常被捕获为 entries；这提供了固定的工程流水线控制，而非生成策略。
+  - 输入/知识源：
+    1. 具体说明：阶段输入是命令行 requirement_path、output_dir、task_type、环境变量和 agent 内部目录。
+    2. 代码/文档定位：main.py:74-82,160-179；factory/recon.py:25-45
+    3. 详细解释：parse_args 读取路径和环境配置，recon 记录 argv/env；没有 prompt 文本或模型上下文作为输入。
+  - 选择/检索：
+    1. 具体说明：通过显式步骤顺序和 profile 关键词分支选择行为，不存在提示词选择或上下文压缩。
+    2. 代码/文档定位：main.py:181-214；factory/compile.py:73-77
+    3. 详细解释：步骤固定执行，唯一面向任务的选择是 _profile_from_text 的 github/sheet 二选一；结果直接传给下一阶段。
+  - 生成/使用：
+    1. 具体说明：函数调用直接执行复制、解析、写文件、npm 和测试命令；没有模型生成文本或代码。
+    2. 代码/文档定位：main.py:181-214；factory/build.py:60-105
+    3. 详细解释：build.py 的 _npm 使用 subprocess 执行固定命令，build_frontend 只运行 npm run build；该链路消费源文件而非 prompt 输出。
+  - 输出：
+    1. 具体说明：步骤日志、build-report.json、pack.json 和 traceability 文件构成编排结果。
+    2. 代码/文档定位：main.py:173-179,385-411；factory/traceability.py:129-131
+    3. 详细解释：main.py 汇总 steps、verification 和 traceability 写入 .arc-factory/build-report.json；Evidence.report 返回错误计数，供报告消费。
+
+STRATEGY-003 [MODEL-ROUTING] 零模型调用与无路由
+  - 状态：
+    1. 具体说明：confirmed；源码声明 zero model calls，静态扫描未发现 OpenAI/Anthropic/模型客户端或可执行模型请求。
+    2. 代码/文档定位：main.py:2-13；factory/compile.py:1-9；README.md:3-5,53-60
+    3. 详细解释：核心入口与 compiler 都明确描述 deterministic/no model calls；依赖说明仅含标准库和 vendored yaml，未提供模型 SDK。
+  - 作用：
+    1. 具体说明：所有任务采用同一确定性模板工厂，避免模型选择、回退和多模型合并成本。
+    2. 代码/文档定位：main.py:181-214；README.md:13-29
+    3. 详细解释：阶段直接生成应用并测试；不存在 primary/secondary model 结果需要融合。
+  - 输入/知识源：
+    1. 具体说明：输入仅为 requirements.yaml、profiles JSON、template 源码和环境参数。
+    2. 代码/文档定位：factory/compile.py:99-129,235-258；factory/recon.py:25-45
+    3. 详细解释：parse_requirements 读取 YAML 并计算 profile，recon 仅记录环境；这些都不是模型上下文端点。
+  - 选择/检索：
+    1. 具体说明：不存在模型端点选择、角色路由、fallback call 或并行模型调用。
+    2. 代码/文档定位：main.py:61-71；factory/build.py:60-113
+    3. 详细解释：导入的是本地 factory 函数；_npm 只调用 npm，prepare_playwright_browsers 只调用 playwright install。
+  - 生成/使用：
+    1. 具体说明：生成来自本地文件复制、JSON/YAML 解析和前端编译，不经过模型。
+    2. 代码/文档定位：factory/build.py:16-38,104-113；factory/compile.py:271-275
+    3. 详细解释：这些函数产生代码和配置文件的确定性副本/序列化结果；没有模型响应被解析或注入。
+  - 输出：
+    1. 具体说明：可运行前后端、配置、构建报告和验证报告；无模型响应输出。
+    2. 代码/文档定位：main.py:385-411；factory/verify.py:332-357
+    3. 详细解释：输出由 build-report 和 Playwright JSON 汇总构成，verify 只收集测试状态与失败信息。
+
+STRATEGY-004 [TOOLS/EXECUTION] 文件、npm、Playwright 与本地 HTTP 健康检查
+  - 状态：
+    1. 具体说明：confirmed；工厂使用文件系统复制、subprocess npm、Playwright 和 127.0.0.1 health polling 来完成构建验证。
+    2. 代码/文档定位：factory/build.py:16-38,60-113；factory/verify.py:154-168,294-327
+    3. 详细解释：工具调用集中在构建和自验证；没有访问提交代码中提供的外部 URL，验证地址是本地启动端口。
+  - 作用：
+    1. 具体说明：将静态模板变成可服务的前端/后端，并通过端到端测试发现具体失败。
+    2. 代码/文档定位：factory/build.py:94-105；factory/verify.py:246-327
+    3. 详细解释：npm install/build 产生依赖和 dist；run_verification 启动 npm start、等待 /api/health，再运行 Playwright。
+  - 输入/知识源：
+    1. 具体说明：输入为输出目录 package.json、requirements 关联测试目录、环境变量端口和测试套件。
+    2. 代码/文档定位：factory/verify.py:96-151,281-294；factory/build.py:60-74
+    3. 详细解释：discover_tests 按固定候选目录和 spec 模式寻找测试；env 注入 PORT、ARC_DB_FILE、PLAYWRIGHT_BASE_URL。
+  - 选择/检索：
+    1. 具体说明：测试套件按环境变量优先、候选目录顺序和 spec/test 文件模式选择；端口从 3311 起扫描空闲端口。
+    2. 代码/文档定位：factory/verify.py:96-151,88-93
+    3. 详细解释：first_match 返回首个匹配套件，_free_port 逐端口探测；这是确定性发现，不是语义检索。
+  - 生成/使用：
+    1. 具体说明：动态写入 Playwright 配置，启动服务并以 npx playwright test 执行发现的套件。
+    2. 代码/文档定位：factory/verify.py:171-198,294-327
+    3. 详细解释：_write_config 固定 timeout/retries/baseURL；subprocess.Popen 启动服务器，subprocess.run 执行测试并读取 JSON 报告。
+  - 输出：
+    1. 具体说明：.arc-factory/playwright-report.json、discovered-tests 归档、验证状态及清理后的输出目录。
+    2. 代码/文档定位：factory/verify.py:53-85,332-360；main.py:385-411
+    3. 详细解释：外部套件源文件被限额归档，测试 JSON 被 _collect 转成 passed/failed/flaky/failures，最终进入 build-report。
+
+STRATEGY-005 [ITERATION/EVALUATION] Playwright 自验证、一次重试与失败诊断
+  - 状态：
+    1. 具体说明：confirmed；构建后可发现外部或 bundled Playwright 套件，运行一次带 retries=1 的测试，并收集每个 spec 状态。
+    2. 代码/文档定位：main.py:249-283；factory/verify.py:187-192,201-243,332-357
+    3. 详细解释：main.py 将验证作为独立阶段；配置把一次 retry 固定写入，_collect 区分 flaky 与失败，形成反馈闭环。
+  - 作用：
+    1. 具体说明：在交付前验证应用行为，暴露构建缺陷、记录失败消息，并把通过状态映射回 traceability 节点。
+    2. 代码/文档定位：main.py:315-337；main.py:338-361；factory/verify.py:201-243
+    3. 详细解释：_verify 将结果放入 report，并对 test_statuses 更新 Evidence；失败不生成模型修复，而是保留诊断。
+  - 输入/知识源：
+    1. 具体说明：输入是 requirements/output 附近发现的 spec 套件、bundled factory-suite、服务健康状态和 JSON reporter 文件。
+    2. 代码/文档定位：factory/verify.py:96-151,154-168,332-338
+    3. 详细解释：discover_tests 决定套件来源，健康检查确认服务已启动，report JSON 是结果解析的事实来源。
+  - 选择/检索：
+    1. 具体说明：按 spec 优先、候选目录顺序选择套件；失败时不做自动代码修补，只在 bundled 跨 spec 失败时记录隔离运行提示。
+    2. 代码/文档定位：factory/verify.py:114-151,339-347
+    3. 详细解释：套件发现是固定 glob；跨文件状态干扰只进入 notes，未触发新的生成策略。
+  - 生成/使用：
+    1. 具体说明：使用测试结果生成 passed/failed/flaky/failures/statuses 汇总和 traceability test status。
+    2. 代码/文档定位：factory/verify.py:201-243,332-357；main.py:338-361
+    3. 详细解释：_collect 遍历 suites/specs/tests/errors，main.py 再把状态写入报告并更新节点为 PASSED 或 IMPLEMENTED。
+  - 输出：
+    1. 具体说明：验证结果 JSON、失败消息、flaky 数量、归档测试源和 .arc traceability 状态。
+    2. 代码/文档定位：factory/verify.py:53-85,332-360；factory/traceability.py:96-114
+    3. 详细解释：report_path 和 archive 保留证据，Evidence.set_test_statuses/upsert-node-state 让结果被平台界面读取。
+
+STRATEGY-006 [STATE/PERSISTENCE] 配置、SQLite seed、traceability 与构建报告持久化
+  - 状态：
+    1. 具体说明：confirmed；状态分别落在 backend/config/pack.json、SQLite 数据库、.arc/traceability、.arc/runner-events.jsonl 和 .arc-factory 报告。
+    2. 代码/文档定位：factory/compile.py:271-275；template/backend/src/app.js:15-39；factory/traceability.py:17-25,76-131；main.py:385-411
+    3. 详细解释：pack 配置驱动启动种子，Evidence 通过官方脚本写当前状态，main.py 写构建生命周期报告；这些是跨阶段可读取的工件。
+  - 作用：
+    1. 具体说明：让应用启动时得到稳定 seed，让需求/接口/测试关系可查询，并让构建结果在运行结束后可审计。
+    2. 代码/文档定位：template/backend/src/app.js:20-29；main.py:216-247,385-411
+    3. 详细解释：resetAndSeed 将配置转成数据库记录；traceability 记录 requirements、interfaces、tests 和 node states；build-report 汇总 steps/verification。
+  - 输入/知识源：
+    1. 具体说明：输入是编译后的 config、requirements YAML 的证据树、模块 atomic ids、Playwright statuses 和环境快照。
+    2. 代码/文档定位：main.py:220-243；factory/recon.py:25-45,114-122；factory/traceability.py:77-114
+    3. 详细解释：main.py 从 YAML 建树并为 module/scenario 写关系；recon 保存 argv/env/目录；验证状态随后写回测试状态。
+  - 选择/检索：
+    1. 具体说明：状态读取通过固定文件路径和官方 traceability 命令完成；没有跨任务记忆、向量索引或 learned cache。
+    2. 代码/文档定位：factory/traceability.py:29-74,77-114；factory/recon.py:114-122
+    3. 详细解释：Evidence._trace 组装本地脚本命令和 payload-file，存储模型是当前状态 JSON；recon 只写单次快照。
+  - 生成/使用：
+    1. 具体说明：序列化 JSON 配置/报告并调用 traceability 脚本的 init、store-tree、upsert-interface/test、node-state、set-test-statuses。
+    2. 代码/文档定位：factory/traceability.py:56-114；main.py:224-243,338-361
+    3. 详细解释：Evidence 将结构化 payload 传给脚本，模块和场景关系被写入 .arc；验证后 test statuses 更新已有记录。
+  - 输出：
+    1. 具体说明：backend/config/pack.json、.arc/traceability 当前状态、.arc/runner-events.jsonl、.arc-factory/recon.json、build-report.json 和清理后的数据库。
+    2. 代码/文档定位：factory/compile.py:271-275；factory/recon.py:114-122；main.py:385-411；factory/verify.py:362-380
+    3. 详细解释：这些工件分别服务运行时、平台可视化、环境诊断和验证审计；verify finally 清理 database.verify.db、test-results，保证下次启动使用 canonical seed。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的提交静态内容中未发现向量/词法索引、语义查询、任务指纹检索或检索结果注入生成；requirements 关键词计分属于确定性分类，不能称为 RAG。
+- PREPARED-KNOWLEDGE：确认存在通用技能说明、template、factory-suite 和 profile seed；未发现面向模型的领域 prompt 或可调用知识库。模板内部的业务代码属于预置实现/代码复用。
+- CODE-REUSE：确认存在直接模板复制、技能复制和 profile fragment 合并；未发现 git clone、补丁应用或模型媒介代码改写。应用 zip 与 agent zip 的关系只能确认提交同时提供应用快照，不能据此推断运行时会读取 applications/sheet.zip。
+- PROMPT-ORCHESTRATION / MODEL-ROUTING：静态检查未发现可执行 prompt、模型 endpoint、fallback 或多模型并行；recon 仅记录名为 MODEL、OPENAI_BASE_URL 的环境变量键，不能证明调用模型。
+- 未解决：由于工作区目录本身拒绝直接列举，只能读取两个 zip 的内容；因此无法确认 zip 外是否有运行时未打包文件。该限制不影响对 agent.zip 内实际入口和应用快照的分析。
+分析完成

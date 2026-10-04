@@ -1,0 +1,207 @@
+﻿核心策略分析：050-幻觉工程研究院-9c59424b2d2f
+题面路径：example\hackathon
+题面范围：example\hackathon\sheet; example\hackathon\github
+工作区路径：workspace\050-幻觉工程研究院-9c59424b2d2f
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+主要策略是一个由控制器驱动的增量式代码生成流水线：先把题面 YAML 编译为模块、冻结合同和验收索引，再按模块把根约束、依赖、技能规则和已完成模块拼入编码模型提示，模型通过受限工具修改模板工程；每个模块后运行静态检查，最后运行构建、单元/API/E2E 与双端口验证并据失败结果重试。必要的参考图走独立视觉模型，输出经题面范围校验后写入缓存并作为补充事实。RAG：在已检查提交静态内容中未发现向量/词法索引、语料库检索或运行时检索器；仅有对已编译题面索引和上下文文件的确定性读取。准备知识和模板复用明确存在；应用级代码复用主要来自初始化时复制模板，未发现从既有应用检索并拼接的专门机制。
+
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 冻结题面合同、模块索引与技能规则
+  - 状态：
+    1. 具体说明：confirmed；控制器读取 requirements.yaml，编译 ROOT/模块上下文，并生成 .haiknow/contract.md、plan.md、acceptance.json 与模块上下文。
+    2. 代码/文档定位：agent/main.py:102-160; agent/main.py:301-340
+    3. 详细解释：这些函数把原始题面变成可重复读取的结构化事实和实施顺序，后续提示直接消费它们，因此属于任务前准备知识而非运行时搜索。
+  - 作用：
+    1. 具体说明：confirmed；为每个编码回合提供祖先约束、场景索引、依赖顺序和技能规范。
+    2. 代码/文档定位：agent/main.py:222-267; agent/HAIKNOW-LITE.md:12-31
+    3. 详细解释：_module_prompt 将模块树、验收索引、已完成模块和技能路径拼入提示，减少模型自行解释题面的空间。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入是 requirements.yaml、内置 HAIKNOW-LITE.md、三套 arcbench 技能以及提交中的模板。
+    2. 代码/文档定位：agent/main.py:102-107; agent/main.py:202-209; agent/main.py:82-99
+    3. 详细解释：源文件被读取或复制到输出工程，形成编码模型可见的约束、流程和基础代码。
+  - 选择/检索：
+    1. 具体说明：confirmed；按 module_order 和当前模块 ID 确定性选择，不是向量或关键词检索。
+    2. 代码/文档定位：agent/main.py:138-160; agent/main.py:484-490
+    3. 详细解释：模块顺序由编译结果给出，当前回合只取对应 subtree、acceptance 条目及 completed_ids；未见 corpus ranking 或 embedding 查询。
+  - 生成/使用：
+    1. 具体说明：confirmed；结构化题面与规则被拼成编码提示，随后交给同一 coding thread。
+    2. 代码/文档定位：agent/main.py:222-267; agent/main.py:404-433
+    3. 详细解释：提示包含实施动作、测试要求和路径约束，模型据此产生文件编辑和测试代码。
+  - 输出：
+    1. 具体说明：confirmed；输出为工程文件、.haiknow 冻结知识文件和 progress/traceability 记录。
+    2. 代码/文档定位：agent/main.py:301-340; agent/main.py:433-464
+    3. 详细解释：冻结合同供后续回合复读，模型结果和使用量写入状态，最终产物进入选手应用 ZIP。
+
+STRATEGY-002 [PROMPT-ORCHESTRATION] 按模块单线程编排与上下文压缩
+  - 状态：
+    1. 具体说明：confirmed；循环对每个 ROOT 模块建立一次提示、调用编码线程、接收检查结果，再推进下一个模块。
+    2. 代码/文档定位：agent/main.py:483-495
+    3. 详细解释：该循环是端到端生成的主调度器，模块边界同时是上下文和验证边界；每次迭代都把当前实现状态传递给下一阶段。
+  - 作用：
+    1. 具体说明：confirmed；通过已完成模块列表、依赖提示和最后模块整合提示控制工作分解。
+    2. 代码/文档定位：agent/main.py:245-267
+    3. 详细解释：模型每回合只接收当前模块及必要祖先信息，完成后把结果状态传给下回合。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入包括模块 subtree、case/leaf index、技能路径、项目路径和已有实现状态。
+    2. 代码/文档定位：agent/main.py:229-259
+    3. 详细解释：这些输入共同构成分阶段 prompt context，既含需求事实也含工程操作要求。
+  - 选择/检索：
+    1. 具体说明：confirmed；选择规则是 module.index、依赖项和 completed_ids 的顺序过滤。
+    2. 代码/文档定位：agent/main.py:236-254; agent/main.py:484-489
+    3. 详细解释：没有独立检索服务，控制器把确定性索引片段放入当前 prompt。
+  - 生成/使用：
+    1. 具体说明：confirmed；使用 Codex SDK 的 ephemeral coding thread，失败时追加 transport recovery 指令。
+    2. 代码/文档定位：agent/main.py:411-433; agent/main.py:417-425
+    3. 详细解释：同一线程保持模块连续性，恢复提示要求先检查现状再继续，避免盲目重复工具效果。
+  - 输出：
+    1. 具体说明：confirmed；输出是模型对模板工程的编辑、测试和 progress 更新，并由 controller 记录 turn。
+    2. 代码/文档定位：agent/main.py:433-464; agent/main.py:472-495
+    3. 详细解释：每回合结果进入 state.turns，检查消息进入 pending_checks 并反馈到下一模块。
+
+STRATEGY-003 [MODEL-ROUTING] 编码模型与独立视觉模型分流
+  - 状态：
+    1. 具体说明：confirmed；编码请求走 OpenAI-compatible responses 配置，参考图分析走 /chat/completions 视觉请求。
+    2. 代码/文档定位：agent/main.py:184-198; agent/agents/model/visual_transport.py:401-426
+    3. 详细解释：两条传输路径职责分离，视觉结果不会把原始图片直接送入编码上下文。
+  - 作用：
+    1. 具体说明：confirmed；编码模型负责实现，视觉模型只抽取题面明确委托的功能事实。
+    2. 代码/文档定位：agent/agents/model/visual_analysis.py:1-11; agent/agents/model/visual_transport.py:370-377
+    3. 详细解释：提示限定视觉模型只回答必要功能证据，样式图或未映射图被跳过。
+  - 输入/知识源：
+    1. 具体说明：confirmed；视觉输入是题面引用图片的 inline bytes 与对应 requirements context，编码输入是模块 prompt。
+    2. 代码/文档定位：agent/core/references.py:24-74; agent/agents/model/visual_transport.py:413-420
+    3. 详细解释：references.py 将图片绑定到具体需求节点，防止全量 OCR 成为无界知识源。
+  - 选择/检索：
+    1. 具体说明：confirmed；视觉候选模型来自 VISUAL_MODEL/MODEL 单值配置，失败才按 candidates 顺序 fallback；编码模型由 MODEL/policy 解析。
+    2. 代码/文档定位：agent/agents/model/visual_transport.py:236-249; agent/agents/model/visual_transport.py:519-530
+    3. 详细解释：这是配置驱动的模型路由，不是按任务语义动态选模；成功候选立即结束该图片链路，并把请求模型、响应模型和候选序号写入元数据。
+  - 生成/使用：
+    1. 具体说明：confirmed；视觉响应经 parse_visual_facts 校验后追加 supplement/cache，编码线程消费这些缓存事实。
+    2. 代码/文档定位：agent/agents/model/visual_transport.py:460-506; agent/main.py:380-396
+    3. 详细解释：只有 scoped facts 才进入后续上下文，原始视觉响应不直接作为生成指令。
+  - 输出：
+    1. 具体说明：confirmed；输出包括 visual-cache.json、visual-failures.json、supplement 事实和编码工程修改。
+    2. 代码/文档定位：agent/agents/model/visual_transport.py:395-397; agent/agents/model/visual_transport.py:505-507
+    3. 详细解释：缓存使同一图片可复用，并在失败时留下不可误读的 UNANALYZED 状态。
+
+STRATEGY-004 [CODE-REUSE] 模板复制与受控技能复制
+  - 状态：
+    1. 具体说明：confirmed；新工程初始化时递归复制 agent/template，另复制三套允许的 arcbench 技能。
+    2. 代码/文档定位：agent/main.py:59-99
+    3. 详细解释：这是直接文件级复用，提供 React/Vite/Express/SQLite 基础和标准工具组件。
+  - 作用：
+    1. 具体说明：confirmed；让模型从稳定 starter 扩展业务模块，保留既有 UI、状态和测试约定。
+    2. 代码/文档定位：agent/main.py:96-99; agent/HAIKNOW-LITE.md:55-69
+    3. 详细解释：初始化先建立可运行骨架，模块回合在其上增量修改，而非从空目录生成。
+  - 输入/知识源：
+    1. 具体说明：confirmed；来源是提交内置 template 目录和 skills/arcbench-* 目录。
+    2. 代码/文档定位：agent/main.py:82-99; agent/template/README.md:1-20
+    3. 详细解释：复制源在提交中可见，属于预置代码和文档资产；它们在控制器初始化阶段被读入，随后成为模型可编辑的起始工程和可引用规则。
+  - 选择/检索：
+    1. 具体说明：confirmed；模板复制按目录遍历和允许名单选择，未发现既有参赛应用搜索或代码片段检索。
+    2. 代码/文档定位：agent/main.py:66-90
+    3. 详细解释：排除 node_modules/build 等目录并限制技能名称，选择逻辑是固定路径策略。
+  - 生成/使用：
+    1. 具体说明：confirmed；模板先落盘，模型随后通过工具对其增删改，技能以 .codex/skills 可读形式提供。
+    2. 代码/文档定位：agent/main.py:96-99; agent/main.py:404-433
+    3. 详细解释：模型生成的是模板上的适配和扩展；未见把另一应用源码自动拼接到当前任务。
+  - 输出：
+    1. 具体说明：confirmed；输出是各任务应用目录中的前后端源码、测试、配置和复制的技能文件。
+    2. 代码/文档定位：applications/sheet.zip:1; applications/github-stage-1.zip:1
+    3. 详细解释：两个 ZIP 均呈现完整模板化 React/Express 工程；静态证据支持模板复用，但不支持跨应用代码检索复用。
+
+STRATEGY-005 [TOOLS/EXECUTION] 受限文件工具、静态检查与测试执行
+  - 状态：
+    1. 具体说明：confirmed；编码线程启用 exec/write/apply_patch 等工具，模块检查明确声明不安装依赖、不启动服务器、不调用模型。
+    2. 代码/文档定位：agent/agents/model/visual_transport.py:41-42; agent/core/checkpoints.py:1-4
+    3. 详细解释：工具边界把生成动作与检查动作分开，降低检查阶段对应用状态的影响。
+  - 作用：
+    1. 具体说明：confirmed；工具用于读写工程、运行必要测试、静态审计 UI 名称和需求绑定。
+    2. 代码/文档定位：agent/main.py:204-209; agent/core/checkpoints.py:24-85
+    3. 详细解释：静态检查读取 acceptance、mapping 和 UI 观察结果，把问题转成下一回合提示。
+  - 输入/知识源：
+    1. 具体说明：confirmed；工具读取输出工程、冻结 acceptance、mapping 与浏览器/测试产物。
+    2. 代码/文档定位：agent/core/checkpoints.py:37-54; agent/main.py:472-483
+    3. 详细解释：这些文件是检查器的证据输入，不是外部 URL 或远程知识源；检查器据此比较当前实现与冻结合同，把差异转成可修复反馈，并供后续模型回合消费。
+  - 选择/检索：
+    1. 具体说明：confirmed；检查按 policy 开关、模块 index 和最多消息数截断；未发现 RAG 检索。
+    2. 代码/文档定位：agent/core/checkpoints.py:24-33; agent/core/checkpoints.py:54-77
+    3. 详细解释：检查器只选择当前模块相关问题并反馈有限摘要，避免把完整日志塞回 prompt。
+  - 生成/使用：
+    1. 具体说明：confirmed；模型调用工具修改文件，检查失败消息被追加到后续 prompt；最终脚本运行 build/Vitest/Playwright。
+    2. 代码/文档定位：agent/main.py:417-433; agent/main.py:489-525; agent/HAIKNOW-LITE.md:75-87
+    3. 详细解释：这是工具执行与模型修复闭环，测试结果改变下一次生成输入；因此生成并非一次性文本输出，而是会被检查反馈驱动的文件编辑过程，并在对应模块检查中再次确认修改有效。
+  - 输出：
+    1. 具体说明：confirmed；输出包括 checkpoint.json、state.json、测试结果、git 快照和最终应用文件。
+    2. 代码/文档定位：agent/core/checkpoints.py:85; agent/main.py:568-591; agent/core/repository.py:31-38
+    3. 详细解释：检查与提交记录持久化，便于恢复和审计最终生成状态；checkpoint 报告描述问题，state 记录阶段进度，Git 快照保存可恢复的工程版本。
+
+STRATEGY-006 [ITERATION/EVALUATION] 检查点反馈、失败恢复与最终验证
+  - 状态：
+    1. 具体说明：confirmed；每模块后静态 checkpoint，ROOT 完成后执行真实构建、Vitest、Playwright 和双端口检查。
+    2. 代码/文档定位：agent/main.py:490-525; agent/core/simple_workflow.py:52-64
+    3. 详细解释：验证分层覆盖静态契约和运行行为，且发生在继续模块或结束前；检查结果会决定继续、修复或停止，从而形成明确的评估门。
+  - 作用：
+    1. 具体说明：confirmed；把失败问题转成有限 repair prompt，并保留已通过模块和测试。
+    2. 代码/文档定位：agent/main.py:489-495; agent/main.py:541-557
+    3. 详细解释：失败恢复要求诊断最小失败路径、保留需求和测试，避免通过禁用测试掩盖问题。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入是静态检查消息、测试脚本结果、deadline 和当前 state。
+    2. 代码/文档定位：agent/main.py:472-483; agent/main.py:541-548
+    3. 详细解释：这些反馈形成下一轮修复的上下文，测试不是孤立报告而是生成控制信号。
+  - 选择/检索：
+    1. 具体说明：confirmed；按 checkpoint messages、失败阶段和剩余时间选择重试或停止，没有学习型评分器。
+    2. 代码/文档定位：agent/main.py:469-483; agent/main.py:557-570
+    3. 详细解释：恢复条件是显式异常/失败状态与时间预算，策略确定性且有上限。
+  - 生成/使用：
+    1. 具体说明：confirmed；失败摘要被附加到修复 prompt，修复后重新运行对应检查。
+    2. 代码/文档定位：agent/main.py:417-425; agent/main.py:541-557
+    3. 详细解释：模型依据具体失败证据修改代码，成功则继续，超时则停止新模型调用并检查现有交付。
+  - 输出：
+    1. 具体说明：confirmed；输出是 checkpoint 报告、validation/state 记录、通过或失败事件及最终源码快照。
+    2. 代码/文档定位：agent/core/checkpoints.py:85; agent/main.py:370-376; agent/main.py:512-525
+    3. 详细解释：这些产物记录每次评估和停止原因，使最终工程与生成过程可追踪。
+
+STRATEGY-007 [STATE/PERSISTENCE] 冻结上下文、缓存与 Git/事件状态
+  - 状态：
+    1. 具体说明：confirmed；控制器持久化 frozen 文件哈希、state.json、visual-cache、事件与 Git 提交。
+    2. 代码/文档定位：agent/main.py:328-345; agent/main.py:370-376; agent/core/repository.py:31-38
+    3. 详细解释：状态跨模块和恢复回合保留，防止上下文漂移并支持回滚式检查；它让恢复逻辑能识别已完成模块和已有验证结果。
+  - 作用：
+    1. 具体说明：confirmed；保存已完成模块、turn、validation、视觉缓存和实现快照。
+    2. 代码/文档定位：agent/main.py:370-376; agent/agents/model/visual_transport.py:505-507
+    3. 详细解释：后续回合读取这些状态以决定已完成范围、是否重用视觉结果和是否继续。
+  - 输入/知识源：
+    1. 具体说明：confirmed；来源包括 requirements 哈希、模块上下文、模型响应元数据和检查报告。
+    2. 代码/文档定位：agent/main.py:328-345; agent/main.py:458-464
+    3. 详细解释：持久化对象既保存输入指纹也保存过程输出，形成可审计的生成轨迹。
+  - 选择/检索：
+    1. 具体说明：confirmed；状态按路径、image SHA256、module ID 和当前 policy 查找；未发现跨任务语义记忆。
+    2. 代码/文档定位：agent/agents/model/visual_transport.py:378-385; agent/main.py:345-350; agent/main.py:484-495
+    3. 详细解释：选择是键控缓存/顺序状态读取，不能等同于 RAG；键值命中只恢复同一图片或模块的既有状态，不计算相似度。
+  - 生成/使用：
+    1. 具体说明：confirmed；缓存视觉事实、冻结合同和 completed_ids 被重新注入提示，Git 快照用于保留工程状态。
+    2. 代码/文档定位：agent/main.py:236-267; agent/agents/model/visual_transport.py:493-506
+    3. 详细解释：持久化状态直接影响后续 prompt 与恢复行为，但不生成新的任务知识。
+  - 输出：
+    1. 具体说明：confirmed；输出为 .haiknow 文件、.arc evidence、visual-cache.json、checkpoint/state/traceability 与 Git commits。
+    2. 代码/文档定位：agent/main.py:301-340; agent/core/checkpoints.py:85; agent/core/repository.py:36-38
+    3. 详细解释：这些持久化工件构成跨回合工作记忆和审计证据；提交应用 ZIP 是最终交付。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent 源码、模板和两个应用 ZIP 静态内容中未发现向量数据库、embedding、语义/词法检索器或任务语料库；存在的 acceptance/module index 是确定性题面索引，不构成 RAG。
+- CODE-REUSE：确认存在内置模板和技能目录复制；在已检查内容中未发现从其他选手应用、外部仓库或运行时 URL 获取并拼接代码的机制。ZIP 内部分目录访问受系统拒绝，无法对未能读取的实时目录行为作更强结论。
+- 视觉模型实际是否成功调用：代码路径、缓存和失败分支已确认，但本分析未执行选手代码或访问其 URL，因此运行时成功率 unresolved。
+分析完成
+
+
+分析完成
+
+分析完成
+
+分析完成
+
+分析完成
+
+分析完成

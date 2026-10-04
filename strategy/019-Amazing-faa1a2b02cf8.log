@@ -1,0 +1,145 @@
+核心策略分析：019-Amazing-faa1a2b02cf8
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\019-Amazing-faa1a2b02cf8
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+主要流水线是读取 requirements.yaml，加载阶段记忆，调用模型生成架构计划，再按需求叶/单元把选定源码和共享提示词送入模型，通过 FILE/EDIT 变更协议写入应用，随后执行构建、运行时和验收测试并将失败反馈给模型修复。RAG/RETRIEVAL：在已检查的选手静态内容中未发现外部语料库、向量索引或语义检索；存在确定性的仓库文件上下文选择，属于代码上下文路由而非 RAG。RAG结论：未发现外部 RAG，源码上下文选择已确认。CODE-REUSE：确认有模板复制、继承阶段应用和模型驱动的源码编辑，但未确认从题面示例直接复制实现。代码复用结论：模板/继承复用已确认，题面示例直接复用未发现。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求驱动的分阶段提示词编排
+  - 状态：
+    1. 具体说明：confirmed；架构规划、共享提示词前缀、逐单元生成、续写和修复调用组成串联编排。
+    2. 代码/文档定位：agent/generated_application.py:339；agent/generated_application.py:418；agent/generated_application.py:461；agent/capability_agent.py:27-109
+    3. 详细解释：`plan_architecture`先生成导航、数据模型和种子计划；`static_prompt_head`把契约、种子、计划和提纲注入每次调用；`generate`再按单元构造任务并在模型输出不足时续写或修复，形成从需求到源码的阶段链。
+  - 作用：
+    1. 具体说明：将大型需求拆为可验证单元，并保持跨调用的产品约束和既有路线。
+    2. 代码/文档定位：agent/generated_application.py:501-536；agent/generated_application.py:562-591
+    3. 详细解释：每个单元的提示包含当前源码、依赖焦点和独立验收测试；失败后使用 continuation 或 build repair，降低一次调用覆盖全部功能的需要。
+  - 输入/知识源：
+    1. 具体说明：requirements.yaml 原文、全局契约、种子值、架构计划、前序阶段摘要和当前源码。
+    2. 代码/文档定位：agent/capability_agent.py:32-41；agent/generated_application.py:418-450；agent/stage_memory.py:1-180
+    3. 详细解释：需求由 `load_requirements` 解析；共享头部携带 contracts/seeds/plan/outline；阶段记忆加载 legacy specs、history 和 previous plan，再进入提示词。
+  - 选择/检索：
+    1. 具体说明：按依赖焦点和单元文本选择上下文，随后按文件修改时间稳定排序。
+    2. 代码/文档定位：agent/generated_application.py:514-520；agent/generated_application.py:562-580；agent/generated_application.py:176-181
+    3. 详细解释：`source_context` 接收 `dep_focus` 与 `unit_text`，`context_select.select`筛选文件，生成阶段和修复阶段各自重新选择，结果再渲染进 prompt。
+  - 生成/使用：
+    1. 具体说明：模型被要求输出严格 FILE/EDIT/DELETE 变更块，解析器校验后落盘。
+    2. 代码/文档定位：agent/source_blocks.py:20-22；agent/source_blocks.py:178-208；agent/generated_application.py:536-546
+    3. 详细解释：生成调用指定 `block_parser`，解析器只接受可定位的文件或编辑操作并拒绝不匹配 OLD 文本；因此模型文本被转换为受控源码变更。
+  - 输出：
+    1. 具体说明：前端、后端源码变更以及 IMPLEMENTATION_PLAN.json、MODEL_STATUS.json 和验收报告。
+    2. 代码/文档定位：agent/generated_application.py:385-387；agent/capability_agent.py:76-80；agent/tdd_loop.py:105-106
+    3. 详细解释：计划持久化到 IMPLEMENTATION_PLAN.json，模型状态写入 MODEL_STATUS.json，验收循环把测试、修复和回归记录放入 status，最终应用目录成为下游评测输入。
+
+STRATEGY-002 [MODEL-ROUTING] 有预算和回退的模型调用路由
+  - 状态：
+    1. 具体说明：confirmed；所有阶段通过统一 `request_json` 发送，按阶段名记录模型、推理级别、token 上限和超时。
+    2. 代码/文档定位：agent/model_transport.py:211-258；agent/capability_agent.py:80-109
+    3. 详细解释：`request_json`读取环境覆盖，构造 model/max_tokens/reasoning 参数并发出 user prompt；上层 `call`为 architecture、source_generation、repair 等阶段复用同一传输层。
+  - 作用：
+    1. 具体说明：在响应超时、传输错误或无可接受答案时重试、降级并记录事件，避免单次失败终止生成。
+    2. 代码/文档定位：agent/model_transport.py:268-284；agent/model_transport.py:343-384
+    3. 详细解释：传输异常与模型拒答分别走重试或 fallback 分支，事件写入状态；调用方收到 fallback 后使用默认架构或继续安全网流程。
+  - 输入/知识源：
+    1. 具体说明：阶段提示词、校正文本、环境中的模型和推理配置、validator。
+    2. 代码/文档定位：agent/model_transport.py:211-235；agent/model_transport.py:252-259
+    3. 详细解释：输入 prompt 与 correction 共同计入 token 预算，环境变量决定 reasoning；validator 由各阶段传入以判定 JSON 或变更结果是否可接受。
+  - 选择/检索：
+    1. 具体说明：没有发现基于任务语义选择多个模型的路由；选择机制是按操作阶段和预算套用配置，并在失败时改变重试状态。
+    2. 代码/文档定位：agent/model_transport.py:220-244；agent/model_transport.py:273-283
+    3. 详细解释：代码只看到单一 `model` 参数及阶段策略，未看到模型池、向量查询或候选结果排序，因此多模型协作状态为未发现。
+  - 生成/使用：
+    1. 具体说明：模型返回 JSON 计划或 FILE/EDIT 文本，分别交给阶段 validator 或 block parser。
+    2. 代码/文档定位：agent/model_transport.py:252-266；agent/generated_application.py:536-546
+    3. 详细解释：传输层清理和解析响应后返回调用方；生成器将其转为计划或源码操作，失败响应则触发 continuation/repair。
+  - 输出：
+    1. 具体说明：接受的模型结果、usage、阶段事件和 fallback 状态。
+    2. 代码/文档定位：agent/model_transport.py:63-67；agent/model_transport.py:285-287；agent/capability_agent.py:67-76
+    3. 详细解释：事件包含 operation/model/reasoning 与 token 统计，`MODEL_STATUS.json`保存可追踪的调用摘要，供后续阶段和诊断使用。
+
+STRATEGY-003 [ITERATION/EVALUATION] 构建、浏览器冒烟和验收驱动修复
+  - 状态：
+    1. 具体说明：confirmed；每个单元实施后运行测试和 review，失败按影响分组修复，修复若破坏既有通过测试则回滚。
+    2. 代码/文档定位：agent/tdd_loop.py:230-299；agent/tdd_loop.py:351-404
+    3. 详细解释：`after_unit`收集单元失败与回归，`evaluate_change`比较 gained/lost 并决定保留；这构成实现—验证—修复闭环。
+  - 作用：
+    1. 具体说明：用独立验收规格和运行时错误约束模型，确保功能变化可执行且不破坏既有功能。
+    2. 代码/文档定位：agent/tdd_loop.py:63-80；agent/generated_application.py:288-310
+    3. 详细解释：修复提示明确要求修产品而非特判测试；build_repair把构建、服务器和浏览器检查错误重新送入模型，形成针对性反馈。
+  - 输入/知识源：
+    1. 具体说明：requirements 生成的 acceptance specs、测试失败摘要、错误/可访问性快照、当前源码。
+    2. 代码/文档定位：agent/tdd_loop.py:56-69；agent/tdd_loop.py:317-334；agent/app_runtime.py:181-248
+    3. 详细解释：失败测试提取 title/file/error/capture，修复阶段再按 focus 选源码；运行时提供路由、页面错误和空渲染信息。
+  - 选择/检索：
+    1. 具体说明：按失败签名分组并优先处理单元测试及回归，修复最多取前六个目标测试。
+    2. 代码/文档定位：agent/tdd_loop.py:46-52；agent/tdd_loop.py:271-288；agent/tdd_loop.py:317-325
+    3. 详细解释：相同错误签名被合并，`ordered[:6]`限制一次修复范围；修复后重跑受影响测试和先前通过测试，依据最新状态继续或停止。
+  - 生成/使用：
+    1. 具体说明：review、test_repair 和 build_repair 都调用模型产生源码块，然后执行构建/测试验证。
+    2. 代码/文档定位：agent/tdd_loop.py:329-337；agent/tdd_loop.py:410-453；agent/generated_application.py:297-310
+    3. 详细解释：不同修复标签使用不同提示和超时，但都经过同一变更解析与验证路径，接受后更新测试状态。
+  - 输出：
+    1. 具体说明：通过/失败测试明细、回归记录、修复接受或回滚记录及最终运行状态。
+    2. 代码/文档定位：agent/tdd_loop.py:105-106；agent/tdd_loop.py:298-300；agent/tdd_loop.py:404
+    3. 详细解释：`status['acceptance']`保存 full_runs、repairs、reviews；日志明确记录 gained/lost 和 reverted，供后续修复决策及最终评测使用。
+
+STRATEGY-004 [PREPARED-KNOWLEDGE] 模板、产品契约与阶段记忆
+  - 状态：
+    1. 具体说明：confirmed；仓库内预置 React/Node 模板、共享产品约束、验收规则和阶段历史被作为生成前知识。
+    2. 代码/文档定位：agent/generated_application.py:198-258；agent/generated_application.py:312-322；agent/stage_memory.py:1-180
+    3. 详细解释：共享提示规定依赖、路由、数据模型和无占位实现；新任务复制模板，继承任务补齐缺失模板文件并载入历史。
+  - 作用：
+    1. 具体说明：提供稳定的工程边界、命名和种子数据约束，减少模型自行发明基础设施。
+    2. 代码/文档定位：agent/generated_application.py:240-250；agent/generated_application.py:518-525
+    3. 详细解释：提示要求单一 store/seed、保持旧路由和登录流；这些规则与当前单元需求一起进入生成 prompt。
+  - 输入/知识源：
+    1. 具体说明：template 目录、requirements 文本、前序 acceptance/legacy/history/plan 文件。
+    2. 代码/文档定位：agent/generated_application.py:312-322；agent/capability_agent.py:38-45；agent/stage_memory.py:183-220
+    3. 详细解释：模板是预置代码知识，阶段记忆从输出目录读取规格和计划；它们不是运行时外部检索语料。
+  - 选择/检索：
+    1. 具体说明：按是否继承应用和是否存在前序阶段选择模板复制、legacy guards 与 prerequisite 文本。
+    2. 代码/文档定位：agent/capability_agent.py:29-45；agent/tdd_loop.py:111-139；agent/generated_application.py:344-353
+    3. 详细解释：`inherited`决定保留现有应用；通过的旧规格才成为 guard，前序需求才追加到架构提示，选择规则是状态分支而非相似度搜索。
+  - 生成/使用：
+    1. 具体说明：模板先形成可运行骨架，契约和阶段记忆再被拼入每次生成、review 与 repair prompt。
+    2. 代码/文档定位：agent/generated_application.py:461-500；agent/generated_application.py:528-536
+    3. 详细解释：`prepare_workspace`建立初始文件；`SHARED`保存计划和共享文本，随后每个单元调用都复用这些材料。
+  - 输出：
+    1. 具体说明：可运行应用骨架、IMPLEMENTATION_PLAN.json、evogit 阶段目录和回归 guard 记录。
+    2. 代码/文档定位：agent/generated_application.py:385-387；agent/stage_memory.py:220-280；agent/tdd_loop.py:124-139
+    3. 详细解释：计划和阶段历史落盘，旧阶段通过的测试文件进入 guard 集合并参与后续测试，形成跨阶段持久约束。
+
+STRATEGY-005 [RAG/RETRIEVAL] 仓库源码上下文选择（非外部 RAG）
+  - 状态：
+    1. 具体说明：inferred；存在确定性文件索引、路由/API/导出扫描和焦点选择，但未发现向量库、文档语料或 embedding 检索。
+    2. 代码/文档定位：agent/context_select.py:1-35；agent/context_select.py:72-84
+    3. 详细解释：模块通过正则识别 HUB 文件、路由和导出并渲染选中文件；这些证据支持“源码上下文路由”，不足以支持传统 RAG。
+  - 作用：
+    1. 具体说明：控制每次模型调用看到的文件范围，并保留核心 app/store/api/auth 等依赖。
+    2. 代码/文档定位：agent/context_select.py:11-20；agent/generated_application.py:165-181
+    3. 详细解释：HUB_NAME定义优先核心文件，调用方把选择结果渲染为 CURRENT SOURCE，从而把已有实现传给生成和修复阶段。
+  - 输入/知识源：
+    1. 具体说明：当前输出目录的源码快照、单元需求文本、依赖焦点和最近修改文件。
+    2. 代码/文档定位：agent/generated_application.py:165-177；agent/generated_application.py:514-520
+    3. 详细解释：快照被传入 `context_select.select`，单元文本与依赖焦点影响上下文，mtime 用于稳定排序和提示缓存。
+  - 选择/检索：
+    1. 具体说明：按路由/API/导出和焦点启发式筛选，超大文件可省略并输出 outlines；没有 query embedding 或外部 corpus。
+    2. 代码/文档定位：agent/context_select.py:23-35；agent/context_select.py:72-84
+    3. 详细解释：选择函数提取结构摘要并按 order 渲染，命中结果直接进入 prompt；静态内容中未找到向量索引、top-k 相似度或联网检索实现。
+  - 生成/使用：
+    1. 具体说明：选中文件以 `=== FILE ... ===` 块注入源码生成、续写、review 和 repair 提示。
+    2. 代码/文档定位：agent/context_select.py:77-84；agent/tdd_loop.py:325-334
+    3. 详细解释：render 的块格式构成模型上下文；修复阶段根据失败页面和测试焦点重新选择，影响模型修改哪些文件。
+  - 输出：
+    1. 具体说明：CURRENT SOURCE 上下文字符串及其驱动的 FILE/EDIT 源码变更。
+    2. 代码/文档定位：agent/generated_application.py:447-452；agent/source_blocks.py:208-220
+    3. 详细解释：上下文本身不形成独立知识库，而是即时提示材料；模型输出经变更协议写回应用。RAG 结论为“未发现外部 RAG，源码选择机制已确认”。
+
+[未发现或未解决]
+- CODE-REUSE：在已检查的 agent 归档中确认模板复制、继承应用保留和模型编辑协议；在可读取静态内容中未发现直接读取 example/github 或 example/sheet 并复制其实现的路径，不能据此断言运行时绝无此行为。
+- TOOLS/EXECUTION：确认存在 subprocess 启动 Node、构建和 Playwright 冒烟检查（agent/app_runtime.py:72-107、181-248）；按本分析限制未执行选手代码、未安装依赖、未访问其中 URL，因此运行时效果保持未验证。
+- STATE/PERSISTENCE：确认 evogit 阶段历史、计划、MODEL_STATUS 和 acceptance 状态落盘（agent/stage_memory.py:220-280、agent/capability_agent.py:67-76）；未发现跨提交的远程记忆或外部缓存。
+- 工作区的 `applications/*` 与 `agent/agent` 解包目录被系统拒绝访问；可读取证据主要来自 `agent/agent.zip`，因此部分生成产物内部调用链标为 inferred/unresolved。
+分析完成

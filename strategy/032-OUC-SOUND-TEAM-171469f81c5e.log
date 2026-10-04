@@ -1,0 +1,253 @@
+核心策略分析：032-OUC-SOUND-TEAM-171469f81c5e
+题面路径：E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon
+题面范围：E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon/github；E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon/sheet
+作答路径：E:/workplace/hackathon/visualizer/anti-cheat/cheat/workspace/032-OUC-SOUND-TEAM-171469f81c5e
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+证据定位约定：agent/agent.zip!/成员路径:行号 指原 ZIP 内文本成员的行号，未解压至磁盘。静态扫描只见三个 ZIP，agent.zip 超出扫描器单文件限制；随后在内存中直接读取源码、指南、参考实现和应用文件。题面包含 github（47 个 ATOMIC 节点）和 sheet（24 个 ATOMIC 节点）。confirmed 指可检查的代码机制或文档规则存在，不代表已经观察到运行成功。
+主要生成路径为：需求 YAML 确定性摘要 → 交付契约及题型提示 → 按名加载领域 Skill → 读取/复制整套参考应用 → 多轮工具修改与自测 → 最终检查和清理。区别性机制是预置完整题目参考实现、REQ 到参考文件的映射和强制复用提示；通用模型适配、工具循环和重试是辅助基础设施。传统向量/索引式 RAG 在已检查内容中未发现，但存在按名称加载指南和按需求选择源码的轻量检索增强。代码复用设计 confirmed；某次运行实际执行复制的历史 unresolved。
+应用包与参考实现逐字节比较：github 有 65 个同路径文件一致，sheet 有 25 个一致；两者不一致的共有文件都是 .gitignore 与 frontend/package-lock.json，额外文件都是 backend/data/db.json。结合入口和指南的明确复制规则，可以确认参考代码是核心生成材料；相似性本身不能证明文件生成先后关系。可复核样例：applications/github.zip!/backend/server.js:1 与 agent/agent.zip!/skills/github-collab-guide/references/backend/server.js:1；applications/sheet.zip!/frontend/src/pages/Editor.jsx:1 与 agent/agent.zip!/skills/spreadsheet-app-guide/references/frontend/src/pages/Editor.jsx:1。
+
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 题目指南与参考实现驱动的生成
+  - 状态：
+    1. 具体说明：confirmed：按题型加载 github-collab-guide 或 spreadsheet-app-guide，并把各自 references 作为实现起点。
+    2. 代码/文档定位：agent/agent.zip!/skills/github-collab-guide/SKILL.md:6；agent/agent.zip!/main.py:405
+    3. 详细解释：两个 Skill 明确声明 references 是完整可运行实现，要求先读骨架、复制 backend/frontend，再逐需求修复；main.py 将这一规则写入每次任务提示，形成稳定的上游知识源。
+  - 作用：
+    1. 具体说明：confirmed：减少从零设计数据模型、路由、ARIA 和文案的成本，直接覆盖题目叶子需求。
+    2. 代码/文档定位：agent/agent.zip!/skills/github-collab-guide/SKILL.md:8；agent/agent.zip!/skills/spreadsheet-app-guide/SKILL.md:8
+    3. 详细解释：指南把参考实现、必读文件和按需求验证顺序绑定起来，模型生成时会围绕既有骨架补缺陷，从而把题面约束转为代码修改任务。
+  - 输入/知识源：
+    1. 具体说明：confirmed：requirements.yaml 摘要、Skill.md、references/backend 与 references/frontend，以及题目种子和交付契约。
+    2. 代码/文档定位：agent/agent.zip!/main.py:128；agent/agent.zip!/main.py:280；agent/agent.zip!/main.py:341
+    3. 详细解释：入口解析需求树并生成去重摘要，同时列出未内联文件；web_contract 注入构建、端口、持久化和评测规则，Skill 则提供领域数据模型与参考文件映射。
+  - 选择/检索：
+    1. 具体说明：confirmed：提示要求模型按题目名称选择 Skill、按 REQ 表选择参考文件；不是运行时语义检索。
+    2. 代码/文档定位：agent/agent.zip!/main.py:405；agent/agent.zip!/skills/github-collab-guide/SKILL.md:21
+    3. 详细解释：题型规则存在于任务提示中，未见自动按题名调用 Skill 的硬编码分支。模型据人工编排的名称和文件表调用 load_skill/read_file，实际是否遵循指令需运行记录确认。
+  - 生成/使用：
+    1. 具体说明：confirmed：把需求摘要、参考资料指令和交付约束拼接成单一任务，模型据此复制/编辑参考代码。
+    2. 代码/文档定位：agent/agent.zip!/main.py:389；agent/agent.zip!/skills/spreadsheet-app-guide/SKILL.md:13
+    3. 详细解释：build_task 将所有上游文本放入 user task，Skill 要求每组需求先读对应参考文件，生成结果通过工具写入 output_dir。
+  - 输出：
+    1. 具体说明：confirmed：输出目录中的 frontend/backend 应用、种子数据、验证脚本和最终可评测构建产物。
+    2. 代码/文档定位：agent/agent.zip!/main.py:341；agent/agent.zip!/main.py:486
+    3. 详细解释：交付契约规定目录和启动形态，AgentCore 在 cwd/output_dir 中执行工具并把生成文件作为最终作品。
+
+STRATEGY-002 [CODE-REUSE] 参考应用复制与演进式修改
+  - 状态：
+    1. 具体说明：confirmed：入口支持 ARCBENCH_TEMPLATE_DIR 复制模板，题目 Skill 还要求逐文件复制 references 并在其上修补。
+    2. 代码/文档定位：agent/agent.zip!/main.py:312；agent/agent.zip!/skills/github-collab-guide/SKILL.md:11
+    3. 详细解释：prepare_output_dir 使用 shutil.copytree 复制既有项目；领域指南把复制参考实现作为强制起点，属于直接复用与模型介导适配的组合。
+  - 作用：
+    1. 具体说明：confirmed：保留既有功能和成熟组件，只把新需求差异作为增量补丁。
+    2. 代码/文档定位：agent/agent.zip!/main.py:334；agent/agent.zip!/main.py:410
+    3. 详细解释：Evolution 文本要求先通读现有结构并保留功能，参考实现规则要求需求原文优先、针对缺口修复，生成链路因此从复制基线开始。
+  - 输入/知识源：
+    1. 具体说明：confirmed：ARCBENCH_TEMPLATE_DIR 指定的现有项目，以及两个 Skill 包内的 backend/frontend/reference 目录。
+    2. 代码/文档定位：agent/agent.zip!/main.py:461；agent/agent.zip!/skills/spreadsheet-app-guide/SKILL.md:11
+    3. 详细解释：入口解析模板环境变量并调用 prepare_output_dir；Skill 明确列出复制范围和排除的 node_modules/dist/data 等内容。
+  - 选择/检索：
+    1. 具体说明：confirmed：空输出目录才自动 copytree；非空目录先作为 Evolution 项目对照，需求组按表选择对应参考文件。
+    2. 代码/文档定位：agent/agent.zip!/main.py:312；agent/agent.zip!/skills/github-collab-guide/SKILL.md:21
+    3. 详细解释：选择取决于目录是否为空和需求 ID 映射，避免盲目覆盖；这是一种路径/文件级复用路由，不是内容相似度检索。
+  - 生成/使用：
+    1. 具体说明：confirmed：CopyFileTool/WriteFileTool/EditFileTool 等工具把参考组件复制后改写，模型负责适配需求和修缺陷。
+    2. 代码/文档定位：agent/agent.zip!/prompt/lilliv3_code_prompt.py:103；agent/agent.zip!/main.py:410
+    3. 详细解释：工具集合提供复制、编辑和写入能力，提示明确要求每个 REQ 先读参考再修改，最终代码由参考实现和补丁共同组成。
+  - 输出：
+    1. 具体说明：confirmed：复制后的前后端源码及其修改版本落在 output_dir，并由后续 build/start 验证。
+    2. 代码/文档定位：agent/agent.zip!/main.py:341；agent/agent.zip!/main.py:516
+    3. 详细解释：交付检查会检查结构、启动服务并清理运行数据，说明复用产物直接进入可评测交付链。
+
+STRATEGY-003 [PROMPT-ORCHESTRATION] 需求摘要、多轮工具循环与子代理分工
+  - 状态：
+    1. 具体说明：confirmed：system prompt + user task 初始化后，run_agent 按轮次处理模型文本和工具调用，并可启动独立 subagent 循环。
+    2. 代码/文档定位：agent/agent.zip!/agent/core.py:64；agent/agent.zip!/agent/engine.py:813；agent/agent.zip!/agent/engine.py:1306
+    3. 详细解释：主序列先放入系统角色和任务，engine 持续迭代直到完成/取消；subagent 使用独立消息序列并回传结果，形成分层编排。
+  - 作用：
+    1. 具体说明：confirmed：提示按需求组组织规划、自测与修复，代码支持独立上下文子代理；工具循环实际按列表串行执行。
+    2. 代码/文档定位：agent/agent.zip!/main.py:417；agent/agent.zip!/context_compaction.py:219
+    3. 详细解释：任务提示要求 todo 按 REQ 分组和逐组验证；上下文超限时将历史压缩为摘要，保持后续轮次可用信息。
+  - 输入/知识源：
+    1. 具体说明：confirmed：system 中的角色/行为/边界/工具规则，加上 user task 的需求摘要、项目说明和契约。
+    2. 代码/文档定位：agent/agent.zip!/prompt/lilliv3_code_prompt.py:34；agent/agent.zip!/main.py:389
+    3. 详细解释：ScenarioPrompt 提供固定行为与工具描述，build_task 提供任务特定上下文，二者共同约束模型每轮决策。
+  - 选择/检索：
+    1. 具体说明：confirmed：模型通过工具名称和参数选择 read/glob/grep/write/shell/todo/load_skill；需要时选择 subagent。
+    2. 代码/文档定位：agent/agent.zip!/prompt/base_prompt.py:189；agent/agent.zip!/agent/engine.py:1239
+    3. 详细解释：有效工具集合被编码为工具 schema，engine 按模型返回的 tool call 分派；子代理工具被单独识别并启动独立循环。
+  - 生成/使用：
+    1. 具体说明：confirmed：每轮消费文本与工具调用；默认遇到 stop 且无工具调用即结束，GoalFinished 仅用于非默认 super_deep 模式。
+    2. 代码/文档定位：agent/agent.zip!/agent/engine.py:948；agent/agent.zip!/agent/engine.py:1447
+    3. 详细解释：工具结果写回 MessageSeq 后再次请求模型；子代理结论作为 tool 消息交还主代理，role=subagent 保存过程且被 API 序列化过滤。engine.py:981 的 for call 串行执行各工具，不能据提示中的并行建议认定实际并行。
+  - 输出：
+    1. 具体说明：confirmed：输出是工具产生的文件变更、验证日志和最终 assistant 消息/运行状态。
+    2. 代码/文档定位：agent/agent.zip!/agent/core.py:37；agent/agent.zip!/arc_reporting.py:46
+    3. 详细解释：AgentResult 汇总状态、轮数和 token，ArcReporter 记录需求进度与完成事件；实际代码产物由工具写入 cwd。
+
+STRATEGY-004 [MODEL-ROUTING] 可配置模型源、重试与上下文路由
+  - 状态：
+    1. 具体说明：confirmed：模型可来自 model_sources.db 注册 ID 或 OPENAI-compatible 环境配置，并按产品 effort 映射请求。
+    2. 代码/文档定位：agent/agent.zip!/main.py:100；agent/agent.zip!/agent/core.py:82
+    3. 详细解释：configure_model 在命令行模型和环境变量之间选择来源，AgentCore 将模型与 effort/thinking/max_rounds 传给 engine。
+  - 作用：
+    1. 具体说明：confirmed：统一支持不同模型端点、上下文窗口和瞬态错误重试，提升长任务完成率。
+    2. 代码/文档定位：agent/agent.zip!/client.py:226；agent/agent.zip!/agent/model_retry.py:260
+    3. 详细解释：client 根据模型解析 endpoint/config/context，model_retry 分类错误并退避重试；这些机制保护主生成循环但不改变领域策略。
+  - 输入/知识源：
+    1. 具体说明：confirmed：模型 ID、API base URL、API key、effort 档位和当前 MessageSeq。
+    2. 代码/文档定位：agent/agent.zip!/main.py:100；agent/agent.zip!/client.py:283
+    3. 详细解释：环境或本地注册表提供路由元数据，MessageSeq 经 compact_history 转为模型 messages，成为每次调用的上下文输入。
+  - 选择/检索：
+    1. 具体说明：confirmed：按 --model/环境变量选端点，按模型能力选择 reasoning effort；失败按错误类别决定是否重试。
+    2. 代码/文档定位：agent/agent.zip!/main.py:100；agent/agent.zip!/client.py:226；agent/agent.zip!/agent/model_retry.py:260
+    3. 详细解释：路由选择发生在请求前，重试策略读取供应商错误码和传输异常；未发现多模型并行投票或检索索引。
+  - 生成/使用：
+    1. 具体说明：confirmed：通过 stream_chat_completions/Responses 兼容层生成文本和 tool calls，失败时继续同一对话。
+    2. 代码/文档定位：agent/agent.zip!/client.py:375；agent/agent.zip!/client.py:1035
+    3. 详细解释：兼容层把 MessageSeq 和工具 schema发送到选定 endpoint，流式事件再由 engine 累积为工具执行和下一轮提示。
+  - 输出：
+    1. 具体说明：confirmed：产生模型文本、工具调用事件、usage/token 统计和最终 AgentResult。
+    2. 代码/文档定位：agent/agent.zip!/agent/core.py:79；agent/agent.zip!/agent/engine.py:235
+    3. 详细解释：UsageRecorder 分别记录主代理与子代理费用，AgentCore 汇总 token/rounds/status，为交付和诊断提供可消费状态。
+
+STRATEGY-005 [TOOLS/EXECUTION] 文件、Shell、网络和验证工具链
+  - 状态：
+    1. 具体说明：confirmed：工具层提供只读探索、文件写入编辑、复制移动、Shell、HTTP、TODO 与报告工具。
+    2. 代码/文档定位：agent/agent.zip!/prompt/lilliv3_code_prompt.py:103；agent/agent.zip!/tools/file_tools.py:1；agent/agent.zip!/tools/shell_tools.py:1
+    3. 详细解释：工具集合直接暴露生成所需的环境操作；主循环按调用执行并把结果回填模型。
+  - 作用：
+    1. 具体说明：confirmed：读取题面/参考、修改源码、运行构建和 API 冒烟、提交需求进度。
+    2. 代码/文档定位：agent/agent.zip!/main.py:417；agent/agent.zip!/arc_reporting.py:105
+    3. 详细解释：任务规则明确要求 todo、构建、curl/node 验证；ArcShellExecTool/ArcTodoTool 将执行和进度绑定到评测报告。
+  - 输入/知识源：
+    1. 具体说明：confirmed：cwd 中现有文件、requirements 路径、Skill 文件和命令输出。
+    2. 代码/文档定位：agent/agent.zip!/agent/core.py:27；agent/agent.zip!/main.py:486
+    3. 详细解释：cwd 注入工具默认工作目录和 system prompt，需求路径由 build_task 描述，工具结果成为后续模型上下文。
+  - 选择/检索：
+    1. 具体说明：confirmed：模型自行选择 glob/grep/read_file 定位文件，选择 shell 或专用工具完成验证；HTTP 工具是可用能力但非必经路径。
+    2. 代码/文档定位：agent/agent.zip!/prompt/lilliv3_code_prompt.py:103；agent/agent.zip!/agent/engine.py:1239
+    3. 详细解释：工具 schema 让模型按当前步骤选择动作；静态代码未显示固定 URL 抓取或外部知识检索被强制执行。
+  - 生成/使用：
+    1. 具体说明：confirmed：工具调用被执行后以 tool message 回写，Shell 后台任务可获取输出并被 kill 清理。
+    2. 代码/文档定位：agent/agent.zip!/agent/engine.py:1322；agent/agent.zip!/main.py:516
+    3. 详细解释：engine 捕获成功/异常并追加结果，入口 finally 停止异步命令；因此生成过程是模型决策与环境反馈闭环。
+  - 输出：
+    1. 具体说明：confirmed：源码文件、构建/测试输出、需求报告和清理后的交付目录。
+    2. 代码/文档定位：agent/agent.zip!/delivery_guard.py:75；agent/agent.zip!/arc_reporting.py:46
+    3. 详细解释：delivery_guard 检查结构并执行 smoke/清理，ArcReporter 持久化开始、进度和完成状态，输出可被平台消费。
+
+STRATEGY-006 [ITERATION/EVALUATION] 按需求分组的验证、重试与收尾
+  - 状态：
+    1. 具体说明：confirmed：最大轮数、时间限制、模型重试、需求报告和交付 smoke 检查共同构成停止与修复机制。
+    2. 代码/文档定位：agent/agent.zip!/agent/core.py:26；agent/agent.zip!/main.py:93；agent/agent.zip!/delivery_guard.py:87
+    3. 详细解释：运行可因 max_rounds/time_limit 结束，模型错误可退避重试。guard 在 backend/package.json 和 node_modules 存在时检查首页与 /api/health；深链验证只是提示要求，不是 guard 已实现的检查。
+  - 作用：
+    1. 具体说明：confirmed：用构建/启动/API 反馈发现缺陷并驱动后续模型修复，避免只生成未验证代码。
+    2. 代码/文档定位：agent/agent.zip!/main.py:380；agent/agent.zip!/main.py:417
+    3. 详细解释：完成标准要求两处安装、build、启动和 curl；任务提示把每组验证和 PASS/FAIL 输出纳入主循环。
+  - 输入/知识源：
+    1. 具体说明：confirmed：命令退出码/输出、需求场景、ArcReporter 事件、模型错误分类。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:153；agent/agent.zip!/agent/model_retry.py:260
+    3. 详细解释：Shell 结果与报告事件回流到模型，错误分类提供重试理由，需求 ID 使验证结果映射到具体覆盖项。
+  - 选择/检索：
+    1. 具体说明：confirmed：按需求组选择自测脚本和参考文件，按错误类别选择重试/停止，按时间预算选择先做可运行主流程。
+    2. 代码/文档定位：agent/agent.zip!/main.py:417；agent/agent.zip!/main.py:489；agent/agent.zip!/agent/model_retry.py:226
+    3. 详细解释：提示中的优先级和重试决策是显式控制流；没有证据表明使用外部评测分数做自动搜索。
+  - 生成/使用：
+    1. 具体说明：confirmed：模型读取反馈后继续调用工具、修补文件或结束；截断时引擎可续写/修复写入调用。
+    2. 代码/文档定位：agent/agent.zip!/agent/engine.py:495；agent/agent.zip!/agent/engine.py:1110
+    3. 详细解释：连续轮次把 assistant/tool 结果接回 MessageSeq，截断恢复逻辑确保大文件写入仍能继续，形成反馈驱动生成。
+  - 输出：
+    1. 具体说明：confirmed：构建状态、curl 响应、PASS/FAIL 需求行、最终 status 和清理后的应用。
+    2. 代码/文档定位：agent/agent.zip!/delivery_guard.py:87；agent/agent.zip!/agent/core.py:37
+    3. 详细解释：finalize 在 agent.run 之后的 finally 执行，结果仅打印且异常被忽略，不回送模型修复，也不据此修改 AgentResult；completed 不等于测试通过。此前模型主动调用的验证工具才可能形成修复闭环。
+
+STRATEGY-007 [RAG/RETRIEVAL] 目录注入与精确名称加载知识
+  - 状态：
+    1. 具体说明：confirmed：BundledSkills 扫描内置指南，入口注册 load_skill 并把目录注入提示。
+    2. 代码/文档定位：agent/agent.zip!/main.py:65；agent/agent.zip!/tools/skill_tools.py:105
+    3. 详细解释：scan 解析 skills/*/SKILL.md 元数据，catalog_block 进入 runtime_context_blocks，模型因而能看到资料名称并请求其正文。
+  - 作用：
+    1. 具体说明：先提供短目录，再按需展开领域指南和参考文件，避免直接塞入整套应用。
+    2. 代码/文档定位：agent/agent.zip!/tools/skill_tools.py:121
+    3. 详细解释：目录只列名称与描述，模型选择之后才读取正文和附属文件路径；这一层把预置材料连接到任务生成链路。
+  - 输入/知识源：
+    1. 具体说明：内置 Skill 元数据、指南全文、references 源码、测试样例和 REQ 文件映射表。
+    2. 代码/文档定位：agent/agent.zip!/tools/skill_tools.py:109；agent/agent.zip!/skills/github-collab-guide/SKILL.md:21
+    3. 详细解释：指南表将 REQ-1 至 REQ-6 映射到认证、组织、仓库、代码、Issue 和 PR 文件，模型据此选择下一步要读的实现。
+  - 选择/检索：
+    1. 具体说明：load_skill 通过 scan().get(name) 精确查找；源码继续由模型按 REQ 映射定位。
+    2. 代码/文档定位：agent/agent.zip!/tools/skill_tools.py:136
+    3. 详细解释：未知名称返回错误，已知名称返回对应指南；没有召回候选打分或向量排序，属于明确名称与路径驱动的轻量检索。
+  - 生成/使用：
+    1. 具体说明：返回指南全文、references 使用提醒及附属文件清单，再由 read_file/copy_file 使用。
+    2. 代码/文档定位：agent/agent.zip!/tools/skill_tools.py:148；agent/agent.zip!/tools/skill_tools.py:187
+    3. 详细解释：load 将 header 与 Skill 文本拼接，工具 execute 返回 loaded；引擎把它作为工具结果送回模型，影响复制和修改决策。
+  - 输出：
+    1. 具体说明：输出是模型上下文中的领域说明和可读源码路径，而非自动生成的应用文件。
+    2. 代码/文档定位：agent/agent.zip!/tools/skill_tools.py:158
+    3. 详细解释：指南工具本身只返回文本，后续生成工具才落盘；传统索引式 RAG 未发现，但检索得到的材料确实能进入生成上下文。
+
+STRATEGY-008 [PROMPT-ORCHESTRATION] 需求去重摘要与长历史压缩降级
+  - 状态：
+    1. 具体说明：confirmed：需求摘要由确定性代码生成，历史压缩优先用当前模型，失败降级机械摘要。
+    2. 代码/文档定位：agent/agent.zip!/main.py:167；agent/agent.zip!/context_compaction.py:219
+    3. 详细解释：入口遍历需求树构建紧凑文本；引擎每轮前调用 maybe_compact，避免长工具历史持续增长而阻断后续生成。
+  - 作用：
+    1. 具体说明：消除重复场景句和 seed 描述，并在长任务中保留文件改动、错误、需求状态与下一步。
+    2. 代码/文档定位：agent/agent.zip!/main.py:184；agent/agent.zip!/context_compaction.py:32
+    3. 详细解释：需求压缩将公共规则提到前部，历史摘要提示明确保留工作进展和错误处理，使模型持续围绕未完成需求修改代码。
+  - 输入/知识源：
+    1. 具体说明：输入是 YAML 的节点描述、依赖与场景，以及当前任务的旧摘要和 assistant/tool 历史。
+    2. 代码/文档定位：agent/agent.zip!/main.py:221；agent/agent.zip!/context_compaction.py:186
+    3. 详细解释：description 原文保留，场景按句去重；历史摘要组合旧摘要与新记录，不引入外部语料或跨任务记忆。
+  - 选择/检索：
+    1. 具体说明：需求内联预算 200000 字符；历史超过 1000000 字符时保留近期约 350000 字符且至少四组。
+    2. 代码/文档定位：agent/agent.zip!/main.py:50；agent/agent.zip!/context_compaction.py:19；agent/agent.zip!/context_compaction.py:199
+    3. 详细解释：需求超预算说明未收入节点供重新读取；历史以 assistant 和全部工具结果成组保留，保证调用配对，不以语义相关度排序。
+  - 生成/使用：
+    1. 具体说明：同模型非流式总结上限 6000 字符，失败用最多 30000 字符机械摘要。
+    2. 代码/文档定位：agent/agent.zip!/context_compaction.py:186；agent/agent.zip!/context_compaction.py:230；agent/agent.zip!/client.py:355
+    3. 详细解释：summarize_text 复用当前 model 端点；异常由 _digest 接替并把结果存在 seq，压缩失败不会终止主循环。
+  - 输出：
+    1. 具体说明：输出为需求 Markdown，以及任务首部、历史摘要和最近消息组成的模型输入视图。
+    2. 代码/文档定位：agent/agent.zip!/main.py:277；agent/agent.zip!/context_compaction.py:250；agent/agent.zip!/client.py:310
+    3. 详细解释：Chat 路径通过 compact_history 插入摘要 user 消息并保留最近历史；Responses 另有输入实现，不能推断两协议压缩行为完全一致。
+
+STRATEGY-009 [STATE/PERSISTENCE] 需求事件与 Git 检查点持久化
+  - 状态：
+    1. 具体说明：confirmed：Reporter 实现事件记录和 Git 检查点；CLI 会话与 todo 为内存状态。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:65；agent/agent.zip!/tools/todo_tools.py:207
+    3. 详细解释：Reporter 初始化 SDK 和 traceability；todo 没有会话 ID 则走内存兜底。可选会话库不在当前 CLI 入口接线中。
+  - 作用：
+    1. 具体说明：将需求实现进度和自测结果关联到代码快照，给平台提供可追踪交付状态。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:76
+    3. 详细解释：report 逐项发送状态并在默认 commit=True 时提交代码，生成过程因此可以留下按需求组织的检查点而非仅最终文件。
+  - 输入/知识源：
+    1. 具体说明：需求树、todo 标题/详情中的 REQ ID，以及命令输出的 PASS/FAIL 行。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:71；agent/agent.zip!/arc_reporting.py:116；agent/agent.zip!/arc_reporting.py:170
+    3. 详细解释：known_ids 限制可上报需求，todo 和 Shell 各自转换为 implemented 与 passed/failed；这些是自报状态，不是外部真实评分。
+  - 选择/检索：
+    1. 具体说明：仅上报已知且变化的需求状态，同一次输出里 FAIL 优先，开始实现不提交 Git。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:132；agent/agent.zip!/arc_reporting.py:170
+    3. 详细解释：_started/_reported 和 _states 去重，FAIL 覆盖同输出的 PASS；实现完成和测试状态触发快照，减少重复事件与提交。
+  - 生成/使用：
+    1. 具体说明：事件与追踪数据写入 .arc，完成组及验证上报执行 Git commit；路径可由环境覆盖。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:89；agent/agent.zip!/arcbench_agent_runtime/context.py:8
+    3. 详细解释：默认路径是 .arc/runner-events.jsonl 与 .arc/traceability，记录服务于运行追踪；SDK 不可用或操作异常被捕获，不阻断应用生成。
+  - 输出：
+    1. 具体说明：预期产物为运行事件、需求追踪文件、Git 提交及最终 completed/failed 事件。
+    2. 代码/文档定位：agent/agent.zip!/arc_reporting.py:94；agent/agent.zip!/arcbench_agent_runtime/context.py:41
+    3. 详细解释：finish 尝试最终提交后记录结束状态；当前包无这些运行日志，因而只能确认代码路径，不能证明该次提交实际产生了所有记录。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的仓库静态内容中未发现向量数据库、embedding、BM25 或语义检索调用；按题型/REQ 选择并加载资料属于本 taxonomy 的 RETRIEVAL，传统索引式 RAG 未发现。
+- STATE/PERSISTENCE：CLI 未传 conversation_store/conversation_id，_persist_conversation 因参数缺失直接返回（agent/agent.zip!/agent/core.py:82；agent/agent.zip!/agent/engine.py:1231）；不能把可选会话库功能当作 CLI 已启用。跨任务学习记忆在已检查内容中未发现。
+- 网络访问：HttpRequestTool 和 artifact URL 处理代码存在，但本次静态分析未执行选手代码、未安装依赖、未访问其 URL，实际运行时网络分支的触发条件无法确认。
+- applications/github.zip 与 applications/sheet.zip 的核心源码和参考实现存在大量逐字节一致，但无生成运行日志可证明复制方向、调用顺序或自测成功；两包均包含 data/db.json，也不能认定遵循了入口的最终清理要求。
+- 实际模型 ID、端点、是否使用子代理、是否执行自测均 unresolved。子代理支持 model 参数覆盖，默认继承父模型（agent/agent.zip!/agent/engine.py:1483），未见多模型投票或自动外部评分优化。
+分析完成

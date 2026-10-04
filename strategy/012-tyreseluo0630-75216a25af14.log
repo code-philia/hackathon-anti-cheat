@@ -1,0 +1,225 @@
+核心策略分析：012-tyreseluo0630-75216a25af14
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\012-tyreseluo0630-75216a25af14
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+端到端主策略是一个以 `agent/agent.zip::main.py` 为编排器的需求驱动代码生成流水线：它把公开 requirements.yaml、方言规则、交付契约和通用脚手架拼成提示，调用 OpenAI-compatible 流式模型生成前后端文件，再用构建、语法、启动、DOM/浏览器及场景检查形成验收门；失败时以带有失败证据的 EDIT/FILE 修复提示循环处理。`scenario_translate.py` 将规则解析不了的场景交给同一类模型并做 JSON 校验和缓存，`testgen.py` 生成 Playwright 测试作为独立反馈。提交的 GitHub 分阶段归档和 Sheet 归档均显示复用了统一 `arc.js` 运行时、seed.js 状态模型与基础后端。RAG=在已检查的静态内容中未发现向量、embedding、外部语料或语义召回；需求全文、词汇表和运行时搜索属于直接读取/词法处理。代码复用=confirmed：脚手架和已有模板会被复制到临时生成阶段，模型被明确要求保留并扩展它们，产物也保留该共享运行时。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求约束驱动的草稿、续写与定向修复提示链
+  - 状态：
+    1. 具体说明：confirmed；系统提示、交付契约、需求上下文、文件续写提示和失败修复提示共同组成了分阶段提示编排，模型输出被限制为完整文件块或精确编辑块。
+    2. 代码/文档定位：agent/agent.zip::main.py:97；agent/agent.zip::main.py:103；agent/agent.zip::main.py:112；agent/agent.zip::main.py:1320
+    3. 详细解释：`SYSTEM` 规定一次生成的角色和输出约束，`CONTINUE`/`RESUME` 处理截断，`REPAIR` 只允许 SEARCH/REPLACE 编辑；`draft_messages` 把这些规则与题面放进消息，因此这是实际生成链路而非仅有注释的意图。
+  - 作用：
+    1. 具体说明：把多任务需求转换成可执行的文件交付，再把每轮检查结果压缩成下一轮模型可处理的修复目标。
+    2. 代码/文档定位：agent/agent.zip::main.py:1247；agent/agent.zip::main.py:1304；agent/agent.zip::main.py:2029
+    3. 详细解释：`draft_application` 按已输出文件决定续写内容，`repair_request` 按 fatal、失败场景和静态门生成反馈；模型因此接收的是当前阶段的动作约束，而不是一次无界的仓库复述。
+  - 输入/知识源：
+    1. 具体说明：输入包括 requirements.yaml 原文、可选 prerequisites.md、方言说明、交付契约、脚手架/模板快照及当前应用文件。
+    2. 代码/文档定位：agent/agent.zip::main.py:1320；agent/agent.zip::main.py:1324；agent/agent.zip::main.py:1094
+    3. 详细解释：`draft_messages` 先拼接 dialect、contract、词汇和 GIVEN seed 清单，再追加需求；存在旧应用时 `template_context` 以 JSON 记录路径、哈希和文本，把当前源文件作为模型可读输入。
+  - 选择/检索：
+    1. 具体说明：上下文选择依据是需求全文、模板是否存在、输出阶段和文件续写游标；没有基于相似度的 prompt 检索。
+    2. 代码/文档定位：agent/agent.zip::main.py:1267；agent/agent.zip::main.py:1296；agent/agent.zip::main.py:1333
+    3. 详细解释：文件块解析决定 `pending` 和已完成集合，`generate` 决定使用 scaffold 还是 template；下一次请求只加入缺失文件或修复问题，所以选择结果直接进入后续模型消息。
+  - 生成/使用：
+    1. 具体说明：模型通过流式 chat completion 产生 `=== FILE` 文件块，修复阶段产生 `=== EDIT` 搜索替换块，结果被解析后写入临时应用目录。
+    2. 代码/文档定位：agent/agent.zip::main.py:314；agent/agent.zip::main.py:524；agent/agent.zip::main.py:1287
+    3. 详细解释：`stream_completion` 接收角色消息并累积内容，`parse_repair`/`write_one` 将受约束的回复转成文件操作；生成文本只有通过路径和协议检查后才改变候选源。
+  - 输出：
+    1. 具体说明：输出是完整的 frontend/backend 文件集合、续写对话历史和每轮修复所使用的模型交换。
+    2. 代码/文档定位：agent/agent.zip::main.py:1299；agent/agent.zip::main.py:1389；agent/agent.zip::main.py:2380
+    3. 详细解释：对话历史被保留给下一次续写或修复，成功文件在 `publish` 前留在 stage，接受的修复才更新 `files` 列表并成为最终应用内容。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 方言、交付契约、脚手架和需求种子清单的预置知识
+  - 状态：
+    1. 具体说明：confirmed；提交中包含专门的 `dialect.md`，并在代码中固定了交付格式、ARIA/路由约束、seed 清单和 scaffold 保护规则。
+    2. 代码/文档定位：agent/agent.zip::dialect.md:1；agent/agent.zip::main.py:69；agent/agent.zip::main.py:1112
+    3. 详细解释：这些文本在当前任务模型调用前已经存在，且 `scaffold_context` 明确要求扩展既有 evaluator 机制；它们是生成前准备的通用知识，区别于模型临场发现的代码事实。
+  - 作用：
+    1. 具体说明：把评测器的可访问名称、同步导航、后端健康检查、种子记录和无依赖交付要求变成模型必须遵守的实现约束。
+    2. 代码/文档定位：agent/agent.zip::main.py:69；agent/agent.zip::main.py:78；agent/agent.zip::main.py:1114
+    3. 详细解释：契约定义 `npm run build/start`、`/api/health` 和零 npm 依赖，脚手架说明 shared layout、内存 seed、dialog 和通知机制；模型据此生成 GitHub/Sheet 的领域代码，而不是重新发明基础运行时。
+  - 输入/知识源：
+    1. 具体说明：通用知识源是 `dialect.md` 与 scaffold 文件，任务知识源是 requirements 文本中抽取的 quoted vocabulary 和 GIVEN seed 条款。
+    2. 代码/文档定位：agent/agent.zip::main.py:1321；agent/agent.zip::main.py:1430；agent/agent.zip::main.py:1493
+    3. 详细解释：`draft_messages` 读取 dialect 并调用 `vocabulary_table`/`seed_checklist`；后两者从题面字面量和场景 GIVEN 步骤构造模型可见清单，因而把领域值直接注入生成输入。
+  - 选择/检索：
+    1. 具体说明：选择是按题面中的引号短语、需求 ID 和 GIVEN seed 去重后全量注入，按文件和模板是否存在选择 scaffold 或 existing application 上下文。
+    2. 代码/文档定位：agent/agent.zip::main.py:1446；agent/agent.zip::main.py:1503；agent/agent.zip::main.py:1343
+    3. 详细解释：这里没有数据库查询；代码逐行解析需求并按出现顺序建立 groups/clauses，再把选出的字符串放进 user prompt，后续模型直接使用这些值命名控件和种子数据。
+  - 生成/使用：
+    1. 具体说明：预置规则以系统消息、Markdown 小节和 JSON 文件快照形式进入模型上下文，作为生成页面、API、状态和可访问性的操作规范。
+    2. 代码/文档定位：agent/agent.zip::main.py:1320；agent/agent.zip::main.py:1118；agent/agent.zip::main.py:1094
+    3. 详细解释：模型收到的不是单独 requirements，而是 contract、词汇/seed 检查表和现有源代码组合；因此应用归档中出现的精确按钮名、seed 数据和共享 layout 有明确的预置来源。
+  - 输出：
+    1. 具体说明：输出包含满足契约的 frontend/backend 目录以及由预置规则约束的题面专用种子和控件文案。
+    2. 代码/文档定位：applications/github.zip::frontend/public/seed.js:1；applications/sheet.zip::frontend/public/seed.js:1；agent/agent.zip::main.py:1394
+    3. 详细解释：GitHub 和 Sheet 归档分别保留了任务命名的 seed.js，`publish` 把通过交付检查的 stage 根目录提升为输出；这些产物体现预置知识已经落到最终代码，而非只停留在提示中。
+
+STRATEGY-003 [CODE-REUSE] 脚手架/模板复制与共享 ARC 运行时复用
+  - 状态：
+    1. 具体说明：confirmed；生成器会复制既有 template 或本地 scaffold 到临时 stage，并要求模型保留关键 `arc.js`、layout、seed 和 backend 机制；应用归档确实包含这套共享文件。
+    2. 代码/文档定位：agent/agent.zip::main.py:1061；agent/agent.zip::main.py:1355；applications/github.zip::frontend/public/lib/arc.js:1
+    3. 详细解释：`read_template` 读取 frontend/backend 源文件，`generate` 用 `copytree` 和 scaffold 字节填充 stage，`arc.js` 在 GitHub 归档中仍是独立共享运行时，因此可确认是直接文件复用而非仅让模型模仿接口。
+  - 作用：
+    1. 具体说明：复用稳定的路由、同步 store、ARIA layout、dialog/popover、clipboard 和后端健康检查，使模型集中实现 GitHub/Sheet 领域功能。
+    2. 代码/文档定位：agent/agent.zip::main.py:1114；applications/github.zip::frontend/public/lib/arc.js:63；applications/sheet.zip::frontend/public/app.js:790
+    3. 详细解释：脚手架上下文列出 shared layout 与 delegated events，ARC 提供 hash routing，Sheet 只需注册 `onCopy/onPaste` 实现表格语义；复用层连接通用交互机制与领域动作。
+  - 输入/知识源：
+    1. 具体说明：输入是 `scaffold/` 的完整静态文件、可选已有 application 的 frontend/backend 文件以及其路径/哈希快照。
+    2. 代码/文档定位：agent/agent.zip::main.py:50；agent/agent.zip::main.py:1094；agent/agent.zip::main.py:1344
+    3. 详细解释：`SCAFFOLD_DIR` 指向提交内预置目录，`read_template` 对现有应用做字节读取和哈希记录，随后原样写入 stage；这些字节是代码复用策略的直接来源。
+  - 选择/检索：
+    1. 具体说明：新任务没有 template 时选择 scaffold；升级任务选择 `--template-dir` 并只允许修改 frontend/backend，隐藏目录和构建产物被排除。
+    2. 代码/文档定位：agent/agent.zip::main.py:1067；agent/agent.zip::main.py:1089；agent/agent.zip::main.py:1282
+    3. 详细解释：遍历过滤 `node_modules/dist/__pycache__`，路径解析拒绝越界；这决定哪些现有代码可被带入生成上下文和 stage，而不是按语义相似度挑选片段。
+  - 生成/使用：
+    1. 具体说明：模型被要求仅输出新增/变更文件，未提及的 scaffold/template 文件保留；修复也以 EDIT 小块应用在已复用文件上。
+    2. 代码/文档定位：agent/agent.zip::main.py:1103；agent/agent.zip::main.py:1122；agent/agent.zip::main.py:2225
+    3. 详细解释：`template_context` 和 `scaffold_context` 都写明“unmentioned files are retained”，`_write_repair` 复用同一路径约束；因此模型生成是对现有基线的适配而非每次从空目录重建全部基础设施。
+  - 输出：
+    1. 具体说明：输出是保留 `frontend/public/lib/arc.js`、seed/app 与 backend scaffold 的应用归档，以及在其上添加的 GitHub/Sheet 领域实现。
+    2. 代码/文档定位：applications/github-stage-1.zip::frontend/public/lib/arc.js:1；applications/github.zip::frontend/public/lib/arc.js:1；applications/sheet.zip::backend/server.js:1
+    3. 详细解释：多个阶段归档都带有相同的 ARC 库和 scaffold 后端，而 app.js/seed.js 随任务变化；这显示共享代码被实际消费并成为最终产品运行时依赖。
+
+STRATEGY-004 [MODEL-ROUTING] 流式主模型、备用模型和测试/翻译旁路调用
+  - 状态：
+    1. 具体说明：confirmed；主生成使用环境可配置的模型和 OpenAI-compatible `/chat/completions`，失败时按模型类别切换 fallback；场景翻译和测试生成还各自发起受限旁路调用。
+    2. 代码/文档定位：agent/agent.zip::main.py:22；agent/agent.zip::main.py:305；agent/agent.zip::main.py:314
+    3. 详细解释：`fallback_model` 根据当前模型和环境变量选择备用值，`stream_completion` 构造同一端点请求；`scenario_translate.py` 和 `testgen.py` 的调用由主流程单独记录，所以路由关系可从静态代码确认。
+  - 作用：
+    1. 具体说明：主模型产出应用/修复，翻译模型补全规则解析失败的场景，测试模型生成独立 Playwright 验收文件；旁路结果不会直接替代应用源代码。
+    2. 代码/文档定位：agent/agent.zip::main.py:1364；agent/agent.zip::main.py:1840；agent/agent.zip::main.py:1980
+    3. 详细解释：`start_suite` 在草稿期间异步启动测试生成，`account_translation` 将翻译调用纳入预算；各角色的返回值分别进入 suite、scenario report 或 repair 上下文。
+  - 输入/知识源：
+    1. 具体说明：路由输入是带 system/user 角色的需求提示、已有文件对话、场景翻译 JSON 上下文、测试分组需求和 API key/base URL/model 环境变量。
+    2. 代码/文档定位：agent/agent.zip::main.py:317；agent/agent.zip::scenario_translate.py:170；agent/agent.zip::testgen.py:117
+    3. 详细解释：不同调用都把结构化消息传给同类 chat 接口；主生成消息由 `draft_messages` 构造，翻译消息含 known_steps，测试消息含 requirements 和 group，因此模型路由按用途分流。
+  - 选择/检索：
+    1. 具体说明：模型选择由 `MODEL`/`SCENARIO_MODEL`、`FALLBACK_MODEL` 和 Kimi 特殊集合决定；旁路是否调用由未解析场景、TESTGEN/SECOND_SUITE 开关及预算决定。
+    2. 代码/文档定位：agent/agent.zip::main.py:305；agent/agent.zip::main.py:1364；agent/agent.zip::scenario_translate.py:513
+    3. 详细解释：`fallback_model` 只在失败或内容过滤路径启用备用模型，`translate` 只处理 status 非 parsed 的场景且可命中缓存；选择结果决定下一步消费哪一类模型输出。
+  - 生成/使用：
+    1. 具体说明：请求使用 SSE 流、temperature/max_tokens 和 usage 统计，收到的 delta 被拼接为模型文本，再按文件块、JSON 场景或测试文件解析。
+    2. 代码/文档定位：agent/agent.zip::main.py:317；agent/agent.zip::main.py:338；agent/agent.zip::scenario_translate.py:194
+    3. 详细解释：流式循环只接受 `data:` 事件并记录 finish/usage，翻译同样要求 `[DONE]` 和 finish_reason；解析器把不同模型输出转换成生成器可用的结构。
+  - 输出：
+    1. 具体说明：输出包括应用文件块、翻译后的 scenario ops、Playwright `.spec.cjs` 文件以及按模型/调用统计的预算记录。
+    2. 代码/文档定位：agent/agent.zip::main.py:282；agent/agent.zip::scenario_translate.py:553；agent/agent.zip::testgen.py:336
+    3. 详细解释：`CallBudget.summary` 汇总模型调用，翻译记录写入 cache JSON，testgen 写 suite manifest；这些输出分别被 publish、scenario_check 和 repair 流程消费。
+
+STRATEGY-005 [TOOLS/EXECUTION] 构建、静态门、本地服务器、DOM 与浏览器探测工具链
+  - 状态：
+    1. 具体说明：confirmed；生成后会运行 npm build、Node 语法检查、启动本地后端、GET 页面/health、DOM 探测和可选 Playwright 语义浏览器检查。
+    2. 代码/文档定位：agent/agent.zip::main.py:987；agent/agent.zip::main.py:1012；agent/agent.zip::main.py:1043
+    3. 详细解释：`smoke_check` 明确执行 build、Popen server、health 轮询和 DOM/semantic checks；这是实际工具调用链，且只针对临时 stage，不是模型自报结果。
+  - 作用：
+    1. 具体说明：验证交付结构、JavaScript 可解析性、服务可启动性、静态资源可访问性、关键 DOM 语义和行为路由，及早阻断不可运行产物。
+    2. 代码/文档定位：agent/agent.zip::main.py:624；agent/agent.zip::main.py:655；agent/agent.zip::main.py:869
+    3. 详细解释：`_check_syntax` 检查每个前端脚本，`_check_page`/`_check_dom` 检查页面和脚本错误，semantic probe 进一步按契约点击；问题被收集为下一阶段反馈。
+  - 输入/知识源：
+    1. 具体说明：工具输入是临时 stage、requirements 文本、端口、Node/npm 环境和由 requirements 生成的 semantic contracts。
+    2. 代码/文档定位：agent/agent.zip::main.py:684；agent/agent.zip::main.py:945；agent/agent.zip::main.py:987
+    3. 详细解释：`semantic_contracts` 从题面构造 seed/form 等约束，`_check_semantic_browser` 将它们序列化给 probe；工具因此同时读取候选文件和题面派生的检查规则。
+  - 选择/检索：
+    1. 具体说明：检查按固定顺序执行：先 build/交付门，再语法和 HTTP 页面，再 DOM/语义浏览器，若有测试则进入场景检查；静态门只扫描候选源的特定后缀。
+    2. 代码/文档定位：agent/agent.zip::main.py:1937；agent/agent.zip::main.py:1929；agent/agent.zip::main.py:1132
+    3. 详细解释：`assess` 先取得 smoke/fatal，再决定是否运行 scenarios；`static_gaps` 固定检查 guards、label、exact names、readonly，结果按门分类传入 repair_request。
+  - 生成/使用：
+    1. 具体说明：工具输出状态码、进程日志、错误列表、DOM/浏览器动作和场景观察，被格式化成模型修复提示而不直接修改业务代码。
+    2. 代码/文档定位：agent/agent.zip::main.py:1029；agent/agent.zip::main.py:1939；agent/agent.zip::main.py:2071
+    3. 详细解释：health 响应确认服务就绪，`assess` 聚合 smoke/static/vocab，`repair_request` 把这些 findings 与失败场景一起发送给模型；写入仍由模型返回的 EDIT/FILE 完成。
+  - 输出：
+    1. 具体说明：输出是 `problems`、`fatal`、`static`、`browser` 和场景 report 等诊断状态，以及最终可发布的临时应用目录。
+    2. 代码/文档定位：agent/agent.zip::main.py:1048；agent/agent.zip::main.py:1942；agent/agent.zip::main.py:1221
+    3. 详细解释：检查失败留在 state 并阻止 publish 或触发修复；通过时 `publish` 才将 stage 替换/提升为 output，工具链因此控制最终产物边界。
+
+STRATEGY-006 [ITERATION/EVALUATION] 独立测试生成、场景评估、回归接受与有界修复
+  - 状态：
+    1. 具体说明：confirmed；草稿之后先评估，失败场景进入 repair loop；每个修复在备份副本上应用、重跑检查，并按 gained/lost 和静态门决定接受或回滚。
+    2. 代码/文档定位：agent/agent.zip::main.py:2235；agent/agent.zip::main.py:2293；agent/agent.zip::main.py:2093
+    3. 详细解释：`repair_delivery` 建立初始 state，循环中复制 backup，`judge` 比较前后场景状态；异常或不接受时 `_swap_back` 恢复原版本，形成可验证的迭代闭环。
+  - 作用：
+    1. 具体说明：独立测试把题面场景转为用户动作和断言，回归判定保护已通过场景，修复循环只在改善超过回归损失时保留变更。
+    2. 代码/文档定位：agent/agent.zip::testgen.py:32；agent/agent.zip::testgen.py:297；agent/agent.zip::main.py:2158
+    3. 详细解释：testgen 要求每个 scenario 一个 Playwright test，`judge` 计算 gained/lost 并应用 LOSS_RATIO；模型不能仅通过自我描述宣布成功，必须使独立检查状态改善。
+  - 输入/知识源：
+    1. 具体说明：评估输入是 requirements、生成的测试 suite、浏览器观察、静态门结果、此前通过/失败的 scenario 状态和当前应用快照。
+    2. 代码/文档定位：agent/agent.zip::testgen.py:117；agent/agent.zip::main.py:1937；agent/agent.zip::main.py:2021
+    3. 详细解释：测试请求从需求分组生成 suite，`assess` 读取 smoke/static/report，`failure_groups` 按依赖深度聚合失败；这些状态共同决定下一轮 focus 和 repair prompt。
+  - 选择/检索：
+    1. 具体说明：测试按需求顶层 ID 分组，每组最多固定数量；修复按依赖深度和失败组选择 focus，并受调用次数、花费、失败次数、时间和连续拒绝限制。
+    2. 代码/文档定位：agent/agent.zip::testgen.py:100；agent/agent.zip::main.py:2013；agent/agent.zip::main.py:2271
+    3. 详细解释：`plan` 产生有界测试文件，`failure_groups` 建立有序队列，`repair_stop`/循环条件在耗尽预算或超时后停止；选择的是失败证据和依赖关系，不是语义知识召回。
+  - 生成/使用：
+    1. 具体说明：模型先生成完整测试文件，若测试自身出错可修复 suite；应用模型再依据失败观察生成 EDIT/FILE，接受后重跑整套或聚焦场景。
+    2. 代码/文档定位：agent/agent.zip::testgen.py:303；agent/agent.zip::testgen.py:375；agent/agent.zip::main.py:2304
+    3. 详细解释：`write_suite` 解析文件块并做 Node 检查，`fix_suite` 保持 scenario/expect 数量不减少；`repair_delivery` 应用模型修改后调用 `assess` 和 `judge` 决定是否进入下一轮。
+  - 输出：
+    1. 具体说明：输出包括 `suite.json`、场景 report、每轮 accepted/reason/files 记录、最终 failing/error 列表以及成功的应用文件。
+    2. 代码/文档定位：agent/agent.zip::testgen.py:336；agent/agent.zip::main.py:2400；agent/agent.zip::main.py:2414
+    3. 详细解释：suite manifest 被 runner 使用，repair rounds 写入 `budget.smoke`，最终状态记录 scenarios_after；只有不破坏既有通过项的接受轮次才会把文件加入最终 `files`。
+
+STRATEGY-007 [STATE/PERSISTENCE] 共享领域状态、浏览器局部状态与生成缓存/审计状态
+  - 状态：
+    1. 具体说明：confirmed；应用运行时将领域数组持久到 `/api/state`，session/ui 留在浏览器；场景翻译缓存和生成预算/进度也有独立状态文件或记录。
+    2. 代码/文档定位：applications/github.zip::frontend/public/lib/arc.js:7；applications/github.zip::frontend/public/lib/arc.js:51；agent/agent.zip::scenario_translate.py:22
+    3. 详细解释：ARC `split/save/pull` 区分 shared 与 local，翻译模块设置临时 cache 目录；两条路径都在静态代码中有读写实现，说明状态不是只存在单次函数调用。
+  - 作用：
+    1. 具体说明：让跨浏览器会话看到同一仓库/工作簿变更，同时保持登录和 UI 草稿的会话隔离，并避免重复翻译相同需求。
+    2. 代码/文档定位：applications/github.zip::frontend/public/lib/arc.js:13；applications/github.zip::frontend/public/lib/arc.js:56；agent/agent.zip::scenario_translate.py:537
+    3. 详细解释：共享数组通过同步 PUT 写后端，session/ui 写 local/sessionStorage；`_cached_or_called` 命中 cache 就跳过模型请求，这分别支持最终应用一致性和生成阶段的重复利用。
+  - 输入/知识源：
+    1. 具体说明：状态输入是 seed.js 顶层记录、用户动作产生的新对象、当前 session/ui，以及 requirements 哈希、模型名和翻译消息缓存。
+    2. 代码/文档定位：applications/sheet.zip::frontend/public/seed.js:4；applications/github.zip::frontend/public/lib/arc.js:16；agent/agent.zip::scenario_translate.py:508
+    3. 详细解释：ARC 从 `window.SEED` 初始化并按 key 判断共享性，Sheet seed 提供 workbook/sheets，翻译 cache key 由 requirements SHA-256、版本和 model 构成，均是明确的数据输入。
+  - 选择/检索：
+    1. 具体说明：运行时选择由 `isShared` 的 key/array 规则、当前 session 和 route 决定；翻译缓存按完整需求文本哈希精确命中，而非相似检索。
+    2. 代码/文档定位：applications/github.zip::frontend/public/lib/arc.js:16；applications/github.zip::frontend/public/lib/arc.js:43；agent/agent.zip::scenario_translate.py:508
+    3. 详细解释：ARC `pull` 只替换 shared keys，`readLocal` 恢复本地状态；`cache_path` 产生确定文件名，`_cached_or_called` 只检查该精确路径，因此结果如何流入下一步是可追踪的。
+  - 生成/使用：
+    1. 具体说明：每个领域 mutation 在 `ARC.save()` 后重绘，翻译 cache 命中后直接送入 `_accept` 校验，预算 progress 以临时 JSON 快照更新。
+    2. 代码/文档定位：applications/sheet.zip::frontend/public/app.js:1027；applications/github.zip::frontend/public/app.js:1139；agent/agent.zip::scenario_translate.py:538
+    3. 详细解释：Sheet 创建 workbook 和 GitHub 创建 repository 都写 shared store；翻译则读取缓存记录并解析 accepted/rejected scenario，因而持久状态参与后续生成/验收而非仅作日志。
+  - 输出：
+    1. 具体说明：输出包括 `/api/state` 中的共享 JSON、浏览器 storage 中的 session/ui、翻译 cache JSON，以及预算中的 progress/smoke/trace 记录。
+    2. 代码/文档定位：applications/github.zip::backend/server.js:52；applications/github.zip::frontend/public/lib/arc.js:54；agent/agent.zip::scenario_translate.py:553
+    3. 详细解释：后端保存 STATE 并为下一会话提供 GET，前端存储本地视图，翻译记录保存 messages/content/usage；这些输出分别被应用重开、场景检查和成本/流程审计消费。
+
+STRATEGY-008 [RAG/RETRIEVAL] 未发现外部语料或语义召回，实际是需求全文与确定性词法处理
+  - 状态：
+    1. 具体说明：confirmed（限已检查静态内容）；未发现向量索引、embedding、FAISS/Chroma、外部 corpus 或把检索命中文本注入生成的实现，存在的是需求解析、词汇抽取和精确 cache。
+    2. 代码/文档定位：agent/agent.zip::main.py:1320；agent/agent.zip::scenario_translate.py:494；agent/agent.zip::scenario_translate.py:508
+    3. 详细解释：主 prompt 只拼接 dialect/contract/requirements/scaffold/template，`_corpus` 只从 requirements 引号内容建集合，`cache_path` 只做完整文本哈希；这些证据支持“静态未发现 RAG”，不推断运行时绝对不可能存在未提交服务。
+  - 作用：
+    1. 具体说明：系统通过直接提供题面和当前源代码解决上下文供给，通过词法精确匹配校验模型输出名称，而不是检索相似历史实现。
+    2. 代码/文档定位：agent/agent.zip::main.py:1430；agent/agent.zip::scenario_translate.py:296；agent/agent.zip::scenario_translate.py:569
+    3. 详细解释：`vocabulary_table` 生成逐字 checklist，`_verbatim` 只允许题面 corpus/已输入值，`_accept` 用同一 corpus 验证翻译结果；它们约束生成但不产生召回文档。
+  - 输入/知识源：
+    1. 具体说明：实际输入源是 requirements.yaml、prerequisites.md、dialect.md、scaffold/template 文件和当前应用快照，另有 requirements 中的 quoted vocabulary/seed 数据。
+    2. 代码/文档定位：agent/agent.zip::main.py:1320；agent/agent.zip::main.py:1324；agent/agent.zip::main.py:1344
+    3. 详细解释：这些来源由显式 `read_text/read_template` 读取后直接拼接到消息；没有看到独立索引构建、查询向量或召回文档集合，因此 RAG 输入维度应记录为未发现。
+  - 选择/检索：
+    1. 具体说明：无 RAG 检索；选择机制是全量需求上下文、引号短语去重、GIVEN seed 去重、按 scenario status 过滤未解析项，以及精确哈希 cache 命中。
+    2. 代码/文档定位：agent/agent.zip::main.py:1493；agent/agent.zip::scenario_translate.py:517；agent/agent.zip::scenario_translate.py:537
+    3. 详细解释：`seed_checklist` 和 `vocabulary_table` 做顺序/集合处理，`translate` 只筛非 parsed 场景，`_cached_or_called` 只按单个 cache path 命中；没有 query、rank 或 top-k 结果传给生成器。
+  - 生成/使用：
+    1. 具体说明：需求文本和模板字节被直接放入 user message，词法 corpus 只用于拒绝不在题面中的名字，精确 cache 内容在翻译阶段直接作为候选 JSON 使用。
+    2. 代码/文档定位：agent/agent.zip::main.py:1321；agent/agent.zip::scenario_translate.py:546；agent/agent.zip::scenario_translate.py:580
+    3. 详细解释：主生成的 message 没有检索结果插槽；翻译使用 build_messages 后解析 cache/content，并在 `_accept` 验证每个 step，故这些是直接上下文和校验，不是 RAG 注入。
+  - 输出：
+    1. 具体说明：输出是模型文件块、直接由题面验证的 scenario ops、词汇/seed 检查结果和精确 hash 的翻译 cache；未发现检索文档、索引或 embedding 产物。
+    2. 代码/文档定位：agent/agent.zip::main.py:1394；agent/agent.zip::scenario_translate.py:553；agent/agent.zip::main.py:1940
+    3. 详细解释：最终 publish 消费文件块，scenario report 消费 parsed/rejected ops，cache 保存模型响应；这些输出都能沿源码回溯到题面或当前代码读取，未出现外部语料召回链。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 `agent.zip`、五个应用归档及其静态源文件中未发现向量索引、embedding、外部知识库或语义检索；需求全文、词汇抽取、依赖/失败分组和精确哈希缓存不应误记为 RAG。
+- CODE-REUSE：已确认存在脚手架、统一 `arc.js`、seed/backend 机制和可选 template 的直接复制/扩展；没有发现从外部 URL 下载代码或运行时远程代码载入的静态证据。
+- MODEL-ROUTING：已确认主模型、fallback、翻译调用和测试生成调用的路由规则；环境变量决定的实际模型服务响应、调用次数和最终成本在静态仓库中无法确认。
+- STATE/PERSISTENCE：已确认应用 `/api/state`、浏览器 storage 与翻译 cache；未发现跨任务学习型记忆、持久向量记忆或把一个选手任务的生成结果自动训练到另一个任务的机制。
+- 访问边界：本分析仅读取选手目录中的归档和静态文件列表/内容；未执行其中代码、未安装依赖、未访问归档或代码中的 URL。
+分析完成

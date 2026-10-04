@@ -1,0 +1,95 @@
+核心策略分析：035-apach-a0df180b0feb
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\035-apach-a0df180b0feb
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+该选手采用“requirements.yaml -> 全局架构/契约 -> 按需求叶节点调用模型生成源码 -> Playwright/构建验证 -> 定向修复”的端到端生成管线。准备知识主要是 agent 内置的产品契约、模板、测试约定和需求引用值索引；源码上下文由确定性关键词/枢纽文件选择器提供，而非向量数据库检索。RAG：在已检查静态内容中未发现外部语料库、向量索引或语义检索，存在需求驱动的文件上下文选择。代码复用：确认复用 starter template、继承工作区和当前源码上下文，但未发现按任务预置成品页面库；模型负责适配和补丁生成。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求驱动的分阶段源码生成
+  - 状态：
+    1. 具体说明：confirmed；入口加载并解析 requirements.yaml，随后按 architecture、test_generation、source_generation/source_continuation 等阶段构造模型请求。
+    2. 代码/文档定位：agent/capability_agent.py:27；agent/capability_agent.py:95；agent/generated_application.py:312；agent/generated_application.py:418
+    3. 详细解释：入口把需求树转换为叶节点和共享状态；架构阶段先产出导航、数据模型和种子计划，生成阶段再以单元为粒度写入文件，因此模型输出受阶段顺序和前序计划约束。
+  - 作用：
+    1. 具体说明：把复杂应用拆成可验证需求单元，并保持跨单元的全局契约、导航和数据模型一致。
+    2. 代码/文档定位：agent/generated_application.py:202；agent/generated_application.py:312；agent/acceptance.py:143
+    3. 详细解释：GLOBAL CONTRACTS、QUOTED VALUES 和父级上下文会进入每个单元提示；测试生成提示还附加共享登录、种子和导航流程，减少单元间语义漂移。
+  - 输入/知识源：
+    1. 具体说明：requirements.yaml 的需求树、祖先描述、引用值索引、架构计划、模板契约和已有源码快照。
+    2. 代码/文档定位：agent/capability_agent.py:32；agent/requirement_context.py:90；agent/generated_application.py:375；agent/generated_application.py:138
+    3. 详细解释：需求文本经 load_requirements 解析，引用值被汇总为种子输入；静态提示头再拼接契约、计划和共享流程，源码快照作为当前实现上下文。
+  - 选择/检索：
+    1. 具体说明：confirmed；先按需求叶节点顺序选择单元，再由 context_select 对源码按焦点、App/app 枢纽文件、关键词和文件大小评分。
+    2. 代码/文档定位：agent/generated_application.py:465；agent/context_select.py:39；agent/context_select.py:48
+    3. 详细解释：选择器不是语义检索；当源码总量超限时保留高分枢纽和小文件，并为未展示文件生成导出/API/路由大纲，再渲染到提示中。
+  - 生成/使用：
+    1. 具体说明：confirmed；每次模型调用要求返回 JSON 或 FILE/EDIT 块，解析后写入允许的源码文件；失败时用 continuation 或 repair 提示重试。
+    2. 代码/文档定位：agent/generated_application.py:487；agent/generated_application.py:513；agent/generated_application.py:271
+    3. 详细解释：模型输出先经过 block_parser 和路径保护，再写入工作区；上下文不足或验证失败会重新选择焦点文件并要求最小修复。
+  - 输出：
+    1. 具体说明：生成的 frontend/backend 源码、IMPLEMENTATION_PLAN.json、MODEL_STATUS.json 及需求单元状态。
+    2. 代码/文档定位：agent/capability_agent.py:64；agent/generated_application.py:597；agent/main.py:46
+    3. 详细解释：模型状态持续写入 MODEL_STATUS，源码块落到应用目录；最终交付由 build/verification 阶段决定，而不是只保存模型文本。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 固定模板、产品契约与测试约定
+  - 状态：
+    1. 具体说明：confirmed；模板目录、后端/前端技术边界、可访问性规则、持久化约定和产品惯例在生成前准备并反复注入提示。
+    2. 代码/文档定位：agent/core_utils.py:52；agent/generated_application.py:168；agent/acceptance.py:92
+    3. 详细解释：这些内容不是当前题面临时检索结果，而是 agent 随包提供的规则和 starter 文件，直接规范模型要生成的应用形态。
+  - 作用：
+    1. 具体说明：把输出限制在 React/Node 标准库、固定 host、统一数据存储和可访问 UI 控件，作为所有需求的共同实现基线。
+    2. 代码/文档定位：agent/generated_application.py:170；agent/generated_application.py:176；agent/generated_application.py:187
+    3. 详细解释：契约规定入口、API 上下文、seed/loadJson/saveJson 和测试定位方式，使后续模型调用共享同一工程边界。
+  - 输入/知识源：
+    1. 具体说明：template/frontend、template/backend、CONTRACT 字符串、TEST_CONVENTIONS、需求中的产品描述。
+    2. 代码/文档定位：agent/main.py:42；agent/generated_application.py:168；agent/acceptance.py:92
+    3. 详细解释：非继承任务复制模板；测试提示把精确的角色名、标签、登录和导航规则与需求一起提供给测试模型。
+  - 选择/检索：
+    1. 具体说明：confirmed；模板按目录全量复制；契约和测试约定按阶段固定拼接，没有外部语料搜索。
+    2. 代码/文档定位：agent/core_utils.py:52；agent/acceptance.py:150；agent/generated_application.py:385
+    3. 详细解释：选择机制是固定注入和需求叶节点过滤；因此属于 prepared knowledge，而非 RAG。
+  - 生成/使用：
+    1. 具体说明：模型按契约创建或编辑页面、路由、API、seed 和持久化模块，测试模型按 TEST_CONVENTIONS 产生 Playwright 文件。
+    2. 代码/文档定位：agent/generated_application.py:168；agent/acceptance.py:150；agent/generated_application.py:470
+    3. 详细解释：契约位于源码上下文之前，模型先读统一规则再处理单元需求；首单元还被要求建立应用基础设施。
+  - 输出：
+    1. 具体说明：可运行的 Vite/Node 项目、需求对应的 acceptance spec，以及结构化实施计划和状态记录。
+    2. 代码/文档定位：agent/generated_application.py:470；agent/acceptance.py:228；agent/capability_agent.py:64
+    3. 详细解释：准备知识最终体现为符合固定 host 和测试定位约定的应用文件，并由状态文件记录其生成过程。
+
+STRATEGY-003 [ITERATION/EVALUATION] 模型响应重试与验收反馈修复
+  - 状态：
+    1. 具体说明：confirmed；模型传输最多多次尝试，源码生成后执行构建、运行和 Playwright 验收，失败则进入 build_repair。
+    2. 代码/文档定位：agent/model_transport.py:201；agent/generated_application.py:261；agent/generated_application.py:281
+    3. 详细解释：传输层区分流式故障、预算耗尽和模型响应；应用层把验证错误映射为源码焦点并循环修复，形成闭环。
+  - 作用：
+    1. 具体说明：淘汰不可解析或不满足行为的模型输出，并把真实构建/运行/测试错误反馈给下一次模型调用。
+    2. 代码/文档定位：agent/model_transport.py:239；agent/generated_application.py:271；agent/acceptance.py:381
+    3. 详细解释：只有通过 parser、contract_check 和 verify 的变更才继续；验收失败会携带错误、失败 URL 和相关源码进入修复提示。
+  - 输入/知识源：
+    1. 具体说明：模型文本、构建输出、运行时检查、Playwright 测试结果、改变前后的源码快照。
+    2. 代码/文档定位：agent/generated_application.py:263；agent/generated_application.py:269；agent/acceptance.py:433
+    3. 详细解释：repair_until_verified 从 check.error 提取路径和错误，再用 changed_paths 与 source_context 组成最小修复上下文。
+  - 选择/检索：
+    1. 具体说明：confirmed；修复焦点优先选择错误中出现的 frontend/backend 路径及本轮变更文件；测试缺失时按需求单元重生成。
+    2. 代码/文档定位：agent/generated_application.py:269；agent/generated_application.py:270；agent/acceptance.py:165
+    3. 详细解释：这是错误驱动的确定性文件筛选，不是外部知识库检索；焦点文件随后进入 repair prompt。
+  - 生成/使用：
+    1. 具体说明：模型收到失败阶段、错误文本和最小源码上下文，要求保留既有功能并做最小改动；传输异常则不把异常误报为答案错误。
+    2. 代码/文档定位：agent/generated_application.py:271；agent/generated_application.py:274；agent/model_transport.py:255
+    3. 详细解释：修复提示明确根因修复和功能保留；流式 JSON 损坏被标为 transport failure 并重试，避免污染生成上下文。
+  - 输出：
+    1. 具体说明：修复后的源码、每单元 verified_build_and_runtime 状态、测试通过数和最终交付标记。
+    2. 代码/文档定位：agent/generated_application.py:281；workspace\035-apach-a0df180b0feb\applications\github\MODEL_STATUS.json:7310
+    3. 详细解释：状态记录显示 26 个单元生成、100 个验收测试中 98 个通过且最终验证成功；这些记录是迭代结果而非模型原始文本。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent 源码和应用压缩包中未发现向量数据库、embedding、外部语料索引或 URL 访问；确认存在基于需求和源码快照的确定性上下文选择。
+- CODE-REUSE：确认模板复制、继承应用原地演进和当前源码编辑；在已检查内容中未发现按 github/sheet 任务预置成品实现库。由于应用压缩包只作为静态证据读取，无法确认其模型运行时是否还有未持久化的隐式缓存。
+- MODEL-ROUTING：确认通过 OPENAI_API_KEY、OPENAI_BASE_URL、MODEL 配置单一客户端，并按 stage 设置 reasoning、token 与预算；未发现多模型并行组合或基于质量的模型选择，fallback 主要是模板/状态层面的安全网。
+- TOOLS/EXECUTION：确认源码中实现 subprocess、npm、Node/Playwright 构建和运行检查，但本次分析未执行选手代码、未安装依赖、未访问 URL；这些是选手设计的执行策略，不是本次分析行为。
+- STATE/PERSISTENCE：确认 MODEL_STATUS、IMPLEMENTATION_PLAN、usage/event 累计、应用 dataDir 的 JSON 持久化及继承工作区检测；跨任务长期记忆或学习型缓存未在可读证据中解决。
+分析完成

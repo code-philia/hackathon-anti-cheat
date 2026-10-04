@@ -1,0 +1,119 @@
+﻿核心策略分析�?001-bugtakue-0b23afbd83fb
+题面路径�?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围�?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github�?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+浣滅瓟璺緞锛?E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\001-bugtakue-0b23afbd83fb
+鍒嗘瀽瑕嗙洊锛歊AG/RETRIEVAL=宸叉鏌ワ紱PREPARED-KNOWLEDGE=宸叉鏌ワ紱CODE-REUSE=宸叉鏌ワ紱PROMPT-ORCHESTRATION=宸叉鏌ワ紱MODEL-ROUTING=宸叉鏌ワ紱TOOLS/EXECUTION=宸叉鏌ワ紱ITERATION/EVALUATION=宸叉鏌ワ紱STATE/PERSISTENCE=宸叉鏌?
+[核心结论]
+端到端主策略是“确定性基础设施初始化 + 需求依赖排序的小批次模型代理编辑”：qualifier 编译公开需求、创建通用前后端脚手架，再让 CodingAgent 按系统提示读取、编辑、快速校验和浏览器探测。任务专用 deterministic canvas 可作为模型失败后的单次恢复，并直接提供完整 GitHub/Sheet 产品骨架。模型输入主要来自公开 requirements.yaml、当前工作区读取结果和准备好的系统提示；没有发现向量数据库、embedding 或语义检索，故 RAG=在已检查静态内容中未发现。代码复用=confirmed：deterministic 产品文件被复制/提升到候选应用，属于任务专用预置代码复用。模型路由是单个 OpenAI-compatible chat 客户端，视觉参考是可选独立网关。工具执行、独立检查、浏览器探测、回归胶囊和追加式 trace 共同形成验证与持久化闭环。
+
+[绛栫暐娓呭崟]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 公开需求驱动的分批代理编辑与审计提示
+  - 鐘舵€? confirmed：CodingAgent 使用固定系统提示、批次任务提示、需求原文预填充和验收审计提示，形成读代码、单次编辑、校验、浏览器探测、AUDIT PASS 的编排链。
+    1. 鍏蜂綋璇存槑：系统提示明确每轮工具顺序和禁止整包粘贴，批次提示携带依赖、共享目录上下文及需求 ID，验收阶段再注入变更快照。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/agent.py:27；agent/agent/factory26_harness/agent.py:561；agent/agent/factory26_harness/agent.py:765
+    3. 详细解释：这些提示在 CodingAgent._run 前构造消息并限制工具循环；模型先获得公开需求和当前代码，再按阶段返回工具调用，审计提示检查变更后才允许结束，因此提示编排直接连接任务描述、编辑和最终候选。
+  - 浣滅敤：把多项原子需求压缩成依赖有序的小批次，并把每次模型工作约束到可验证的工程动作。
+    1. 鍏蜂綋璇存槑：batches 按数量和字符预算切分，shared_folder_context 只注入一次共享目录规则；repair 使用聚焦系统提示处理失败批次。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/requirements.py:485；agent/agent/factory26_harness/requirements.py:507；agent/agent/factory26_harness/qualifier.py:1351
+    3. 详细解释：调度器保持依赖顺序并控制上下文大小，后续修复切换 FOCUSED_SYSTEM_PROMPT，使模型只处理当前需求；这减少上下文重复并让补丁可定位。
+  - 杈撳叆/鐭ヨ瘑婧恅：输入是 requirements.yaml 解析出的 RequirementNode、依赖索引、共享文件夹上下文、先前批次交接和当前源代码。
+    1. 鍏蜂綋璇存槑：RequirementNode 能生成完整原文或有界摘要，agent 将需求、先前源路径和交接信息包在 untrusted 标签中。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/requirements.py:156；agent/agent/factory26_harness/agent.py:580；agent/agent/factory26_harness/agent.py:600
+    3. 详细解释：原始需求被保留为模型可分页读取的数据，工作区读取工具提供实现事实；模型不能把需求文本当作 harness 指令，但可据此生成页面和 API 行为。
+  - 閫夋嫨/妫€绱：通过依赖顺序、批次字符预算、需求分页游标和已读源快照选择上下文，没有语义检索排序。
+    1. 鍏蜂綋璇存槑：批次选择由 _schedule_cost 和 max_spec_chars 决定，超长需求通过 read_requirement_spec 从 start_char 分页，审计只保留新鲜读取结果。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/requirements.py:456；agent/agent/factory26_harness/workspace_tools.py:424；agent/agent/factory26_harness/agent.py:290
+    3. 详细解释：选择规则是确定性的容量和依赖规则；它把选中的原文和新鲜代码观察送入下一轮，而不是从外部知识库召回相似文档。
+  - 鐢熸垚/浣跨敤：模型以工具调用产生小块 replace_text/write_file，随后 run_validation、browser_probe 和无工具 AUDIT PASS。
+    1. 鍏蜂綋璇存槑：每轮最多受限工具调用，写操作必须提供期望哈希，验证和探测结果会被压缩后回送模型。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/agent.py:30；agent/agent/factory26_harness/workspace_tools.py:365；agent/agent/factory26_harness/agent.py:1065
+    3. 详细解释：模型输出不是直接成品文本，而是受 schema 约束的编辑动作；工具结果成为下一轮上下文，直到代码通过审计或达到停止条件。
+  - 杈撳嚭：输出为 frontend/backend 文件变更、批次交接摘要、验证记录和最终审计状态。
+    1. 鍏蜂綋璇存槑：成功批次记录 changed_files、验证范围、浏览器探测状态并交给后续批次。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/agent.py:1178；agent/agent/factory26_harness/qualifier.py:1455
+    3. 详细解释：这些输出被候选应用阶段消费，后续批次读取前序源代码和 handoff；最终目录再进入独立 full checks 和发布拷贝。
+
+STRATEGY-002 [CODE-REUSE] 任务专用 deterministic GitHub/Sheet 基线与一次恢复
+  - 鐘舵€? confirmed：代码库包含 deterministic/github_product 和 deterministic/sheet_product 的完整官方实现，并由 AgentFirstFallbackGraph 在模型候选失败时绑定。
+    1. 鍏蜂綋璇存槑：fallback 解析任务树，选择 github_canvas 或 sheet_canvas，复制对应 official 前后端文件并独立验证。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/agent_first_fallback.py:104；agent/agent/factory26_harness/agent_first_fallback.py:212；agent/agent/factory26_harness/qualifier.py:863
+    3. 详细解释：这是直接文件级预置代码复用，不是模型根据示例临时重写；恢复在同一需求边界运行，验证通过后提升为候选基线。
+  - 浣滅敤：在正常 Agent 候选未通过独立验收时，快速恢复覆盖公开需求的可运行产品，并继续剩余需求。
+    1. 鍏蜂綋璇存槑：fallback 图只允许一次 FALLBACK_ATTEMPT，随后 VALIDATE_FALLBACK、PROMOTE 或终止。
+    2. 浠ｇ爜/文档位置：agent/agent/factory26_harness/agent_first_fallback.py:23；agent/agent/factory26_harness/agent_first_fallback.py:246；agent/agent/factory26_harness/agent_first_fallback.py:271
+    3. 详细解释：有限状态图把预置实现放在模型失败后的恢复支路，避免无限重试；成功基线随后重新进入 PLAN。
+  - 杈撳叆/鐭ヨ瘑婧恅：输入是公开需求树哈希、需求 ID 集合和 deterministic 模块内的静态产品源文件。
+    1. 鍏蜂綋璇存槑：绑定按根需求树身份决定适用 canvas，产品源包含完整 app.js、server.mjs、styles.css。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/agent_first_fallback.py:104；agent/agent/deterministic/github_canvas.py:1；agent/agent/deterministic/sheet_canvas.py:1
+    3. 详细解释：需求树是路由条件，预置源文件是生成输入；它们绕过模型创作阶段直接形成候选应用文件。
+  - 閫夋嫨/妫€绱：选择规则是任务根名称/需求集合的确定性匹配，不存在内容相似度检索。
+    1. 鍏蜂綋璇存槑：resolve_fallback_binding 只在识别 GitHub 或 Sheet 树时返回绑定，且 graph 检查 fallback_attempted 防止第二次。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/agent_first_fallback.py:104；agent/agent/factory26_harness/agent_first_fallback.py:205
+    3. 详细解释：匹配结果决定复制哪套官方实现；未匹配时明确无 fallback，而不是猜测其他目录。
+  - 鐢熸垚/浣跨敤：fallback 将静态官方应用 staged 到临时工作区，运行结构、构建、启动和行为检查后再提升。
+    1. 鍏蜂綋璇存槑：_run_agent_first_fallback 在隔离目录执行绑定的 apply/build/check 流程。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/qualifier.py:825；agent/agent/factory26_harness/qualifier.py:874
+    3. 详细解释：预置代码通过同一独立验收门槛进入最终输出，避免仅凭复制动作宣称成功。
+  - 杈撳嚭：输出是被验证的完整 frontend/backend 产品基线、fallback 状态和覆盖需求 ID。
+    1. 鍏蜂綋璇存槑：graph 记录 fallback_name、covered_count、attempted、recovered，ArcRuntime 再提交恢复候选。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/agent_first_fallback.py:373；agent/agent/factory26_harness/arc_runtime.py:63
+    3. 详细解释：状态元数据供后续调度判断是否继续模型批次，文件基线供最终输出目录和测试消费。
+
+STRATEGY-003 [TOOLS/EXECUTION] 受限文件工具、离线检查与浏览器语义探测
+  - 鐘舵€? confirmed：模型只能通过显式工具 schema 读写 frontend/backend，执行 quick/full validation 和有限 browser_probe；系统提示禁止自行启动服务器。
+    1. 鍏蜂綋璇存槑：工具面包含 read_file/read_files/search_text/write_file/replace_text/run_validation/read_requirement_spec/browser_probe，并限制写目录和调用次数。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:319；agent/agent/factory26_harness/workspace_tools.py:365；agent/agent/factory26_harness/workspace_tools.py:446
+    3. 详细解释：schema 与权限检查把模型生成转化为可审计动作；浏览器工具只访问本地生成应用，结果返回可见文本和行为断言。
+  - 浣滅敤：提供代码检查、精确补丁、构建/启动验证以及用户流程验证，形成模型与候选工作区之间的执行接口。
+    1. 鍏蜂綋璇存槑：WorkspaceTools.execute 记录 tool_call/tool_result，写入前校验 expected_sha256、路径和累计字节预算。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:579；agent/agent/factory26_harness/workspace_tools.py:618
+    3. 详细解释：工具层阻止越界或陈旧覆盖，并将执行结果送回模型；这是生成链的实际落地层而非文档建议。
+  - 杈撳叆/鐭ヨ瘑婧恅：输入包括当前文件内容、公开需求规格、模型给出的语义步骤和本地验证配置。
+    1. 鍏蜂綋璇存槑：read_files/search_text 返回路径、行号和内容，browser_probe 接受 click/fill/press/select/check/reload 步骤。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:321；agent/agent/factory26_harness/workspace_tools.py:347；agent/agent/factory26_harness/browser_probe.py:214
+    3. 详细解释：这些输入分别支持源代码定位和端到端交互验证，模型据此决定下一次补丁或结束。
+  - 閫夋嫨/妫€绱：文件选择按显式路径/文本查询，流程选择按需求场景和可见控件断言，工具预算限制最多调用次数。
+    1. 鍏蜂綋璇存槑：search_text 是词法搜索，browser_probe 在每批最多三次启动并要求语义动作；没有向量索引。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:451；agent/agent/factory26_harness/browser_probe.py:465
+    3. 详细解释：选择依据是路径、字面匹配和场景步骤；结果进入压缩观察消息，不会形成外部知识库召回。
+  - 鐢熸垚/浣跨敤：工具调用直接修改候选文件或运行隔离检查，成功结果触发 revision 更新，失败结果触发模型修复。
+    1. 鍏蜂綋璇存槑：write_file/replace_text 原子写入，run_validation 调用 quick/full 检查，browser_probe 在变更后要求重新验证。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:939；agent/agent/factory26_harness/workspace_tools.py:1014；agent/agent/factory26_harness/workspace_tools.py:1063
+    3. 详细解释：每个动作都会改变或验证候选状态；模型只能在验证和探测状态满足条件后输出 AUDIT PASS。
+  - 杈撳嚭：输出为源文件变更、check 结果、browser_probe 行为断言和可供下一轮消费的压缩工具观察。
+    1. 鍏蜂綋璇存槑：工具层记录变更哈希、检查摘要、失败原因和浏览器断言，并写入 production trace。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/workspace_tools.py:628；agent/agent/factory26_harness/trace.py:74
+    3. 详细解释：这些结果既是模型下一步上下文，也是最终报告的可审计证据，连接执行动作与发布候选。
+
+STRATEGY-004 [ITERATION/EVALUATION] 独立验收、回归胶囊与追加式状态持久化
+  - 鐘舵€? confirmed：系统在模型批次后运行独立 checks，成功浏览器流程可存为 regression capsule，失败批次进入 repair 或 fallback。
+    1. 鍏蜂綋璇存槑：qualifier 将 run_full_checks、browser 探测、回归重放和 fallback 图组合为接受门。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/qualifier.py:94；agent/agent/factory26_harness/qualifier.py:1401；agent/agent/factory26_harness/regression.py:300
+    3. 详细解释：验收独立于模型自述，只有通过的候选才进入下一批次或最终输出；失败信息驱动有界修复。
+  - 浣滅敤：检测语法、构建、启动、交互和历史流程回归，防止新补丁破坏已完成需求。
+    1. 鍏蜂綋璇存槑：RegressionMemory 只保存成功提升后的合法步骤配方，并按需求 ID 选择重放胶囊。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/regression.py:140；agent/agent/factory26_harness/regression.py:185
+    3. 详细解释：历史流程被绑定源清单摘要，重放时重新启动隔离应用并检查行为计数，因而能发现跨批次回归。
+  - 杈撳叆/鐭ヨ瘑婧恅：输入是候选源 manifest、需求 ID、浏览器步骤、check 结果和模型/工具事件。
+    1. 鍏蜂綋璇存槑：回归 remember 接受 requirement_ids、steps、source_manifest；trace 接收受限元数据事件。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/regression.py:140；agent/agent/factory26_harness/trace.py:109
+    3. 详细解释：这些输入把行为配方与具体源版本关联，后续只在匹配需求或最终阶段重放。
+  - 閫夋嫨/妫€绱：回归胶囊按需求交集和轮换顺序选择，最多保留 24 个；失败尝试不会被提升为记忆。
+    1. 鍏蜂綋璇存槑：_select 优先选择与当前 requirement_ids 相交的胶囊，maximum_capsules 限制容量。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/regression.py:109；agent/agent/factory26_harness/regression.py:185
+    3. 详细解释：选择规则是需求 ID 过滤而非语义相似度；它将历史已验证流程定向传给当前验收阶段。
+  - 鐢熸垚/浣跨敤：通过的 browser_probe 步骤被规范化、哈希并保存，之后在隔离候选中重放；失败则生成 repair ticket。
+    1. 鍏蜂綋璇存槑：_recipe 校验交互步骤，_replay 调用 probe_local_app，失败状态由 qualifier 进入修复或 fallback。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/regression.py:41；agent/agent/factory26_harness/regression.py:221；agent/agent/factory26_harness/qualifier.py:1363
+    3. 详细解释：生成物不是新代码，而是可重复的行为验证配方；它约束后续编辑必须保持已验证用户流程。
+  - 杈撳嚭：输出为 production-trace.jsonl、harness-report、回归摘要、编译计划和最终应用目录。
+    1. 鍏蜂綋璇存槑：ProductionTrace 追加写入并校验链式事件，session/evidence 导出保存验证元数据。
+    2. 浠ｇ爴/文档位置：agent/agent/factory26_harness/trace.py:354；agent/agent/factory26_harness/trace.py:394
+    3. 详细解释：追加式 trace 保留模型请求、工具、验收和回归状态的可审计历史；这些状态支持跨批次 handoff，但未发现跨任务学习记忆。
+
+[鏈彂鐜版垨鏈В鍐砞
+- RAG/RETRIEVAL：在已检查的选手静态仓库中未发现向量索引、embedding、外部语料库或语义召回；search_text 和需求分页属于词法/顺序读取。
+- PREPARED-KNOWLEDGE：已确认系统提示、需求模板、共享目录规则、generic scaffold 和任务专用 deterministic 产品均为预先准备知识/资产。
+- MODEL-ROUTING：已确认一个 OpenAI-compatible chat 客户端和可选视觉网关；具体运行时模型值来自环境，静态仓库无法确认实际服务端响应。
+- STATE/PERSISTENCE：已确认运行内 compiled-plan、handoff、回归胶囊和 production trace；未发现跨任务学习或持久化向量记忆。
+分析完成

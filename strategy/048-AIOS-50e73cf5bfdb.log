@@ -1,0 +1,203 @@
+核心策略分析：048-AIOS-50e73cf5bfdb
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\048-AIOS-50e73cf5bfdb
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+提交是一个以 Octos 外部编码代理为核心的需求驱动生成流水线：main.py 读取 requirements.yaml，解析原子需求与 GIVEN 场景，构造常驻系统上下文和按家族分组的工单，再经 stdio 驱动模型在工作区生成前后端。宿主预置脚手架、领域规则、fixture 提取和测试骨架，模型负责业务实现；随后通过 Playwright、语法检查、回归与修复轮次迭代。未发现向量/关键词语料检索式 RAG；存在明确的模板/脚手架代码复用，且主要是宿主直接复制生成，未确认从题面仓库复制实现代码。模型路由支持 OpenAI 兼容、DeepSeek、Anthropic 及自定义 provider。
+
+证据口径：archive.zip!/member:line 表示原始 ZIP 内成员文本行号，均只读查看，未解压落盘。confirmed 指静态实现确认，不等于本次运行确认。扫描器跳过五个大型 ZIP，已补充查看压缩包内源码。
+
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 需求树、架构规则与宿主脚手架的预置知识
+  - 状态：
+    1. 具体说明：confirmed：系统在模型调用前构造 ROOT 背景、children map、规则与 fixture 规则，并把这些内容作为常驻上下文；模板文件和家族 stub 也由宿主预先准备。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1992；agent/agent.zip!/main.py:2006；agent/agent.zip!/plan_envelope.py:37；agent/agent.zip!/scaffold/__init__.py:44
+    3. 详细解释：build_system_row_context 明确把需求树和规则拼接为系统行，plan_envelope 的 CHARTER_RULES/ARCHITECTURE_LINES 给出固定工程约束，scaffold 则在模型工作前写入可启动基座，因此生成过程拥有稳定的领域和工程先验。
+  - 作用：
+    1. 具体说明：为模型提供可执行的产品边界、路径契约、权限/持久化规则和 UI 骨架，减少从空目录设计基础设施的负担。
+    2. 代码/文档定位：agent/agent.zip!/plan_envelope.py:64；agent/agent.zip!/plan_envelope.py:97；agent/agent.zip!/scaffold/__init__.py:47
+    3. 详细解释：架构清单规定 backend/frontend、路由和数据库职责，脚手架说明把 HTTP、存储和 UI 基础预置，模型因此集中实现需求家族，而不是重新搭建运行时。
+  - 输入/知识源：
+    1. 具体说明：输入包括 example 任务中的 requirements.yaml、解析出的需求树、fixture_manifest 产物、固定 CHARTER_RULES/ARCHITECTURE_LINES，以及 template/scaffold 常量。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1696；agent/agent.zip!/main.py:3360；agent/agent.zip!/main.py:3363；agent/agent.zip!/plan_envelope.py:64
+    3. 详细解释：load_requirement_tree 读取 YAML 并附加源行，scope_pruned_tree 和 fixture_manifest.extract 从中派生模型可见契约；固定架构文本和脚手架常量则是任务前准备的知识源。
+  - 选择/检索：
+    1. 具体说明：confirmed：按需求树层级、家族范围和依赖图选择上下文；不是向量或关键词检索，系统行使用渲染后的全局树，工单使用当前批次。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2106；agent/agent.zip!/main.py:2285；agent/agent.zip!/main.py:3358
+    3. 详细解释：session_group_batches 按家族依赖排序，build_turn_features 只装当前批节点及其场景，scope_pruned_tree 裁剪范围外内容；选择规则是结构化分组而非相似度搜索。
+  - 生成/使用：
+    1. 具体说明：把规则作为 bootstrap 系统行，把本批 TASK、SEED 和逐字 SCENARIOS 拼入模型工单，并把预置模板留在工作区供模型编辑。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2006；agent/agent.zip!/main.py:2297；agent/agent.zip!/scaffold/__init__.py:53
+    3. 详细解释：系统行提供跨轮稳定约束，turn 正文提供本批可执行事实，scaffold 按 write-if-absent 落盘文件；三者共同影响模型生成的路由、组件和数据实现。
+  - 输出：
+    1. 具体说明：输出为带 AGENTS.md/规则上下文的 Octos 会话、requirements-derived 家族 stub、backend/frontend 模板及 fixture-manifest.json。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3582；agent/agent.zip!/main.py:3684；agent/agent.zip!/scaffold/__init__.py:58
+    3. 详细解释：fixture 清单和全局上下文成为后续验证输入，模板和 stub 成为模型直接修改的代码产物，最终共同组成应用工作区。
+
+STRATEGY-002 [PROMPT-ORCHESTRATION] 按家族依赖分组的分阶段模型工单
+  - 状态：
+    1. 具体说明：confirmed：先按顶层家族建批，超大或异型树才退化为同父批，再按家族依赖排序；组内复用会话，组边界关闭会话。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1869；agent/agent.zip!/main.py:2106；agent/agent.zip!/main.py:3379
+    3. 详细解释：group_siblings 和 session_group_batches 把大需求拆成有序批次，主流程记录 work orders 并逐批调用 Octos，形成明确的阶段编排。
+  - 作用：
+    1. 具体说明：控制上下文大小和实现顺序，使共享家族连贯实现、跨家族依赖先后可追踪，并允许按 OCTOS_ARC_FAMILIES 做局部运行。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2110；agent/agent.zip!/main.py:2322；agent/agent.zip!/main.py:3392
+    3. 详细解释：家族策略保持文档顺序并处理依赖环，scope 可排除不相关家族；这样模型每轮聚焦有限需求，同时保留全局产品契约。
+  - 输入/知识源：
+    1. 具体说明：每轮输入是当前批原子节点 ID、逐字 Gherkin 场景、GIVEN/SEED 约束、父家族信息和常驻系统行。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2289；agent/agent.zip!/main.py:2297；agent/agent.zip!/main.py:2006
+    3. 详细解释：build_turn_features 明确 TASK→SEED→SCENARIOS 结构；系统行补充架构，父索引支持场景渲染，输入因此既有局部事实又有全局规则。
+  - 选择/检索：
+    1. 具体说明：按文档顺序、同父节点和家族依赖图选择批次，不执行外部 corpus 查询或 embedding 相似度排序。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1878；agent/agent.zip!/main.py:2134；agent/agent.zip!/main.py:2147
+    3. 详细解释：代码通过 parent 比较、依赖集合和 Kahn 式 ready 集合决定下一组，命中的是结构关系而不是检索结果，因此 RAG 结论为未发现。
+  - 生成/使用：
+    1. 具体说明：为每批构造英文 TASK、固定 SEED 行和原文 SCENARIOS，并在失败时追加 reentry、fresh-session repair 或 zero-output 提示。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2297；agent/agent.zip!/main.py:3941；agent/agent.zip!/main.py:3976
+    3. 详细解释：初始工单驱动实现，终止标记或空输出会触发带原因的续轮/新会话修复提示，使提示编排覆盖正常和异常路径。
+  - 输出：
+    1. 具体说明：输出是每批模型修改的应用文件、提交/事件追踪以及按节点记录的成功或失败证据。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3765；agent/agent.zip!/main.py:4311；agent/agent.zip!/main.py:2640
+    3. 详细解释：流程维护批次谱和节点级证据，OctosDriver.run 产生协议事件；这些结果供后续回归和最终交付判定消费。
+
+STRATEGY-003 [MODEL-ROUTING] 可配置多 provider 的 Octos 模型驱动
+  - 状态：
+    1. 具体说明：confirmed：运行时读取 OPENAI_API_KEY、OPENAI_BASE_URL、MODEL/OCTOS_MODEL 和 OCTOS_PROVIDER，并建立主模型与修复模型两个 driver 配置。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2505；agent/agent.zip!/main.py:3735；agent/agent.zip!/main.py:3742
+    3. 详细解释：build_octos_env 解析 provider，repair driver 使用独立配置和 profile；代码显示路由和修复调用均已实现，而非仅文档声明。
+  - 作用：
+    1. 具体说明：把需求工单发送给外部 Octos 代理，必要时用独立 profile 的修复 driver（当前主/修复均 enabled/max） 处理语法或回归错误。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2640；agent/agent.zip!/main.py:3745；agent/agent.zip!/main.py:4043
+    3. 详细解释：run_octos/OctosDriver 负责协议会话，get_repair_driver 设置 THINKING_REPAIR，修复调用消费静态错误摘要并继续修改工作区。
+  - 输入/知识源：
+    1. 具体说明：输入是工单 prompt、系统 bootstrap、环境中的 endpoint/key/model、以及修复阶段的 syntax/spec 错误摘要。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2505；agent/agent.zip!/main.py:3862；agent/agent.zip!/main.py:4043
+    3. 详细解释：环境决定服务地址和模型标识，turn_core 及错误摘要决定消息内容；两类输入在不同 driver 路径进入模型请求。
+  - 选择/检索：
+    1. 具体说明：provider 通过 OCTOS_PROVIDER 优先、再依据 base_url 中 deepseek/anthropic 字样推断，否则使用 openai；模型名由 OCTOS_MODEL 覆盖 MODEL。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2508；agent/agent.zip!/main.py:2510；agent/agent.zip!/main.py:2527
+    3. 详细解释：这是配置优先级，不是失败后更换模型的路由；修复 driver 仍读取相同模型环境变量，仅会话与配置目录独立。
+  - 生成/使用：
+    1. 具体说明：生成 config.json（provider/model/base_url/gateway/思考参数），通过 Octos stdio/chat 协议提交 prompt，并把工具事件回传主流程。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2534；agent/agent.zip!/main.py:2563；agent/agent.zip!/octos_stdio.py:26
+    3. 详细解释：配置文件控制模型网关和上下文预算，stdio 会话封装子进程协议；模型响应随后驱动文件工具和代码修改。
+  - 输出：
+    1. 具体说明：输出是模型文本/协议帧、工作区改动和主/修复 driver 的运行日志，最终形成应用代码。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2640；agent/agent.zip!/main.py:3666；agent/agent.zip!/main.py:4306
+    3. 详细解释：协议输出被记录到 .arc/.octos 追踪层，driver 关闭后保留生成工作区，后续验证阶段消费这些文件。
+
+STRATEGY-004 [TOOLS/EXECUTION] 宿主脚手架、文件工具与受控浏览器验证
+  - 状态：
+    1. 具体说明：confirmed：系统允许 bash/read_file/edit_file/write_file/grep/list_dir 工具，并由宿主启动模板、开发服务器和 Playwright 检查。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2574；agent/agent.zip!/main.py:3484；agent/agent.zip!/main.py:4187
+    3. 详细解释：工具白名单和 scaffold 调用是可执行代码路径，Tier-2 调用明确运行 staged Playwright；因此工具/执行策略有实现证据。
+  - 作用：
+    1. 具体说明：为模型提供读取需求、编辑代码、写入文件和检查目录的能力，同时让宿主独立执行页面健康检查与验收规格。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2577；agent/agent.zip!/main.py:1435；agent/agent.zip!/main.py:1200
+    3. 详细解释：白名单限制模型工具面，page-health 和 staged runner 由宿主读取生成应用并产生可比较的通过/失败结果。
+  - 输入/知识源：
+    1. 具体说明：工具输入来自需求文件、AGENTS.md、脚手架代码、工作区当前文件和 staged e2e/spec 文件；浏览器输入是运行中的本地应用。
+    2. 代码/文档定位：agent/agent.zip!/plan_envelope.py:69；agent/agent.zip!/main.py:3689；agent/agent.zip!/main.py:3465
+    3. 详细解释：架构规则限定读取需求范围，workspace AGENTS 副本暴露端口和路径，stage_specs 将验收输入放入工作区供验证。
+  - 选择/检索：
+    1. 具体说明：confirmed：文件工具按模型指定路径操作，验收 spec 按 spec_to_node_map 和 scope 过滤，开发服务器固定使用 smoke port 避免 grading port。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2577；agent/agent.zip!/main.py:3472；agent/agent.zip!/main.py:3445
+    3. 详细解释：工具选择由 allowlist 限制，测试选择按节点映射和范围裁剪，端口选择由 smoke_port 分支决定，均为显式规则。
+  - 生成/使用：
+    1. 具体说明：模型通过工具生成/修改 frontend/backend；宿主随后启动服务器、执行页面健康检查和 Playwright staged specs。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3484；agent/agent.zip!/main.py:1435；agent/agent.zip!/main.py:4187
+    3. 详细解释：脚手架先写入模板，模型工具在其上补业务代码，宿主把生成结果作为运行目标并执行浏览器流程，形成代码到可见页面的闭环。
+  - 输出：
+    1. 具体说明：输出包括工作区源码、e2e 骨架、preview-ready.json、验收通过/失败摘要和 traceability 事件。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3611；agent/agent.zip!/main.py:4194；agent/agent.zip!/main.py:4340
+    3. 详细解释：自测目录和验收结果分别供后续修复/交付使用，preview-ready 标志把最终可预览状态通知平台。
+
+STRATEGY-005 [ITERATION/EVALUATION] 语法门、批尾回归与 Tier-2 修复循环
+  - 状态：
+    1. 具体说明：confirmed：每批可执行 syntax repair、红规格回归和最终 staged Playwright，失败会进入修复 driver 或重试提示。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1549；agent/agent.zip!/main.py:4043；agent/agent.zip!/main.py:4187
+    3. 详细解释：js_syntax_errors、repair run 和 Tier-2 run 构成可观察的评估链，说明迭代不是注释中的计划而是主流程分支。
+  - 作用：
+    1. 具体说明：捕获语法错误、当前批红测试和跨家族回归，修复后再验证，降低后续家族破坏既有功能的风险。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1623；agent/agent.zip!/main.py:3765；agent/agent.zip!/main.py:4311
+    3. 详细解释：syntax_repair_prompt 提供错误上下文，staged spec 集合界定 blast radius，节点证据按失败优先级记录，形成持续质量门。
+  - 输入/知识源：
+    1. 具体说明：评估输入是生成后的 JS 文件、运行中应用、按节点映射的 spec、Playwright 输出以及模型协议终止状态。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1549；agent/agent.zip!/main.py:3472；agent/agent.zip!/main.py:646
+    3. 详细解释：静态语法扫描和浏览器规格分别观察代码和用户流程，turn_end/reentry 还读取 kernel terminal marker，错误都能回流提示。
+  - 选择/检索：
+    1. 具体说明：先按 syntax 错误决定修复，再按已完成批次的 staged specs 做回归，最终按 scoped_spec_files 选择 Tier-2 文件；停止条件是绿或达到尝试/预算上限。
+    2. 代码/文档定位：agent/agent.zip!/main.py:4043；agent/agent.zip!/main.py:3765；agent/agent.zip!/main.py:4187；agent/agent.zip!/main.py:4261
+    3. 详细解释：代码按阶段缩小测试集合，Tier-2 全绿分支产生最终成功文本，未绿则保留失败证据并停止继续扩张。
+  - 生成/使用：
+    1. 具体说明：把语法错误、红测试摘要、终止原因包装为 syntax_repair_prompt、回归修复 prompt 或 reentry prompt，再交给模型修改文件。
+    2. 代码/文档定位：agent/agent.zip!/main.py:1623；agent/agent.zip!/main.py:3941；agent/agent.zip!/main.py:4043
+    3. 详细解释：反馈不是单独报告而是下一轮模型输入；模型据此执行编辑工具，随后同一检查链重新评估。
+  - 输出：
+    1. 具体说明：输出为修复后的源码、每节点 passed/failed 证据、Tier-2 digest 和 final-verification.json。
+    2. 代码/文档定位：agent/agent.zip!/main.py:4194；agent/agent.zip!/main.py:4293；agent/agent.zip!/main.py:4311
+    3. 详细解释：验收统计和 digest 固化最终状态，节点证据供平台追踪，修复产物则留在应用工作区供预览和评分。
+
+STRATEGY-006 [STATE/PERSISTENCE] 分层上下文、profile 与追踪工件持久化
+  - 状态：
+    1. 具体说明：confirmed：系统持久化 workspace AGENTS.md、fixture-manifest、.arc/.octos 日志、会话 profile 和最终验证文件，并在修复时使用独立 profile。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3684；agent/agent.zip!/main.py:3582；agent/agent.zip!/main.py:3739
+    3. 详细解释：全局上下文和运行事实写入文件，repair profile 与主 profile 隔离，说明状态管理贯穿多轮而非仅存在内存。
+  - 作用：
+    1. 具体说明：让跨轮模型保持稳定架构前缀和进度信息，让宿主能够重放、审计、定位失败并在修复会话中继续工作。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2000；agent/agent.zip!/main.py:3666；agent/agent.zip!/main.py:3761
+    3. 详细解释：bootstrap 常驻上下文减少轮次漂移，日志分层保存协议和调试数据，进度账本服务工单/事件消费，三者连接生成与审计。
+  - 输入/知识源：
+    1. 具体说明：状态输入包括需求树渲染文本、fixture 统计、模型协议帧、批次完成集合、错误摘要和环境配置。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3582；agent/agent.zip!/main.py:3765；agent/agent.zip!/main.py:3666
+    3. 详细解释：这些来源分别形成清单、回归范围和上下文日志；下一批和修复轮次读取它们决定要携带的事实。
+  - 选择/检索：
+    1. 具体说明：状态按 profile、全局系统行、批次 ledger、.arc 追踪目录分层选择；不使用跨任务向量记忆，且 config 明确关闭 memory refresh。
+    2. 代码/文档定位：agent/agent.zip!/main.py:2534；agent/agent.zip!/main.py:2581；agent/agent.zip!/main.py:3761
+    3. 详细解释：config 的 memory.refresh=false 和 context log 设置表明这是文件/会话状态持久化；不同 profile 仅按主流程或修复用途选择。
+  - 生成/使用：
+    1. 具体说明：写入 AGENTS.md、fixture-manifest.json、context logs、runner/debug 事件和 final-verification.json，并把这些文件用于后续模型/宿主阶段。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3582；agent/agent.zip!/main.py:3689；agent/agent.zip!/main.py:4293
+    3. 详细解释：持久化动作把本轮派生信息变成下一阶段可读输入，最终验证文件还把评估结果固定为交付证据。
+  - 输出：
+    1. 具体说明：输出是工作区中的 AGENTS.md、.arc/traceability、.octos 调试记录、fixture-manifest.json、preview-ready 和 final-verification 文件。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3666；agent/agent.zip!/main.py:3582；agent/agent.zip!/main.py:4340
+    3. 详细解释：这些工件分别被后续批次、平台事件聚合器、预览服务和最终评估消费；它们不等同于模型生成代码，但支撑可重复的端到端流程。
+
+STRATEGY-007 [CODE-REUSE] 固定工具箱落盘与模型在家族扩展点上适配
+  - 状态：
+    1. 具体说明：confirmed：默认启用的宿主脚手架将 Python 常量写为应用代码，sheet 业务组件实际导入网格、公式、UI 和 CSV 工具。
+    2. 代码/文档定位：agent/agent.zip!/main.py:3483；agent/agent.zip!/scaffold/manifest.py:34；applications/sheet.zip!/frontend/src/features/req3-cell-and-range-editing.jsx:10
+    3. 详细解释：主流程调用 scaffold.scaffold，清单给出常量到路径映射，应用 import 显示下游使用，因此不仅是模板存在，而是能确认完整复用链。
+  - 作用：
+    1. 具体说明：复用 HTTP/会话/存储、React UI、单元格选择与公式基础，让模型主要编辑业务家族路由和 feature。
+    2. 代码/文档定位：agent/agent.zip!/scaffold/manifest.py:39；agent/agent.zip!/scaffold/manifest.py:60；agent/agent.zip!/scaffold/manifest.py:78
+    3. 详细解释：预制代码覆盖重复的运行与编辑机制，MODEL_FILES 声明业务扩展面；这种分工是区别于从空项目生成的关键策略。
+  - 输入/知识源：
+    1. 具体说明：代码源为 scaffold/backend.py、frontend.py、grid/formula 模板常量，结构输入为需求树家族名称、ID 和节点。
+    2. 代码/文档定位：agent/agent.zip!/scaffold/manifest.py:36；agent/agent.zip!/scaffold/manifest.py:60；agent/agent.zip!/scaffold/taskshape.py:202
+    3. 详细解释：manifest 引用内置常量，task_stubs 从树派生文件名和需求标识；未见该路径需要检索外部成品应用。
+  - 选择/检索：
+    1. 具体说明：固定遍历 SCAFFOLD_FILES，仅补不存在的文件；装配层仅在仍与原始模板字节相同时替换。
+    2. 代码/文档定位：agent/agent.zip!/scaffold/__init__.py:53；agent/agent.zip!/scaffold/taskshape.py:211；agent/agent.zip!/scaffold/taskshape.py:223
+    3. 详细解释：固定清单加存在性/原始字节判断保护模型已生成代码；选择的是缺失基础文件，而不是按相似度检索候选组件。
+  - 生成/使用：
+    1. 具体说明：write_text 写出基座和 stub，模型修改业务模块并导入已有工具，sheet 编辑器引用公式计算与网格逻辑。
+    2. 代码/文档定位：agent/agent.zip!/scaffold/__init__.py:58；agent/agent.zip!/scaffold/taskshape.py:214；applications/sheet.zip!/frontend/src/features/req3-cell-and-range-editing.jsx:8
+    3. 详细解释：前半段为确定性直接复用，后半段为模型适配。业务文件的 import 将工具箱连接到最终界面，是复用进入产物的直接证据。
+  - 输出：
+    1. 具体说明：输出 backend/src、frontend/src/app 和家族 routes/features；sheet 路由装配文件挂载五个家族模块。
+    2. 代码/文档定位：agent/agent.zip!/scaffold/taskshape.py:237；applications/sheet.zip!/backend/src/routes/index.js:5；applications/github-stage-3.zip!/frontend/src/main.jsx:3
+    3. 详细解释：装配文件将业务模块连接运行入口。stage-3 的 main.jsx 仍装载 app/App.jsx，不能因同时存在 TS 文件就认定另一入口生效。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的仓库静态内容中未发现外部语料、embedding、向量索引或 BM25 增强生成；确认的是按 ID、行号地图、家族范围与依赖图选择本地需求上下文（agent/agent.zip!/plan_envelope.py:69；agent/agent.zip!/main.py:2106）。应用本身的代码搜索不能据此视为代理 RAG。
+- PREPARED-KNOWLEDGE：fixture 从 data:/GIVEN 提取事实，compile_seed 只生成探针/统计基线，不直接替模型填 db.json，模型承担种子实现（agent/agent.zip!/fixture_manifest.py:61；agent/agent.zip!/main.py:3573）。graph/sheet 规则按形态注入（agent/agent.zip!/fixture_manifest.py:1042）。YAML 加载剥离参考图标记，本链路没有自动附图（agent/agent.zip!/main.py:1713）。
+- CODE-REUSE：确认内置基础代码复用与模型适配；未确认从 example 复制实现代码。template/ 存在本身不是执行证明，实际来源为 scaffold 常量。三个 GitHub 包的 AGENTS 地图依次覆盖 REQ-1/2、REQ-3/4、REQ-5/6，结合保留模块可推断分阶段扩展，但无法仅凭包名确认历史执行顺序（applications/github-stage-1.zip!/AGENTS.md:7；applications/github-stage-2.zip!/AGENTS.md:7；applications/github-stage-3.zip!/AGENTS.md:7）。
+- ITERATION/EVALUATION：前述 staged Playwright 回归是有条件实现，不代表本任务实际取得官方规格。代码查找外部测试目录，agent 包未带 public-tests；requirements-only 路径主要使用模型自编 e2e 与宿主健康检查（agent/agent.zip!/main.py:3120；agent/agent.zip!/main.py:3868）。sheet 有公式场景测试及 passed 缓存，不能证明完整题面通过（applications/sheet.zip!/e2e/req4-formula-calculation.spec.ts:25；applications/sheet.zip!/e2e/test-results/.last-run.json:2）。
+- MODEL-ROUTING：主/修复常量均 enabled/max，“降档”只是历史注释（agent/agent.zip!/main.py:92）。未确认自动换模型或本次真实服务端模型值。Octos 内核仅二进制，内部压缩、工具守卫及缓存命中 unresolved；包装器只能确认传入配置，不能证明内核全部执行。
+- STATE/PERSISTENCE：语法修复最多两轮，仍失败则回滚 pre_batch_head（agent/agent.zip!/main.py:4040；agent/agent.zip!/main.py:4059）。独立 profile、日志和稳定上下文已确认，未发现可确认的跨任务学习型知识库。部分同名目录拒绝读取，已从原始 ZIP 查看成员补足，未修改权限。
+- 检查边界：仅运行分析 skill 静态扫描、报告校验和只读 ZIP/文本检查，未执行选手源码或二进制、未安装依赖、未访问 URL。四个应用包已检查目录/清单/AGENTS，并抽查 sheet 业务 import/e2e、stage-3 入口；未穷尽会话日志、数据库与全部业务实现。所有运行结果仅按已有工件陈述，不作通过或违规判定。
+分析完成

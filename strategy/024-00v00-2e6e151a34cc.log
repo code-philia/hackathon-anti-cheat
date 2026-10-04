@@ -1,0 +1,113 @@
+Core strategy analysis: 024-00v00-2e6e151a34cc90
+Example path: example\hackathon
+Workspace path: workspace\024-00v00-2e6e151a34cc90
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+The controller uses deterministic requirements, ordered module prompts, one coding thread, and repeated checkpoints. Static evidence supports prompt orchestration, prepared knowledge, local code reuse, and iteration/evaluation. RAG retrieval is not evidenced: no vector store, embeddings, BM25, or external corpus lookup appears in the inspected archive.
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] The controller composes module-specific prompts from frozen requirements and current workspace state.
+  - 状态:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 作用:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输入/知识源:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 选择/检索:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 生成/使用:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输出:?
+    1. 具体说明?? confirmed; The controller composes module-specific prompts from frozen requirements and current workspace state. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:222-274; agent/agent.zip:488-526
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+STRATEGY-002 [PREPARED-KNOWLEDGE] The run prepares a frozen contract, plan, acceptance criteria, and module context before coding.
+  - 状态:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 作用:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输入/知识源:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 选择/检索:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 生成/使用:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输出:?
+    1. 具体说明?? confirmed; The run prepares a frozen contract, plan, acceptance criteria, and module context before coding. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:303-345; agent/agent.zip:102-160
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+STRATEGY-003 [CODE-REUSE] The run reuses the local template, bundled skills, and incremental workspace artifacts.
+  - 状态:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 作用:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输入/知识源:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 选择/检索:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 生成/使用:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输出:?
+    1. 具体说明?? confirmed; The run reuses the local template, bundled skills, and incremental workspace artifacts. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:59-100; agent/agent.zip:238-245
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+STRATEGY-004 [ITERATION/EVALUATION] The run evaluates checkpoints and issues targeted repair prompts before final verification.
+  - 状态:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 作用:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输入/知识源:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 选择/检索:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 生成/使用:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+  - 输出:?
+    1. 具体说明?? confirmed; The run evaluates checkpoints and issues targeted repair prompts before final verification. This is an explicit, evidence-backed strategy in the static controller flow.
+    2. 代码/文档定位?? agent/agent.zip:476-526; agent/agent.zip:548-556
+    3. 详细解释?? The cited location identifies implementation evidence. The surrounding flow shows how the controller carries this strategy into prompts, artifacts, tests, or repair decisions.
+[未发现或未解决]
+RAG/RETRIEVAL: no vector, embedding, BM25, semantic search, or external corpus lookup was found; only deterministic requirements and module-index selection were observed.
+CODE-REUSE: local template and bundled skills are reused; no external repository or URL content was fetched. The explicit code-reuse conclusion is supported by the archive structure.
+MODEL-ROUTING, TOOLS/EXECUTION, and STATE/PERSISTENCE remain partly unresolved because the static archive does not expose a complete provider trace or runtime execution log.
+RAG and ?????? conclusions are explicitly recorded: no retrieval mechanism was found, while local template and bundled skills are reused.
+分析完成

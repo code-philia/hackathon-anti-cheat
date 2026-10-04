@@ -1,0 +1,118 @@
+﻿核心策略分析：009-VOLO-AI-38c8627442a4
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\009-VOLO-AI-38c8627442a4
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+confirmed：仓库的主流程是读取指定 requirements.yaml，将 requirements、dialect.md、delivery contract、词汇与 seed 清单以及内置 scaffold 拼成提示词，调用流式 chat-completions 生成带文件块的前后端应用；随后生成测试并在本地构建/启动/浏览器场景检查中依据失败项进行受预算约束的修复。scaffold 是明确的预置知识和代码复用来源。RAG/RETRIEVAL：在已检查的选手静态内容中未发现向量索引、语义检索或外部语料检索；仅有按需求解析出的词汇/seed 清单和全量 scaffold 注入。CODE-REUSE：confirmed，生成阶段复制并扩展 agent/scaffold，升级模式还读取既有应用快照；未发现从外部仓库下载或按查询复制代码。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求驱动的 scaffold 扩展与测试修复流水线
+  - 状态：
+    1. 具体说明：confirmed；main.py 将初稿、续写、修复、测试审核组织为多个阶段，输出协议要求逐文件 FILE/END 块。
+    2. 代码/文档定位：agent/agent/main.py:136-162；agent/agent/main.py:1376-1465
+    3. 详细解释：系统提示规定完整应用和严格文件块协议；draft_application 在截断或协议错误后保留完整块并继续请求，形成可追踪的生成链。
+  - 作用：
+    1. 具体说明：confirmed；把自然语言需求转为可构建的 frontend/backend 文件，并把验收失败转成局部编辑。
+    2. 代码/文档定位：agent/agent/main.py:108-134；agent/agent/main.py:154-162
+    3. 详细解释：delivery contract 固定 npm 构建、HTTP 健康接口、无依赖和文件格式；REPAIR 要求 SEARCH/REPLACE 编辑，减少重写已通过代码。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入包括 requirements 文本、dialect.md、contract、引用词汇表、GIVEN seed 清单和 scaffold 文件内容。
+    2. 代码/文档定位：agent/agent/main.py:1467-1480；agent/agent/main.py:1601-1648；agent/agent/main.py:1669-1709
+    3. 详细解释：draft_messages 把这些材料拼进 user 消息；词汇和 seed 从需求静态解析后按原文提供，属于准备知识而非运行时检索。
+  - 选择/检索：
+    1. 具体说明：confirmed；没有向量/关键词检索，选择规则是全量注入需求与 scaffold，并从需求提取去重的引号短语和 seed 条目。
+    2. 代码/文档定位：agent/agent/main.py:1467-1480；agent/agent/main.py:1608-1647；agent/agent/main.py:1680-1708
+    3. 详细解释：每次初稿将完整 requirements 与选定的最多 40 条 seed 线索放入提示；未见按查询从知识库筛选的路径，因此 RAG 结论为未发现。
+  - 生成/使用：
+    1. 具体说明：confirmed；模型通过流式 API 生成文件块，截断时续写，完成后由解析器写入 staging 目录。
+    2. 代码/文档定位：agent/agent/main.py:379-462；agent/agent/main.py:1416-1449
+    3. 详细解释：stream_completion 发送 messages 和模型参数；draft_application 解析 FILE/END、校验路径并写文件，输出直接成为应用源代码。
+  - 输出：
+    1. 具体说明：confirmed；输出是 staging 中完整前后端应用文件、测试套件和修复后的文件变更，最终发布到 output-dir。
+    2. 代码/文档定位：agent/agent/main.py:1499-1538；agent/agent/main.py:1335-1352
+    3. 详细解释：generate 先写入 scaffold/模型文件，再运行 smoke、测试和 repair_delivery，最后 publish 原子替换输出目录；结果由 runner 消费。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] Scaffold 与评测方言的预置知识/代码复用
+  - 状态：
+    1. 具体说明：confirmed；内置 scaffold 明确作为新生成前的基础，dialect.md 作为可访问性和交互规则卡片。
+    2. 代码/文档定位：agent/agent/main.py:87-94；agent/agent/main.py:1264-1278；agent/agent/dialect.md:1-20
+    3. 详细解释：scaffold_context 宣布保留 ARC 原语并只扩展 seed/app/styles；方言文件给出 locator、角色和语义约束，均在生成前准备。
+  - 作用：
+    1. 具体说明：confirmed；复用共享布局、路由、对话框、状态通知、健康接口等通用实现，降低每题从零实现成本。
+    2. 代码/文档定位：agent/agent/main.py:1266-1277；agent/agent/scaffold/README.md:3-28
+    3. 详细解释：提示要求把业务写入 seed.js/app.js 并保留 arc.js/backend；README 说明 scaffold 已覆盖布局和交互陷阱，直接影响最终页面行为。
+  - 输入/知识源：
+    1. 具体说明：confirmed；知识来自本仓库 agent/scaffold、dialect.md、delivery contract 及已有应用快照（升级模式）。
+    2. 代码/文档定位：agent/agent/main.py:1215-1243；agent/agent/main.py:1246-1261
+    3. 详细解释：read_template 对模板做受限快照，template_context 以 JSON 传入文件路径、哈希和文本；这是代码/文档复用，不是外部检索。
+  - 选择/检索：
+    1. 具体说明：confirmed；read_template 遍历非隐藏、非构建目录文件并全量排序纳入，scaffold 仅在无 template 且开关开启时注入。
+    2. 代码/文档定位：agent/agent/main.py:1215-1243；agent/agent/main.py:1494-1511
+    3. 详细解释：选择由目录边界、文件数量/大小上限和配置开关决定；没有相似度排序或查询命中。
+  - 生成/使用：
+    1. 具体说明：confirmed；模型被要求扩展 scaffold，生成的文件与 scaffold 合并，已有文件仅按 FILE/EDIT 协议替换。
+    2. 代码/文档定位：agent/agent/main.py:1264-1278；agent/agent/main.py:1433-1440
+    3. 详细解释：stage 先写入 scaffold/snapshot，随后模型块覆盖同路径文件；提示明确禁止替换核心 ARC 原语，形成直接代码复用。
+  - 输出：
+    1. 具体说明：confirmed；输出保留 scaffold 运行时能力并新增题面业务文件，升级模式输出至少一个实际变更。
+    2. 代码/文档定位：agent/agent/main.py:1507-1521；agent/agent/main.py:1335-1352
+    3. 详细解释：复制与发布逻辑保证未提及的 scaffold 文件仍在最终应用中，模型只需提供新增或改变的文件块。
+
+STRATEGY-003 [MODEL-ROUTING] 流式模型调用、回退与预算控制
+  - 状态：
+    1. 具体说明：confirmed；默认 deepseek-v4-flash，可配置 MODEL/FALLBACK_MODEL，并在传输失败后切换备用模型。
+    2. 代码/文档定位：agent/agent/main.py:34-47；agent/agent/main.py:368-376
+    3. 详细解释：环境变量决定主/备用模型；fallback_model 按当前模型和预算状态计算下一模型。
+  - 作用：
+    1. 具体说明：confirmed；为初稿、测试翻译和修复提供可恢复的模型服务，并限制调用次数、失败次数和修复花费。
+    2. 代码/文档定位：agent/agent/main.py:300-332；agent/agent/main.py:379-387
+    3. 详细解释：CallBudget 在每次调用前检查 phase 限额和 CNY 估算；流式响应中断可重试或转备用模型，保障流水线继续。
+  - 输入/知识源：
+    1. 具体说明：confirmed；模型输入是 orchestrated messages，包含 system、需求、方言、契约、scaffold/模板内容和修复发现。
+    2. 代码/文档定位：agent/agent/main.py:390-397；agent/agent/main.py:1467-1480
+    3. 详细解释：payload 将 messages 原样发送到 /chat/completions；不同阶段复用或追加历史对话，模型据此生成代码或补丁。
+  - 选择/检索：
+    1. 具体说明：confirmed；模型选择按环境变量、Kimi 特例和传输失败次数路由，无内容相似度路由。
+    2. 代码/文档定位：agent/agent/main.py:368-376；agent/agent/main.py:496-505
+    3. 详细解释：主模型连续失败后当前调用切到 fallback；下一调用重新从主模型开始，属于可靠性路由。
+  - 生成/使用：
+    1. 具体说明：confirmed；调用采用 SSE 流，累计 content 与 usage，finish_reason 决定完成、续写或过滤处理。
+    2. 代码/文档定位：agent/agent/main.py:409-462；agent/agent/main.py:489-501
+    3. 详细解释：解析 data: 事件拼接模型文本；cut 时保留完整文件块并继续，content_filter 也进入续写分支。
+  - 输出：
+    1. 具体说明：confirmed；模型文本转为文件块、测试代码或修复编辑，并记录调用、模型、token 和成本摘要。
+    2. 代码/文档定位：agent/agent/main.py:339-362；agent/agent/main.py:1433-1449
+    3. 详细解释：CallBudget 记录每次调用元数据；文件块写入 stage，后续检查消费这些产物。
+
+STRATEGY-004 [ITERATION/EVALUATION] 测试生成、浏览器验收与收益比修复
+  - 状态：
+    1. 具体说明：confirmed；完整初稿后生成 requirement-driven 测试，运行 smoke/DOM/语义浏览器检查，再进行 repair_delivery。
+    2. 代码/文档定位：agent/agent/main.py:1522-1538；agent/agent/testgen.py:51-67
+    3. 详细解释：generate 的阶段顺序把测试和真实浏览器发现接到修复环；testgen 的系统提示要求每个场景独立覆盖需求。
+  - 作用：
+    1. 具体说明：confirmed；把失败场景、前端脚本错误、构建/健康检查问题转成模型可执行的修复依据。
+    2. 代码/文档定位：agent/agent/main.py:154-162；agent/agent/main.py:1150-1203
+    3. 详细解释：REPAIR 明确要求仅修原因并保留通过行为；smoke 检查构建、/api/health、页面和 DOM，失败信息进入后续阶段。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入来自 requirements 场景、Playwright 测试结果、构建输出、HTTP/DOM/语义诊断。
+    2. 代码/文档定位：agent/agent/testgen.py:51-107；agent/agent/main.py:1183-1203
+    3. 详细解释：测试生成器只依据需求写场景；运行器收集状态和错误，形成 repair prompt 的 findings。
+  - 选择/检索：
+    1. 具体说明：confirmed；最多展示配置数量的失败场景，按 repair call/time/CNY/failure/rejection 限额停止；没有知识库检索。
+    2. 代码/文档定位：agent/agent/main.py:44-55；agent/agent/main.py:318-332
+    3. 详细解释：REPAIR_SHOWN、REPAIR_CALLS、REPAIR_SECONDS 等参数限制反馈窗口；repair_stop 在下一调用前估算成本并决定是否继续。
+  - 生成/使用：
+    1. 具体说明：confirmed；模型生成 EDIT 搜索替换块或短 COMPLETE 文件，应用后重新检查，破坏通过场景的修复可被丢弃。
+    2. 代码/文档定位：agent/agent/main.py:154-162；agent/agent/main.py:1433-1443
+    3. 详细解释：修复协议要求精确当前行片段；写入后检查器再次消费应用，形成 plan-act-review 循环。
+  - 输出：
+    1. 具体说明：confirmed；输出为通过交付检查的应用和测试/诊断记录，失败时保留 staging 中已完成文件以避免零结果。
+    2. 代码/文档定位：agent/agent/main.py:1542-1550；agent/agent/main.py:1355-1361
+    3. 详细解释：异常路径仅在 delivery_complete 时发布已有 stage；最终发布由 smoke 与修复结果共同决定。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的选手仓库静态内容中未发现向量数据库、embedding、检索索引或外部语料查询；requirements 的词汇/seed 解析属于全量准备，不构成 RAG。
+- STATE/PERSISTENCE：confirmed 有运行期 CallBudget/progress.json、staging 文件和最终应用持久化；未发现跨任务长期记忆或学习型缓存。定位：agent/agent/main.py:263-289、1499-1511。其状态服务于单次生成的进度、成本与回滚。
+- 未执行选手代码、未安装依赖、未访问仓库中 URL；以上结论仅基于静态代码/文档证据。
+分析完成

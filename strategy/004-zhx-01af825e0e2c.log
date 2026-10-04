@@ -1,0 +1,190 @@
+核心策略分析：004-zhx-01af825e0e2c
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\004-zhx-01af825e0e2c
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+主链路是“需求 YAML 解析与卡片化 -> 固定工程交付提示 -> 单模型 agent2 循环调用文件/命令工具 -> 构建、数据库、浏览器交付检查 -> 按首个失败项有限修复”。已确认 RAG：在已检查提交静态内容中没有索引、向量库、语义检索或任务指纹检索，需求是按 ID 卡片和工作区上下文直接读取。已确认代码复用：复制 agent 自带通用 template 中目标缺失的文件，并让模型在已有应用上增量修改；未发现从 example 目录直接复制实现代码的路径。workspace 顶层没有 skills 目录，因此技能目录机制未向该任务注入实际知识。
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 需求卡片、固定交付规则与系统提示编排
+  - 状态：
+    1. 具体说明：confirmed；运行前将 requirements YAML 解析成按需求 ID 分文件的卡片，并把交付约束、实现顺序和叶子需求索引拼入模型任务提示。
+    2. 代码/文档定位：agent/agent/main.py:106；agent/agent/main.py:279；agent/agent/main.py:223
+    3. 详细解释：_persist_requirement_tree 遍历输入树并写入运行时追踪状态，make_prompt 要求先读 overview 和各 feature card，再按 UI、API、DB、可观察结果、重载持久化的顺序实现；因此这是在当前任务前准备并注入模型的领域工作知识，而不是运行时检索。
+  - 作用：
+    1. 具体说明：把多任务题面压缩为可执行的实现合同，约束入口、权限、验证、持久化和完成报告。
+    2. 代码/文档定位：agent/agent/main.py:182；agent/agent/main.py:282；agent/agent/main.py:293
+    3. 详细解释：DELIVERY_RULES 规定真实用户路径和失败状态，make_prompt 又将原始叶子 ID/名称列出；模型由此获得共享规则和任务目录，减少遗漏并把输出指向可运行应用。
+  - 输入/知识源：
+    1. 具体说明：具体输入是 requirements.yaml 的 YAML 文档、其 ancestor_cards/dependencies，以及代理内置 SYSTEM_PROMPT 和 DELIVERY_RULES。
+    2. 代码/文档定位：agent/agent/main.py:93；agent/agent/main.py:112；agent/agent/main.py:230
+    3. 详细解释：read_task 读取题面，_persist_requirement_tree 提取 id、描述、场景和依赖，随后 make_prompt 只把索引和读取规则交给模型，完整卡片仍由模型用 file_read 取得。
+  - 选择/检索：
+    1. 具体说明：没有 RAG 检索；选择规则是先读 overview，再按叶子需求和依赖逐卡读取，压缩后只在需要时重读。
+    2. 代码/文档定位：agent/agent/main.py:282；agent/agent/main.py:284；agent/agent/arc_light/spec.py:77
+    3. 详细解释：提示明确规定 distinct ancestor 只读一次，completion_prompt 根据未完成 ID 映射相关 card 文件；这是确定性的文件选择，不是向量或关键词检索。
+  - 生成/使用：
+    1. 具体说明：模型收到 SYSTEM_PROMPT、workspace_context 和 make_prompt 生成的用户任务，并据此通过工具修改应用。
+    2. 代码/文档定位：agent/agent/main.py:571；agent/agent/main.py:580；agent/agent/main.py:780
+    3. 详细解释：_run_single2 将任务文本和固定系统提示传给 client.agent2；run_task 在主实现、继续、完成和修复阶段复用这一上下文，提示内容直接影响后续代码编辑。
+  - 输出：
+    1. 具体说明：输出是 requirements/by-id 卡片、运行时追踪记录、模型修改的应用文件以及三行未完成/阻塞/文件摘要。
+    2. 代码/文档定位：agent/agent/main.py:888；agent/agent/main.py:895；agent/agent/main.py:922
+    3. 详细解释：卡片和追踪先落盘，模型再修改 output_dir；最终摘要被 report_summary 提取并用于完成判断，交付检查结果随后写入验证产物。
+STRATEGY-002 [PROMPT-ORCHESTRATION] 单代理分阶段生成、上下文压缩与失败定向修复
+  - 状态：
+    1. 具体说明：confirmed；流程包含主 agent2、基础设施中断后的 continuation、未完成 ID 的 completion，以及交付失败后的最多两轮 repair。
+    2. 代码/文档定位：agent/agent/main.py:784；agent/agent/main.py:818；agent/agent/main.py:676
+    3. 详细解释：run_task 根据状态和摘要分支，而不是一次调用后结束；每个分支均把已有工作区作为上下文，形成分阶段提示链。
+  - 作用：
+    1. 具体说明：把长任务拆成实现、恢复、补全和验证修复，控制预算并让失败反馈进入下一次模型调用。
+    2. 代码/文档定位：agent/agent/main.py:789；agent/agent/main.py:826；agent/agent/main.py:694
+    3. 详细解释：continuation 保留 baseline 和 prior output，completion 只针对 unfinished IDs，repair_prompt 只描述首个失败检查，避免无边界重做。
+  - 输入/知识源：
+    1. 具体说明：阶段输入包括既有文件、git baseline、模型自报摘要、UI 覆盖缺失项和交付检查失败详情。
+    2. 代码/文档定位：agent/agent/main.py:764；agent/agent/main.py:799；agent/agent/main.py:656
+    3. 详细解释：run_task 保存 baseline，后续提示带入 prior summary；repair_prompt 还要求读取失败路径对应 card 和 ancestor_cards，形成反馈驱动的局部上下文。
+  - 选择/检索：
+    1. 具体说明：阶段选择由 status/reason、正则提取的 unfinished IDs 和首个 !ok check 决定。
+    2. 代码/文档定位：agent/agent/main.py:787；agent/agent/main.py:818；agent/agent/main.py:688
+    3. 详细解释：_interrupted 识别输出截断或运行时错误，unfinished_ids 从摘要中匹配已知需求，repair 循环只取 next 首个失败检查；未见语义检索。
+  - 生成/使用：
+    1. 具体说明：每阶段重新构造带角色约束的用户提示，模型继续调用相同的 bash/file_read/file_write/apply_patch/grep/git_diff 工具。
+    2. 代码/文档定位：agent/agent/main.py:534；agent/agent/main.py:694；agent/agent/main.py:827
+    3. 详细解释：_coder_tools 固定工具面，阶段提示改变任务焦点但不改变权限边界；模型输出以工具调用形式落到代码和配置文件。
+  - 输出：
+    1. 具体说明：阶段输出包括 agent status、token/step 指标、git 提交、completion 状态和 selfcheck/repair 记录。
+    2. 代码/文档定位：agent/agent/main.py:582；agent/agent/main.py:810；agent/agent/main.py:704
+    3. 详细解释：结果指标被汇总并作为下一阶段条件，git commit 保留阶段快照，selfcheck 返回 repair_rounds 和失败步骤，最终生成可追踪交付状态。
+STRATEGY-003 [CODE-REUSE] 通用模板填充与已有工作区增量适配
+  - 状态：
+    1. 具体说明：confirmed；启动时递归扫描 agent/template，只复制目标工作区中不存在的文件；已有任务文件被跳过。
+    2. 代码/文档定位：agent/agent/main.py:70；agent/agent/main.py:81；agent/agent/main.py:84
+    3. 详细解释：copy_template_contents_to_output 使用 relative 路径映射并以 destination.exists() 防止覆盖，因此是直接模板复用；模型随后针对题面工作区做适配。
+  - 作用：
+    1. 具体说明：提供 Express/SQLite/React 等基础骨架，缩短新任务的启动成本，同时保留 task-specific schema 和已有实现。
+    2. 代码/文档定位：agent/agent/main.py:71；agent/agent/main.py:73；agent/agent/main.py:882
+    3. 详细解释：注释和调用都表明模板用于缺失文件，run_agent 在读取题面和调用模型前执行它；生成链因此从可启动骨架而非空目录开始。
+  - 输入/知识源：
+    1. 具体说明：输入是提交内 agent/template 文件树和 output_dir 当前文件树，另有模型可读取的已有应用源码。
+    2. 代码/文档定位：agent/agent/main.py:77；agent/agent/main.py:81；agent/agent/main.py:573
+    3. 详细解释：模板文件由 Path(__file__).parent 定位，模型工具的 workspace 参数指向当前 output_dir；未看到 example/hackathon 被作为复制源传入。
+  - 选择/检索：
+    1. 具体说明：选择规则是按模板文件排序遍历，仅当同相对路径不存在时复制；模型复用由其读取源文件后的判断决定。
+    2. 代码/文档定位：agent/agent/main.py:81；agent/agent/main.py:84；agent/agent/main.py:242
+    3. 详细解释：这是路径存在性选择，不是相似度检索；SYSTEM_PROMPT 还要求“Reuse the existing implementation”，引导模型在现有组件上增量修改。
+  - 生成/使用：
+    1. 具体说明：复制动作先物理写入骨架，随后模型通过 file_read 和 patch/write 在同一目录重用并改造这些文件。
+    2. 代码/文档定位：agent/agent/main.py:87；agent/agent/main.py:541；agent/agent/main.py:571
+    3. 详细解释：shutil.copy2 生成初始文件，_coder_tools 暴露编辑工具，agent2 的工具调用把通用组件转成题面所需应用；没有发现模型请求复制 example 实现的专门工具。
+  - 输出：
+    1. 具体说明：输出是填充后的前后端源码、模板复制计数以及 git diff/提交快照。
+    2. 代码/文档定位：agent/agent/main.py:885；agent/agent/main.py:810；agent/agent/main.py:923
+    3. 详细解释：template_copy 诊断记录 written/skipped，阶段提交和最终提交保存改造后的应用；这构成直接代码复用的可观察产物。
+STRATEGY-004 [TOOLS/EXECUTION] 文件编辑、构建启动、浏览器检查和数据库验证工具链
+  - 状态：
+    1. 具体说明：confirmed；代理工具集包含 bash、file_read、file_write、apply_patch、grep、git_diff，交付器另行运行 npm、health、build、Playwright 和 SQLite 快照。
+    2. 代码/文档定位：agent/agent/main.py:534；agent/agent/arc_light/delivery.py:114；agent/agent/arc_light/delivery.py:226
+    3. 详细解释：工具权限和交付检查分别由 _coder_tools 与 verify 实现，静态证据显示应用生成依赖真实编辑和运行验证，而非只输出文本。
+  - 作用：
+    1. 具体说明：工具把模型计划转成源码修改，并验证健康启动、依赖、构建、数据库持久性和浏览器用户路径。
+    2. 代码/文档定位：agent/agent/main.py:232；agent/agent/arc_light/delivery.py:149；agent/agent/arc_light/delivery.py:218
+    3. 详细解释：系统提示要求实际工具调用；verify 启动后等待 /api/health，分别检查依赖/build、重启前后 sqlite_snapshot 和 browser_check，形成端到端执行闭环。
+  - 输入/知识源：
+    1. 具体说明：输入包括模型生成的命令、工作区 package.json、后端端口和数据库文件、ARC_VERIFY_URL/OUTPUT 环境变量。
+    2. 代码/文档定位：agent/agent/arc_light/delivery.py:122；agent/agent/arc_light/delivery.py:159；agent/agent/arc_light/delivery.py:226
+    3. 详细解释：verify 从工作区发现 npm 和 backend/frontend，命令在对应 cwd 执行，浏览器脚本从环境变量获得本地地址和报告路径；没有访问提交中 URL 的证据属于本次静态分析范围。
+  - 选择/检索：
+    1. 具体说明：执行选择由固定工具白名单、package 存在性、health 响应和检查步骤条件控制，不使用内容检索。
+    2. 代码/文档定位：agent/agent/main.py:540；agent/agent/arc_light/delivery.py:181；agent/agent/arc_light/delivery.py:232
+    3. 详细解释：npm install/build 和 browser smoke 仅在相应目录/能力存在时运行；失败被记录为 check，而不是通过关键词从代码库召回资料。
+  - 生成/使用：
+    1. 具体说明：模型用 apply_patch/file_write 生成源码，交付器以 subprocess 启动命令、urllib 检查 health、调用 browser_check，并读取 SQLite。
+    2. 代码/文档定位：agent/agent/main.py:541；agent/agent/arc_light/delivery.py:149；agent/agent/arc_light/delivery.py:78
+    3. 详细解释：编辑工具改变应用，verify 对改变后的应用执行静态/动态验收；sqlite_snapshot 只读取表内容用于比较，不参与模型生成。
+  - 输出：
+    1. 具体说明：输出包括 verification.json、browser-report.json、构建/命令日志、数据库一致性结果和模型可消费的短失败诊断。
+    2. 代码/文档定位：agent/agent/arc_light/delivery.py:238；agent/agent/arc_light/delivery.py:286；agent/agent/main.py:651
+    3. 详细解释：verify 汇总 checks 后写 verification.json，浏览器结果单独保存；_selfcheck 将失败步骤和尾部详情传入 repair_prompt，驱动下一次编辑。
+STRATEGY-005 [MODEL-ROUTING] OpenAI 兼容/Anthropic 提供商配置与上下文压缩模型调用
+  - 状态：
+    1. 具体说明：confirmed；客户端从环境变量解析模型、provider、API key、base URL，并支持 chat_completions/responses 协议和 Anthropic 分类。
+    2. 代码/文档定位：agent/agent/main.py:550；agent/agent/opencollab/adapters/llm/providers.py:26；agent/agent/opencollab/bootstrap/context_builder.py:235
+    3. 详细解释：OpenCollab 构造时保存路由配置，ContextBuilder 允许 role.model 覆盖全局模型；provider 模块规范化名称并决定原生 Anthropic 路径。
+  - 作用：
+    1. 具体说明：为主代理和自动上下文摘要选择 LLM 后端，并在超长会话时让摘要调用沿用相同提供商配置。
+    2. 代码/文档定位：agent/agent/opencollab/bootstrap/container.py:149；agent/agent/opencollab/bootstrap/container.py:177；agent/agent/opencollab/bootstrap/container.py:362
+    3. 详细解释：_build_summarizer 创建压缩摘要用的 LLM，AutoCompactShaper 在会话整形中调用它；主 runner 和摘要器都由 agent.model/base_url/wire_protocol 派生。
+  - 输入/知识源：
+    1. 具体说明：输入是 MODEL、OPENCOLLAB_MODEL、OPENCOLLAB_PROVIDER、OPENAI/OPENCOLLAB_API_KEY、BASE_URL 和上下文窗口配置。
+    2. 代码/文档定位：agent/agent/main.py:550；agent/agent/main.py:556；agent/agent/main.py:559
+    3. 详细解释：环境变量决定有效端点与模型，history_trigger_target 根据 context_window 计算压缩阈值；提交中没有静态可确认的具体运行时模型值。
+  - 选择/检索：
+    1. 具体说明：模型选择是环境变量或 role.model 覆盖，provider 选择是规范化字符串，协议选择是受限枚举；没有任务语义路由或多模型投票。
+    2. 代码/文档定位：agent/agent/main.py:552；agent/agent/opencollab/adapters/llm/providers.py:36；agent/agent/opencollab/bootstrap/context_builder.py:235
+    3. 详细解释：配置只决定调用适配器和能力检查；agent2 主循环未按需求类型切换模型，故 MODEL-ROUTING 是基础端点路由而非策略性检索。
+  - 生成/使用：
+    1. 具体说明：主模型通过 client.agent2 生成工具调用，压缩模型接收无工具的完整历史片段并生成摘要文本。
+    2. 代码/文档定位：agent/agent/main.py:571；agent/agent/opencollab/application/compaction_prompt.py:26；agent/agent/opencollab/application/compaction_prompt.py:84
+    3. 详细解释：agent2 绑定系统提示和工具；get_compact_prompt 明确摘要模型只能输出 analysis/summary 文本，摘要再交给 AutoCompactShaper 整理上下文。
+  - 输出：
+    1. 具体说明：输出为应用编辑工具调用、agent result 指标，以及可能的历史压缩 summary；提供商错误由适配器重试或报告。
+    2. 代码/文档定位：agent/agent/main.py:582；agent/agent/opencollab/application/compaction_prompt.py:92；agent/agent/opencollab/bootstrap/container.py:494
+    3. 详细解释：主结果包含 status/reason/tokens/steps，摘要去掉 analysis 标签后供下一轮上下文使用；context overflow 会触发压缩重试安全网。
+STRATEGY-006 [ITERATION/EVALUATION] 交付自检、UI 覆盖和有限修复循环
+  - 状态：
+    1. 具体说明：confirmed；主代理后执行 UI 字符串覆盖扫描和 delivery verify，失败时最多两轮把具体失败回送模型。
+    2. 代码/文档定位：agent/agent/main.py:813；agent/agent/main.py:845；agent/agent/main.py:682
+    3. 详细解释：检查不是模型自报完成的替代品；run_task 明确先扫描、再 selfcheck，并记录 repair_rounds 和最终 failed_step。
+  - 作用：
+    1. 具体说明：用可观察的构建、启动、持久化和浏览器结果发现实现缺口，并对最相关路径进行定向修复。
+    2. 代码/文档定位：agent/agent/main.py:656；agent/agent/main.py:663；agent/agent/arc_light/delivery.py:222
+    3. 详细解释：repair_prompt 要求保持工作功能并修正 route/render/API 原因，delivery 比较数据库快照，因而反馈覆盖 UI 和状态两类错误。
+  - 输入/知识源：
+    1. 具体说明：输入是抽取的 UI 文本、verify checks、browser-report.json、命令尾部日志和数据库快照。
+    2. 代码/文档定位：agent/agent/main.py:910；agent/agent/main.py:670；agent/agent/arc_light/delivery.py:218
+    3. 详细解释：ui_strings 来自题面文档，失败详情由 selfcheck 截短后注入提示；browser 报告和 sqlite 内容只作为验收证据，不作为 RAG 语料库。
+  - 选择/检索：
+    1. 具体说明：选择首个失败 check，最多 REPAIR_ROUNDS=2；UI completion 仅在摘要列出已知 unfinished IDs 时触发。
+    2. 代码/文档定位：agent/agent/main.py:682；agent/agent/main.py:688；agent/agent/main.py:818
+    3. 详细解释：条件分支和预算/时间阈值决定是否修复，避免无限循环；失败项按 check 顺序处理，不做相似案例召回。
+  - 生成/使用：
+    1. 具体说明：将失败步骤、命令和最多 5000 字节尾部详情格式化为 repair prompt，再调用同一 agent2 工具链编辑源文件。
+    2. 代码/文档定位：agent/agent/main.py:657；agent/agent/main.py:694；agent/agent/main.py:700
+    3. 详细解释：模型只接收具体失败上下文和原卡片要求，修复后重新执行 _selfcheck；这构成 plan-act-check-repair 闭环。
+  - 输出：
+    1. 具体说明：输出是覆盖率诊断、每轮 repair 结果、checks 列表、最终 verification.json 和 git 状态。
+    2. 代码/文档定位：agent/agent/main.py:407；agent/agent/main.py:704；agent/agent/arc_light/delivery.py:286
+    3. 详细解释：这些产物供协调器判断继续/完成/失败并留下可审计证据；代码注释明确模型停止本身不是 acceptance verdict。
+STRATEGY-007 [STATE/PERSISTENCE] 需求追踪、会话自动保存、历史压缩与 Git 快照
+  - 状态：
+    1. 具体说明：confirmed；运行时持久化 requirement/node 状态、事件 JSONL、会话快照和 Git 提交，并在事件触发时自动保存。
+    2. 代码/文档定位：agent/agent/main.py:108；agent/agent/opencollab/bootstrap/container.py:424；agent/agent/opencollab/application/autosave.py:34
+    3. 详细解释：需求树进入 traceability，SessionRuntime 注册 AutoSaveSubscriber；状态跨阶段可被读取，但文档明确这是同一 session 持久化，不是跨任务学习。
+  - 作用：
+    1. 具体说明：保存当前实现进度和上下文，使中断 continuation、压缩后恢复、失败修复和交付审计都有稳定基线。
+    2. 代码/文档定位：agent/agent/main.py:764；agent/agent/opencollab/application/autosave.py:41；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:104
+    3. 详细解释：baseline 用于比较和恢复，autosave 合并尚未写出的最新 generation，事件层将 runner/requirement 状态追加到 runner-events.jsonl。
+  - 输入/知识源：
+    1. 具体说明：输入是需求 ID 状态变更、用户消息/step_end/budget 事件、完整会话消息和 Git 工作树。
+    2. 代码/文档定位：agent/agent/opencollab/application/autosave.py:15；agent/agent/opencollab/application/autosave.py:81；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:22
+    3. 详细解释：SAVE_TRIGGERS 控制何时冻结状态，事件 writer 记录 phase/status/message；历史整形读取完整 segment 后生成摘要，避免把持久化误当知识检索。
+  - 选择/检索：
+    1. 具体说明：保存选择由固定事件集合和单 subscriber coalescing 决定，历史压缩由 context window 阈值决定；没有跨任务记忆召回。
+    2. 代码/文档定位：agent/agent/opencollab/application/autosave.py:15；agent/agent/opencollab/application/autosave.py:93；agent/agent/opencollab/bootstrap/container.py:329
+    3. 详细解释：_enqueue 只保留最新待写 generation，history_trigger_target 根据窗口确定压缩触发/目标，均为生命周期策略而非 RAG。
+  - 生成/使用：
+    1. 具体说明：prepare_fn 冻结一致快照，to_thread 执行文件 I/O；AutoCompactShaper 调用无工具摘要提示并把摘要重新放入上下文。
+    2. 代码/文档定位：agent/agent/opencollab/application/autosave.py:37；agent/agent/opencollab/application/autosave.py:121；agent/agent/opencollab/bootstrap/container.py:362
+    3. 详细解释：冻结/flush 分离避免并发修改撕裂，压缩在每次模型调用前整形消息；两者共同维护可继续生成的状态。
+  - 输出：
+    1. 具体说明：输出包括 runner-events.jsonl、traceability 状态、会话快照/日志、Git commit 和压缩后的 summary 文本。
+    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/context.py:8；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:104；agent/agent/opencollab/application/compaction_prompt.py:92
+    3. 详细解释：这些状态供 continuation、审计和后续模型上下文使用；静态材料中未发现面向多个独立题目的共享记忆库。
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的提交静态内容中未发现向量/倒排索引、embedding、任务指纹或语义召回；需求卡片按路径读取，故判定为未发现。
+- PREPARED-KNOWLEDGE：已发现通用系统提示、DELIVERY_RULES、requirements 卡片和编排代码；workspace 顶层无 skills 目录，实际技能正文注入未解决但没有证据表明本任务使用。
+- CODE-REUSE：已确认提交内 template 的缺失文件复制和已有工作区增量适配；未发现从 example/hackathon 直接读取或复制实现代码的路径。
+- MODEL-ROUTING：具体运行模型值、API 返回和实际调用次数未在静态代码中解析，属于 unresolved；路由配置和协议分支已确认。
+- 以上结论是核心策略分析，不是作弊、通过或失败判定。
+分析完成

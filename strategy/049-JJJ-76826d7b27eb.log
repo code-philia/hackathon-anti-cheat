@@ -1,0 +1,70 @@
+﻿核心策略分析：049-JJJ-76826d7b27eb
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\049-JJJ-76826d7b27eb
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+选手提交是一个由 OpenCollab 驱动的网页应用生成代理。主链路是读取需求树、把每个需求拆成卡片，调用 Duo 双候选工作流（两个隔离候选、机械选择与只读裁决），再采用候选并执行自检修复。准备知识主要来自内置系统提示、交付规则和 bundled React/Express 模板。RAG：在已检查的提交静态内容中未发现向量/关键词检索或外部语料库；需求卡片是结构化全量输入而非检索。代码复用：确认存在模板文件复制与候选工作树复用，但未发现按题面答案复制的专用代码库。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求卡片驱动的双候选生成与裁决
+  - 状态：
+    1. 具体说明：confirmed；main.py 将需求树拆为 requirements/by-id 卡片，Duo 工作流再启动 candidate-a、candidate-b、mechanical-selection、adjudication、adoption 五阶段。
+    2. 代码/文档定位：agent/main.py:161-216；agent/workflows/g22.py:1-9；agent/opencollab/builtin_workflows/duo.py:14-33
+    3. 详细解释：这些代码分别建立卡片索引、暴露上游 duo 规格并声明阶段，形成从输入规格到候选生成、证据裁决和最终采用的编排链。
+  - 作用：
+    1. 具体说明：把大需求分解为可逐项读取的上下文，并让两个独立 coder 产生方案后由 adjudicator 选择。
+    2. 代码/文档定位：agent/main.py:337-350；agent/opencollab/builtin_workflows/duo.py:19-32
+    3. 详细解释：系统提示要求先读 overview 再读每张卡；duo 将双候选结果送入选择器和裁决器，降低单次上下文遗漏对最终应用的影响。
+  - 输入/知识源：
+    1. 具体说明：需求 YAML、每个需求的 name/description/scenarios/dependencies，以及固定的 coder/system/delivery prompt。
+    2. 代码/文档定位：agent/main.py:120-154；agent/main.py:263-335
+    3. 详细解释：_persist_requirement_tree 保存需求字段，CODER_RULES 与 DELIVERY_RULES 注入测试、可访问性、数据库和交付约束；它们是预置知识，不是运行时检索结果。
+  - 选择/检索：
+    1. 具体说明：按需求节点顺序全量生成卡片并由工作流阶段选择候选；未发现向量、BM25 或关键词检索。
+    2. 代码/文档定位：agent/main.py:175-207；agent/opencollab/builtin_workflows/duo.py:25-31
+    3. 详细解释：visit 顺序写出每个 id 文件，adjudicator 接收候选证据目录；选择发生在候选之间，而非从外部知识库召回。
+  - 生成/使用：
+    1. 具体说明：coder 以角色提示连续调用工具修改隔离工作树，selection prompt 约束证据化比较。
+    2. 代码/文档定位：agent/main.py:341-350；agent/opencollab/builtin_workflows/_prompts.py:20-78
+    3. 详细解释：提示要求每个工作响应包含工具调用并按需求实现；Duo 的 selection prompt 将候选文件证据交给裁决流程，随后采用被选树。
+  - 输出：
+    1. 具体说明：被采用的前端/后端源码、提交事件和 .arc/g22-evidence 候选证据。
+    2. 代码/文档定位：agent/README.md:7-13；agent/opencollab/builtin_workflows/duo.py:30-34
+    3. 详细解释：README 明确说明候选采用回写 output workspace 并保留证据；duo 返回含 prompt_revision 的工作流结果供运行时记录。
+
+STRATEGY-002 [CODE-REUSE] 模板填充与隔离工作树中的增量修改
+  - 状态：
+    1. 具体说明：confirmed；启动器将 bundled template 中缺失文件复制到输出目录，候选在 SDK 管理的隔离 worktree 上编辑。
+    2. 代码/文档定位：agent/main.py:73-93；agent/README.md:7-12
+    3. 详细解释：copy_template_contents_to_output 只复制目标不存在的文件，README 说明先复制 React/Express 模板并创建 Git baseline；这是通用骨架复用。
+  - 作用：
+    1. 具体说明：提供可构建的 React/Express/SQLite 初始结构，让模型专注于需求差异并能安全比较候选。
+    2. 代码/文档定位：agent/main.py:73-92；agent/main.py:337-348
+    3. 详细解释：复制函数保留已有任务文件，系统提示明确 frontend/backend 目录契约；因此模板直接进入生成起点，隔离树承载后续补丁。
+  - 输入/知识源：
+    1. 具体说明：agent/template 下的前后端源码、package 配置，以及输入需求文件。
+    2. 代码/文档定位：agent/main.py:73-85；agent/main.py:54-64
+    3. 详细解释：模板目录被逐文件遍历，需求路径被解析为 requirements.yaml/task.yaml；两者共同构成模型可见的初始工程和规格。
+  - 选择/检索：
+    1. 具体说明：复制规则是“目标不存在才写入”，没有按语义匹配选择代码片段；候选隔离由 workflow 的 isolation 选项管理。
+    2. 代码/文档定位：agent/main.py:84-92；agent/opencollab/application/workflow.py:613-621
+    3. 详细解释：exists 判断决定模板文件是否采用，workflow session 构建接收 isolation 参数；这属于路径/状态选择而非 RAG。
+  - 生成/使用：
+    1. 具体说明：模型通过 file_read/file_write/apply_patch 等工具在模板上增量编辑，必要时采用候选结果。
+    2. 代码/文档定位：agent/opencollab/adapters/tools/fs.py:1-3,164-216；agent/opencollab/adapters/tools/apply_patch.py:37-58
+    3. 详细解释：文件工具提供读取、str_replace 和写入，apply_patch 提供原子 unified diff/行替换；这些调用把提示决策落实为源码变更。
+  - 输出：
+    1. 具体说明：输出目录中的完整应用源码，以及被保留的候选证据和 Git 变更。
+    2. 代码/文档定位：agent/README.md:7-13；agent/opencollab/adapters/tools/apply_patch.py:125-140
+    3. 详细解释：README 描述采用候选回写和证据保存，补丁工具只有成功应用后才产生文件内容，最终产物由运行时提交。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent 源码、模板和工作流静态内容中未发现外部索引、向量库、关键词检索或语义召回；需求卡片为全量拆分输入。
+- PREPARED-KNOWLEDGE：已确认存在通用系统提示、交付规则和模板；未发现针对 github/sheet 题面的预制答案库。
+- MODEL-ROUTING：confirmed 存在通过环境变量选择模型和 OpenAI 兼容 base URL（agent/main.py:769-772），以及工具调用适配与重试（agent/opencollab/adapters/llm/openai_provider.py:76-115）；未发现按需求语义动态路由多个不同模型。
+- TOOLS/EXECUTION：confirmed 使用受控文件读写、补丁、bash 等工具（agent/opencollab/adapters/tools/fs.py:1-3；agent/opencollab/adapters/tools/apply_patch.py:37-58）；实际选手运行行为未执行，无法据此断言每个工具分支均被触发。
+- ITERATION/EVALUATION：confirmed 有预算、阶段和自检修复轮次（agent/main.py:240-259；agent/main.py:1042-1074），并在交付规则中要求 node --check、npm build 和后端健康检查（agent/main.py:333-335）；具体运行结果属于未执行的动态事实。
+- STATE/PERSISTENCE：confirmed 需求追踪数据库、.arc 事件/traceability 和 g22-evidence 持久化（agent/main.py:120-154；agent/README.md:11-13）；跨任务学习记忆未发现。
+
+分析完成

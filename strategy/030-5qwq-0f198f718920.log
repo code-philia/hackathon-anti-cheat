@@ -1,0 +1,197 @@
+核心策略分析：030-5qwq-0f198f718920
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\030-5qwq-0f198f718920
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+该提交的主链路是“需求树编译与初始状态提取 -> 复制通用模板/技能 -> 按依赖顺序构造模块提示 -> 通过 Codex Responses 线程调用模型并允许工具改写工作区 -> 模块检查、构建/测试/双端口验证 -> 失败恢复、修复回合和 git 快照”。准备知识来自 requirements.yaml、HAIKNOW-LITE.md、内置技能和模板；在已检查的静态内容中没有发现向量库、嵌入或按相似度检索，因此 RAG 结论为未发现。代码复用明确存在，表现为 starter template、competition scaffold 和三类技能的文件级复制，以及模型被要求在既有应用上增量修改。
+
+[策略清单]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 需求树编译、验收索引与冻结上下文
+  - 状态：
+    1. 具体说明：confirmed；控制器读取并校验 ROOT 需求树，保留字段和场景，编译叶子依赖、模块顺序、初始状态、运行契约和引用清单。
+    2. 代码/文档定位：agent/agent/main.py:102；agent/agent/core/requirements.py:29；agent/agent/core/requirements.py:119
+    3. 详细解释：这些位置展示了 YAML 先被 safe_load、校验节点唯一性，再交给 compile_acceptance；编译结果随后成为每个模块的 acceptance 和提示输入，因而这是生成前的确定性知识准备，而非模型自行发现。
+  - 作用：
+    1. 具体说明：把题面约束转成稳定的模块执行顺序、案例 ID、种子事实和可验证契约，减少模型遗漏跨模块依赖。
+    2. 代码/文档定位：agent/agent/core/requirements.py:75；agent/agent/core/requirements.py:152；agent/agent/main.py:149
+    3. 详细解释：叶子依赖先拓扑排序，module_index 再筛选相关事实、场景种子和运行契约，main.py 将其挂到 RequirementModule；模型因此接收结构化验收材料而不是整份原始题面。
+  - 输入/知识源：
+    1. 具体说明：输入是 submission 运行时传入的 requirements.yaml、其 description/scenarios/dependencies，以及其中的相对图片引用。
+    2. 代码/文档定位：agent/agent/main.py:102；agent/agent/core/requirements.py:46；agent/agent/core/requirements.py:61
+    3. 详细解释：requirements.py 从节点字段和 scenarios 建立 cases，从 Markdown 图片语法建立 references；这些源数据进入 acceptance.json 和模块上下文，图片本身只在显式委托时进一步处理。
+  - 选择/检索：
+    1. 具体说明：采用确定性全量解析、依赖拓扑排序和按 module_id 的过滤，没有语义检索或候选召回。
+    2. 代码/文档定位：agent/agent/core/requirements.py:15；agent/agent/core/requirements.py:132；agent/agent/main.py:253
+    3. 详细解释：stable_order 只依据 dependencies 集合选 ready 节点，module_index 只保留当前模块及 ROOT 项；被选内容直接序列化进提示，说明这是规则筛选而非 RAG。
+  - 生成/使用：
+    1. 具体说明：控制器把模块子树、编译索引、原始需求目录和必要的查询命令拼接为模块级编码提示。
+    2. 代码/文档定位：agent/agent/main.py:222；agent/agent/main.py:250；agent/agent/main.py:258
+    3. 详细解释：_module_prompt 依次加入 ROOT 全局约束、当前 subtree、acceptance 和 contract_context 查询建议；Codex 线程收到该文本后据此生成或编辑应用。
+  - 输出：
+    1. 具体说明：产出 .haiknow/contract.md、plan.md、progress.md、acceptance.json，以及供模型消费的 RequirementModule/提示文本。
+    2. 代码/文档定位：agent/agent/main.py:303；agent/agent/main.py:323；agent/agent/main.py:149
+    3. 详细解释：_prepare_knowledge 将源哈希、模块计划和编译 acceptance 写入工作区，模块对象再把这些文件和索引传入生成阶段，形成可追踪的需求到代码链路。
+
+STRATEGY-002 [CODE-REUSE] 模板、脚手架和技能的增量复制
+  - 状态：
+    1. 具体说明：confirmed；初始化阶段递归复制 agent/template 的缺失文件，并在 profile 开启时复制 competition/scaffold，同时复制三个 ARC-Bench 技能。
+    2. 代码/文档定位：agent/agent/main.py:59；agent/agent/main.py:82；agent/agent/main.py:96
+    3. 详细解释：copy_template_contents 明确跳过 node_modules、构建产物等目录且不覆盖已有文件；initialize_project 与 copy_skills_to_output 将可复用应用骨架和操作知识放入输出项目。
+  - 作用：
+    1. 具体说明：提供可直接扩展的 React/Vite、Node 后端、数据库测试和追踪ability 基础，使模型专注于题面差异和增量实现。
+    2. 代码/文档定位：agent/agent/main.py:96；agent/agent/main.py:208；agent/agent/core/simple_workflow.py:36
+    3. 详细解释：simple workflow 在任何模型调用前先准备工作区、项目模板和技能；开发提示还要求保留既有应用、持久化数据和测试，体现的是 starter 复用加原地适配。
+  - 输入/知识源：
+    1. 具体说明：来源是提交仓库内 agent/template、agent/competition/scaffold 和 agent/skills/arcbench-{traceability,checkpoint,runtime-signals} 的源码与说明。
+    2. 代码/文档定位：agent/agent/main.py:86；agent/agent/main.py:97；agent/agent/main.py:208
+    3. 详细解释：allowed 列表固定三类技能，模板目录递归读取；这些文件作为工作区初始内容和提示可读资料，随后由模型调用和控制器验证共同消费。
+  - 选择/检索：
+    1. 具体说明：选择规则是固定目录复制、目标缺失时才复制文件，以及仅按 profile 决定是否增加 scaffold；没有按题面相似度挑选代码片段。
+    2. 代码/文档定位：agent/agent/main.py:66；agent/agent/main.py:87；agent/agent/main.py:98
+    3. 详细解释：destination.exists() 时跳过文件，allowed 限定技能集合，profile_enabled() 决定脚手架；因此复用是预置路径策略而非检索式代码复用。
+  - 生成/使用：
+    1. 具体说明：模型在复制出的工程上使用 apply_patch 等 SDK 工具实现需求，提示要求增量修改并保留现有能力。
+    2. 代码/文档定位：agent/agent/main.py:228；agent/agent/agents/model/chat_adapter.py:18；agent/agent/main.py:437
+    3. 详细解释：模块提示把输出视为既有应用，chat_adapter 明确约束 apply_patch 形式，thread.run 执行编码回合；复制的组件最终通过模型适配为题面应用。
+  - 输出：
+    1. 具体说明：输出是填充后的前后端项目、.codex/skills 副本及其测试/配置，而不是单独的代码片段库。
+    2. 代码/文档定位：agent/agent/main.py:71；agent/agent/main.py:92；agent/agent/main.py:502
+    3. 详细解释：文件复制落在 output_dir，模块完成后提交快照；模型改写后的应用和复制的基础共同构成最终交付物。
+
+STRATEGY-003 [PROMPT-ORCHESTRATION] 单线程模块化提示与上下文约束
+  - 状态：
+    1. 具体说明：confirmed；控制器为每个 ROOT 子模块建立一次主要编码回合，复用同一 Codex thread，并在后续模块中携带 completed_ids 和上轮检查结果。
+    2. 代码/文档定位：agent/agent/main.py:355；agent/agent/main.py:472；agent/agent/main.py:493
+    3. 详细解释：implement_modules 定义模块循环，turn 通过 recover 调用 execute_turn；静态检查消息会追加到下一次 prompt，形成有序的提示编排而非多代理并行。
+  - 作用：
+    1. 具体说明：把全局规则、当前模块、依赖索引、验证要求和工具边界组合成角色化编码指令，指导模型从需求到代码和测试。
+    2. 代码/文档定位：agent/agent/main.py:202；agent/agent/main.py:248；agent/agent/main.py:268
+    3. 详细解释：_developer_instructions 注入 HAIKNOW-LITE、访问策略、技能和验证纪律；_module_prompt 再注入模块材料及测试命令，二者共同限定模型行为。
+  - 输入/知识源：
+    1. 具体说明：输入包括 HAIKNOW-LITE.md、profile policy、ROOT/subtree JSON、acceptance 索引、技能路径和工作区状态。
+    2. 代码/文档定位：agent/agent/main.py:204；agent/agent/main.py:236；agent/agent/main.py:251
+    3. 详细解释：开发者指令从仓库内规则文件和 profile 生成，模块提示从结构化 JSON 和已有 .haiknow 文件生成；这些材料按角色和阶段进入模型上下文。
+  - 选择/检索：
+    1. 具体说明：通过模块索引筛选相关 case/runtime contract，并根据是否首模块、是否末模块、是否有已完成模块分支化提示。
+    2. 代码/文档定位：agent/agent/main.py:229；agent/agent/main.py:246；agent/agent/core/requirements.py:132
+    3. 详细解释：completed_ids 改变后续提示，module.index==total 增加跨模块集成要求；这是上下文压缩和阶段路由，不是外部语料检索。
+  - 生成/使用：
+    1. 具体说明：提示以文本和 JSON 拼接后送入 Codex thread.run，模型可返回说明并通过 SDK 工具编辑文件；静态检查摘要还会链式回灌。
+    2. 代码/文档定位：agent/agent/main.py:275；agent/agent/main.py:405；agent/agent/main.py:437
+    3. 详细解释：每回合先构造 prompt，再在隔离 SDK 中运行 thread；执行记录保存 prompt 字符数和结果，前一模块 findings 直接成为下一回合修复上下文。
+  - 输出：
+    1. 具体说明：输出包括模型修改的源文件、简短变更摘要、turns/validations 记录以及模块状态事件。
+    2. 代码/文档定位：agent/agent/main.py:467；agent/agent/main.py:501；agent/agent/core/simple_workflow.py:45
+    3. 详细解释：execute_turn 将结果写入 state.turns，模块完成触发 implementation_done 和 commit；因此提示链的产物同时是应用变更和可审计过程记录。
+
+STRATEGY-004 [MODEL-ROUTING] ARC-Bench Responses 单模型通道与视觉特例
+  - 状态：
+    1. 具体说明：confirmed；模型通过 CodexConfig 的自定义 arcbench provider 使用 Responses wire API，web search、multi-agent、apps、plugins 和 MCP 被关闭；视觉传输是显式图片委托的附加通道。
+    2. 代码/文档定位：agent/agent/main.py:182；agent/agent/main.py:193；agent/agent/main.py:400
+    3. 详细解释：配置固定 provider、认证环境和能力开关，implement_modules 仅创建一个 Codex thread；VisualTransport 只在 reference contexts 存在时加入，未见多个模型投票或名称路由。
+  - 作用：
+    1. 具体说明：把模块提示可靠送入平台模型，并把模型的工具调用限制在输出项目和安全策略内；视觉通道只补充被需求明确委托的功能事实。
+    2. 代码/文档定位：agent/agent/main.py:164；agent/agent/main.py:208；agent/agent/core/references.py:24
+    3. 详细解释：_codex_config 设置 cwd、HOME、base_url 和隔离环境，开发指令声明禁止 OCR 风格参考；references.py 只为显式功能委托构造上下文，避免将全部截图作为模型知识。
+  - 输入/知识源：
+    1. 具体说明：模型输入是开发者指令、模块 prompt、requirements 编译 JSON、工作区文件和可选 reference image context；模型与 base URL 来自环境变量和 policy。
+    2. 代码/文档定位：agent/agent/main.py:202；agent/agent/main.py:385；agent/agent/core/references.py:51
+    3. 详细解释：reference_contexts 从 acceptance 的 references 按祖先关系和请求模式绑定图片，Codex 配置再将 OPENAI_BASE_URL/本地 key 放入子进程环境；工作区内容通过 SDK 工具访问。
+  - 选择/检索：
+    1. 具体说明：模型路由没有候选模型选择；唯一的选择是 policy 的 resolve_model，以及显式功能图片委托和 provider base_url 配置。
+    2. 代码/文档定位：agent/agent/core/simple_workflow.py:23；agent/agent/core/runtime_config.py:44；agent/agent/core/references.py:43
+    3. 详细解释：simple_workflow 调用 resolve_model(policy) 后把结果写入状态；references.py 仅按 delegation_patterns 匹配原始描述，未发现 embedding、向量索引或 lexical corpus 查询。
+  - 生成/使用：
+    1. 具体说明：同一 coding thread 逐模块调用 thread.run，必要时通过 VisualTransport 将绑定图片事实传给模型；返回结果由控制器记录并继续下一个阶段。
+    2. 代码/文档定位：agent/agent/main.py:400；agent/agent/main.py:405；agent/agent/main.py:437
+    3. 详细解释：Codex 和 transport 在 isolated_sdk 中创建，execute_turn 调用 thread.run；这使模型生成成为代码编辑、测试修复和摘要的统一入口。
+  - 输出：
+    1. 具体说明：输出为模型驱动的应用源代码/测试修改、回合摘要和状态中的 model、prompt_chars、controller_turns 等指标。
+    2. 代码/文档定位：agent/agent/main.py:42；agent/agent/main.py:410；agent/agent/main.py:467
+    3. 详细解释：state 初始化保存 model 与效率字段，turn 结束保存 record；最终代码由 SDK 工具落盘，模型文本本身不是唯一交付物。
+
+STRATEGY-005 [TOOLS/EXECUTION] 受控文件工具、检查器和本地验证链
+  - 状态：
+    1. 具体说明：confirmed；工具执行包含隔离 SDK、模板文件操作、模块静态 checkpoint、项目验证和交付验证，并通过安全环境和 cwd 限定边界。
+    2. 代码/文档定位：agent/agent/main.py:164；agent/agent/core/checkpoints.py:24；agent/agent/core/validation.py:259
+    3. 详细解释：Codex 配置把输出目录作为 cwd，checkpoint 明确是静态源检查，validation 另有构建、测试、临时数据库和双端口路径；这些工具共同把模型修改转成可检验产物。
+  - 作用：
+    1. 具体说明：让模型检查实际文件、编辑代码、运行受控测试并获得机器反馈，同时隔离临时数据库、浏览器缓存和外部访问策略。
+    2. 代码/文档定位：agent/agent/main.py:268；agent/agent/core/checkpoints.py:37；agent/agent/core/validation.py:431
+    3. 详细解释：提示要求使用 scripts/check.py，checkpoint 调用受限 node parser，validation 启动本地 npm 服务并轮询健康端点；反馈随后成为修复依据。
+  - 输入/知识源：
+    1. 具体说明：工具输入是输出项目、requirements.yaml、.haiknow acceptance/runtime map、依赖缓存和模型生成的测试/源文件。
+    2. 代码/文档定位：agent/agent/core/checkpoints.py:42；agent/agent/core/checkpoints.py:67；agent/agent/core/validation.py:259
+    3. 详细解释：checkpoint 从 acceptance 和 UI 观察结果生成检查，validation 从 project 与 evidence 运行验证；它们不把示例仓库作为运行时输入。
+  - 选择/检索：
+    1. 具体说明：工具选择由阶段和 policy 决定：先 preflight/依赖准备，再模块 checkpoint，最后 verify_project；失败信息限制长度后回灌。
+    2. 代码/文档定位：agent/agent/core/simple_workflow.py:51；agent/agent/main.py:496；agent/agent/main.py:512
+    3. 详细解释：simple workflow 按固定阶段调用 preflight/recover，模块完成后 checkpoint，最终 validation；不是任意工具搜索，而是确定性的生命周期路由。
+  - 生成/使用：
+    1. 具体说明：模型通过 SDK 工具修改工作区，控制器通过 subprocess 调用静态解析、npm 启动和测试，并将结果写入 evidence。
+    2. 代码/文档定位：agent/agent/agents/model/chat_adapter.py:216；agent/agent/core/checkpoints.py:37；agent/agent/core/validation.py:431
+    3. 详细解释：chat_adapter 计算 offered tools 并拒绝未知调用，checkpoint/validation 执行实际检查；模型产物和工具证据形成闭环。
+  - 输出：
+    1. 具体说明：输出包括源代码改动、checkpoint.json、validation 记录、测试日志、运行状态和 git 提交快照。
+    2. 代码/文档定位：agent/agent/core/checkpoints.py:85；agent/agent/main.py:512；agent/agent/core/repository.py:31
+    3. 详细解释：checkpoint 将报告写入 evidence，验证结果进入 state.validations，repository 在里程碑处提交快照；最终交付因此带有工具证据和可恢复版本。
+
+STRATEGY-006 [ITERATION/EVALUATION] 验证反馈、恢复重试和修复回合
+  - 状态：
+    1. 具体说明：confirmed；每个模块可执行静态检查，整体执行 build/unit/API/e2e/双端口验证，失败时按 repair_attempts 触发新的修复提示，超时则保存当前状态。
+    2. 代码/文档定位：agent/agent/main.py:472；agent/agent/main.py:496；agent/agent/main.py:550
+    3. 详细解释：turn 使用 recover，模块后 checkpoint，验证失败进入 repair loop；simple_workflow 捕获异常并把 failed/error 写入 state，说明存在明确的反馈和停止路径。
+  - 作用：
+    1. 具体说明：把可执行验收结果转成模型下一轮的具体问题，避免只依赖一次生成，并在成功或达到限制时固定交付状态。
+    2. 代码/文档定位：agent/agent/main.py:493；agent/agent/core/simple_recovery.py:40；agent/agent/main.py:524
+    3. 详细解释：pending_checks 会附加到下一模块提示，recover 按 operation 记录尝试，验证成功时提交“verified”快照；失败则继续有限修复或交付未解决检查。
+  - 输入/知识源：
+    1. 具体说明：输入是静态 UI/name/semantic 观察、构建输出、Vitest/Playwright 结果、健康探测和先前回合的 state/evidence。
+    2. 代码/文档定位：agent/agent/core/checkpoints.py:36；agent/agent/core/validation.py:323；agent/agent/main.py:467
+    3. 详细解释：checkpoint 从 observations.json 形成 issues，validation 汇总 subprocess 日志，turn record 保存响应和耗时；这些结果成为 repair prompt 的事实来源。
+  - 选择/检索：
+    1. 具体说明：根据 return code、报告 issues、deadline 和 repair_attempts 选择成功提交、追加修复提示、重试或停止；没有外部评估器语义检索。
+    2. 代码/文档定位：agent/agent/main.py:482；agent/agent/main.py:512；agent/agent/main.py:550
+    3. 详细解释：checked_report/recover 区分可重试错误，验证分支在无问题时 return，在剩余预算内构造“Repair attempt”提示，否则提交 unresolved 状态，规则完全由控制器决定。
+  - 生成/使用：
+    1. 具体说明：修复提示引用上一轮失败摘要和磁盘证据，模型继续在同一线程编辑文件并重跑受影响检查。
+    2. 代码/文档定位：agent/agent/main.py:279；agent/agent/main.py:493；agent/agent/main.py:550
+    3. 详细解释：_failure_excerpt 保留初始原因和最终断言，pending_checks 及 repair attempt 文本送入 turn；模型据此产生针对性补丁，而非重新生成整个项目。
+  - 输出：
+    1. 具体说明：输出是每轮 validations/turns、checkpoint 与最终 verify/delivery 报告，以及成功或未解决检查对应的提交。
+    2. 代码/文档定位：agent/agent/main.py:380；agent/agent/main.py:512；agent/agent/main.py:541
+    3. 详细解释：状态数组保留过程证据，成功路径提交测试快照，失败/截止路径也提交可运行但带 unresolved checks 的版本，形成可审计停止结果。
+
+STRATEGY-007 [STATE/PERSISTENCE] 冻结知识、证据状态与 git 检查点
+  - 状态：
+    1. 具体说明：confirmed；系统持久化 .haiknow 知识文件、.arc/haiknow evidence、runner/traceability 状态和模块级 git snapshot，并在增量工作区归档旧代理元数据。
+    2. 代码/文档定位：agent/agent/core/simple_workflow.py:40；agent/agent/core/workspace.py:68；agent/agent/core/repository.py:31
+    3. 详细解释：prepare_workspace 记录 fresh/incremental 与 prior source，知识和 evidence 贯穿运行；initialize_repository/commit_snapshot 将里程碑写入版本历史，构成跨回合恢复基础。
+  - 作用：
+    1. 具体说明：保存需求哈希、计划、进度、回合、验证和历史应用上下文，使同一运行可恢复且后续模块能消费之前的事实。
+    2. 代码/文档定位：agent/agent/main.py:309；agent/agent/main.py:380；agent/agent/core/workspace.py:99
+    3. 详细解释：contract.md 保存源哈希，state.json 保存 turns/validations，workspace.json 记录 archive 和 database_input；这些文件把生成链从瞬时提示扩展为持久状态。
+  - 输入/知识源：
+    1. 具体说明：来源是当前 requirements.yaml、既有 .haiknow/acceptance.json 或 prior-acceptance.json、数据库输入快照、模型回合和验证输出。
+    2. 代码/文档定位：agent/agent/core/workspace.py:59；agent/agent/core/workspace.py:75；agent/agent/main.py:380
+    3. 详细解释：_prior_sources 只合并需求描述和案例，prepare_workspace 捕获数据库输入并归档代理目录；state/evidence 再记录运行期新增的模型与测试信息。
+  - 选择/检索：
+    1. 具体说明：持久化选择遵循固定文件名、当前工作区是否已有应用和模块序列；旧状态不会直接宣称完成，只保留兼容性描述并重新验证。
+    2. 代码/文档定位：agent/agent/core/workspace.py:76；agent/agent/core/workspace.py:99；agent/agent/main.py:243
+    3. 详细解释：existing 只决定 fresh/incremental，prior source 被标为 descriptions only，提示明确要求新会话检查现有实现；因此状态用于上下文恢复而非无条件复用通过结论。
+  - 生成/使用：
+    1. 具体说明：模块提示读取 frozen contract/plan/progress 和 acceptance，控制器将 turn、validation、checkpoint 写入 JSON，git 在模块/验证里程碑提交。
+    2. 代码/文档定位：agent/agent/main.py:248；agent/agent/main.py:467；agent/agent/main.py:501
+    3. 详细解释：提示让模型在上下文压缩时读取持久文件，state 更新记录每轮，module completion 触发 commit_snapshot；这些持久化产物会影响后续提示和恢复。
+  - 输出：
+    1. 具体说明：输出为 .haiknow/*.md/json、.arc/haiknow/state.json 与 checks、traceability/runner 事件、归档目录和 git commits。
+    2. 代码/文档定位：agent/agent/main.py:303；agent/agent/core/checkpoints.py:85；agent/agent/core/repository.py:36
+    3. 详细解释：知识、证据和快照分别服务模型上下文、评估审计和可恢复交付；最终应用代码与这些元数据共同描述生成过程。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 agent/core、agents、skills、competition 和工作区静态内容中未发现向量索引、embedding、相似度搜索或任务语料库；requirements 的拓扑排序和字段筛选属于确定性编译，不应称为 RAG。
+- CODE-REUSE：已确认模板、competition scaffold 和技能复制；未发现从外部 URL 下载或按相似项目检索代码。内置 template 中的通用组件是否逐文件由模型实际采用，静态证据只能确认其可用和复制路径。
+- MODEL-ROUTING：已确认单一 ARC-Bench Responses provider 与可选 VisualTransport；未发现多模型并行、投票或基于质量的模型切换。实际远端模型响应未执行，动态分支保持未解析。
+- TOOLS/EXECUTION：代码含有 subprocess、网络探测和 npm/Playwright 路径，但本次分析未执行选手代码、未安装依赖、未访问其 URL；上述行为是静态实现意图，不是本次运行事实。
+分析完成

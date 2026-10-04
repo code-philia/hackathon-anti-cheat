@@ -1,0 +1,144 @@
+﻿核心策略分析：018-2M2-a95fed7eca51
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\018-2M2-a95fed7eca51
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+选手提交的是一个通用 ARC-Bench/Codex 控制器：读取 requirements.yaml，编译依赖和验收上下文，把模板、内置 skills 与当前输出目录准备好，再按模块复用一个 coding thread 让模型通过受限工具生成应用；每个模块后做静态 checkpoint，最后运行构建、启动、单元/API/E2E 验证，失败时把证据送回模型修复。静态证据中未发现面向题面仓库的向量/关键词检索或外部知识库 RAG；代码复用（CODE-REUSE）以通用 starter/template 和输出目录已有代码的增量复制/适配为主，未发现把题面示例代码直接导入生成路径的证据。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 按 ROOT 模块的单线程编码与修复编排
+  - 状态：
+    1. 具体说明：confirmed；main.py 维护 RequirementModule，并按编译后的 module_order 逐模块向 Codex 发送模块 prompt，修复仍复用同一线程。
+    2. 代码/文档定位：agent/agent.zip::main.py:135；agent/agent.zip::main.py:355-406；agent/agent.zip::main.py:491-558
+    3. 详细解释：compile_acceptance 生成模块、叶节点顺序和依赖；implement_modules 创建 Codex/线程并循环发送 prompt，验证失败后再次 turn，因此生成上下文包含全局约束、当前子树和已完成模块。
+  - 作用：
+    1. 具体说明：把大题拆成有序功能模块，同时保持跨模块上下文和可回修通道。
+    2. 代码/文档定位：agent/agent.zip::main.py:222-258；agent/agent.zip::core/requirements.py:37-114
+    3. 详细解释：_module_prompt 注入 requirements 目录、ROOT context、依赖和 acceptance；稳定拓扑顺序把依赖先行，随后工具调用直接修改输出项目。
+  - 输入/知识源：
+    1. 具体说明：requirements.yaml 的 ROOT、children、scenarios、dependencies，以及 .haiknow acceptance/module context。
+    2. 代码/文档定位：agent/agent.zip::main.py:105-157；agent/agent.zip::main.py:252-258
+    3. 详细解释：YAML 被解析并编译成 acceptance、case_ids、runtime contracts；这些结构化字段成为模块 prompt 的事实输入，而非对示例仓库的运行时读取。
+  - 选择/检索：
+    1. 具体说明：confirmed；选择规则是 stable_order 的依赖拓扑序和当前 module_id 过滤，没有语义检索。
+    2. 代码/文档定位：agent/agent.zip::core/requirements.py:16-30；agent/agent.zip::core/requirements.py:141-170
+    3. 详细解释：stable_order 只检查依赖集合；module_index 仅筛选相关 req/case/runtime contract，结果按顺序传给下一编码 turn。
+  - 生成/使用：
+    1. 具体说明：将结构化模块上下文拼成自然语言 prompt，交给 Codex Responses/工具线程生成和修改文件。
+    2. 代码/文档定位：agent/agent.zip::main.py:222-274；agent/agent.zip::main.py:404-413
+    3. 详细解释：prompt 明确当前模块、目录、全局约束和验证要求；Codex thread 的 tool calls 产生实际前端/后端代码，后续 turn 使用同一历史。
+  - 输出：
+    1. 具体说明：输出目录中的应用源代码、.haiknow 状态和每模块提交快照。
+    2. 代码/文档定位：agent/agent.zip::main.py:501-502；agent/agent.zip::main.py:310-344
+    3. 详细解释：模块完成后写 implementation_done 事件并 commit_snapshot；冻结 contract/plan/acceptance 供后续模块和验证消费。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 通用模板、内置技能与验收契约注入
+  - 状态：
+    1. 具体说明：confirmed；控制器复制 template 和三项 arcbench skills，并生成 contract、plan、acceptance。
+    2. 代码/文档定位：agent/agent.zip::main.py:45-103；agent/agent.zip::main.py:300-344
+    3. 详细解释：copy_template_contents 只填充缺失 starter 文件，copy_skills_to_output 固定允许的 skills；prepare_workspace 写入冻结知识文件，这些随后被模型和检查器读取。
+  - 作用：
+    1. 具体说明：提供可直接扩展的前后端骨架、合规工具说明和可执行验收索引，减少每题从零设计。
+    2. 代码/文档定位：agent/agent.zip::main.py:67-103；agent/agent.zip::main.py:205-219
+    3. 详细解释：模板覆盖 backend/frontend 基础设施，developer instructions 要求读取 skills、维护测试和遵循访问边界，形成生成前的固定先验。
+  - 输入/知识源：
+    1. 具体说明：agent/template、agent/skills、题面 requirements.yaml 与 competition policy JSON。
+    2. 代码/文档定位：agent/agent.zip::main.py:300-344；agent/agent.zip::main.py:163-200
+    3. 详细解释：模板和 skills 来自提交包预置目录；requirements 被序列化为 acceptance，policy 决定模型配置和工具边界。
+  - 选择/检索：
+    1. 具体说明：confirmed；按固定目录复制，按 module_id/依赖筛选契约，不存在向量或全文语义召回。
+    2. 代码/文档定位：agent/agent.zip::main.py:45-103；agent/agent.zip::core/requirements.py:141-170
+    3. 详细解释：复制函数遍历模板树且不覆盖已有文件；module_index 只保留相关事实、场景和运行契约，选择结果进入模块 prompt。
+  - 生成/使用：
+    1. 具体说明：模型在模板上增量写代码，skills 作为提示中的操作规范和脚本入口。
+    2. 代码/文档定位：agent/agent.zip::main.py:222-274；agent/agent.zip::main.py:205-219
+    3. 详细解释：提示要求使用 traceability/checkpoint/runtime skills，并把 starter 当作输出基础；模型产物因此沿用模板接口和状态结构。
+  - 输出：
+    1. 具体说明：生成项目文件及 .codex/skills、.haiknow/contract.md、plan.md、acceptance.json、module contexts。
+    2. 代码/文档定位：agent/agent.zip::main.py:300-344；agent/agent.zip::main.py:86-103
+    3. 详细解释：这些文件成为后续 coding、checkpoint 和 validation 的可持久输入；它们是准备知识的落盘结果。
+
+STRATEGY-003 [MODEL-ROUTING] 视觉分析与编码模型的配置、回退和工具网关
+  - 状态：
+    1. 具体说明：confirmed；VisualTransport 读取 VISUAL_MODEL/MODEL，编码侧使用 Codex 配置，视觉请求可按候选模型顺序回退。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:289-313；agent/agent.zip::agents/model/visual_transport.py:474-590
+    3. 详细解释：模型候选、base URL、密钥和 protocol policy 被集中配置；请求失败时记录并切换下一个候选，成功结果缓存为视觉补充事实。
+  - 作用：
+    1. 具体说明：把图片事实提取和代码生成分成不同调用路径，并将可验证的视觉事实注入需求上下文。
+    2. 代码/文档定位：agent/agent.zip::core/references.py:15-65；agent/agent.zip::agents/model/visual_transport.py:462-557
+    3. 详细解释：references.py 只对明确功能委托的本地图片建立上下文；transport 将模型返回事实绑定 req_id 后供生成使用。
+  - 输入/知识源：
+    1. 具体说明：本地 data:image 或题面引用图片、requirements 文本、环境模型配置。
+    2. 代码/文档定位：agent/agent.zip::core/references.py:36-65；agent/agent.zip::agents/model/visual_transport.py:417-480
+    3. 详细解释：图片先校验为本地/受限数据并计算 SHA256，文本 prompt 与图片共同组成视觉请求；环境变量决定模型和 endpoint。
+  - 选择/检索：
+    1. 具体说明：按明确 delegation pattern、req_id 所属关系和图片哈希缓存选择；模型按候选数组顺序尝试。
+    2. 代码/文档定位：agent/agent.zip::core/references.py:41-65；agent/agent.zip::agents/model/visual_transport.py:474-590
+    3. 详细解释：没有通用 corpus search；只选择当前需求拥有的引用，失败才进入下一模型，缓存命中可跳过重复分析。
+  - 生成/使用：
+    1. 具体说明：视觉模型使用固定 scoped-reference prompt 生成 JSON facts；编码模型通过 chat adapter 发送带工具定义的消息。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_analysis.py:3-28；agent/agent.zip::agents/model/chat_adapter.py:88-190
+    3. 详细解释：视觉响应经过 parse_visual_facts 的 owner/kind 校验后成为补充上下文；chat adapter 过滤和修正工具调用，再把有效消息交给模型。
+  - 输出：
+    1. 具体说明：视觉 supplement/cache metadata、编码模型响应和工具调用事件。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:549-620；agent/agent.zip::agents/model/visual_transport.py:649-718
+    3. 详细解释：成功事实带 image_sha256、model、prompt_version 并写入缓存/事件；编码结果由工具网关消费以修改项目。
+
+STRATEGY-004 [TOOLS/EXECUTION] 受限文件、终端、补丁和图像工具驱动的代码生成
+  - 状态：
+    1. 具体说明：confirmed；CODING_TOOLS 白名单包含 exec_command、write_stdin、shell、update_plan、view_image、apply_patch，SDK 配置禁用 web search/apps/plugins。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:41-42；agent/agent.zip::main.py:163-200
+    3. 详细解释：工具名称先白名单过滤，Codex overrides 明确 web_search disabled 和 mcp_servers={}，生成只能通过控制器允许的本地操作发生。
+  - 作用：
+    1. 具体说明：让模型检查文件、编辑源代码、运行本地测试/构建并查看被授权的功能图片。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:41-42；agent/agent.zip::main.py:205-219
+    3. 详细解释：工具调用由 coding chat 传输层转发；开发指令要求维护 backend/test-e2e 并使用 skills 脚本，工具结果反馈到同一线程。
+  - 输入/知识源：
+    1. 具体说明：输出目录现有文件、requirements/acceptance、工具返回的命令和测试结果。
+    2. 代码/文档定位：agent/agent.zip::main.py:245-258；agent/agent.zip::agents/model/chat_adapter.py:175-225
+    3. 详细解释：增量模式提示模型先检查已有应用；adapter 把经过校验的 tool calls/results 纳入消息历史，成为后续决策输入。
+  - 选择/检索：
+    1. 具体说明：工具由模型按当前 prompt 自主选择，传输层仅允许白名单名称并拒绝无效调用。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:609-718；agent/agent.zip::agents/model/chat_adapter.py:184-225
+    3. 详细解释：模型提出调用，网关核对 protocol/tool 名称后执行或返回错误；不存在自动网页搜索或外部 URL 访问策略。
+  - 生成/使用：
+    1. 具体说明：apply_patch/命令工具直接改变工作区，测试工具输出被用作下一轮修复上下文。
+    2. 代码/文档定位：agent/agent.zip::agents/model/visual_transport.py:649-718；agent/agent.zip::main.py:510-558
+    3. 详细解释：编码响应中的合法工具调用进入 transport；验证失败消息包含验证证据并重新发送 repair prompt，形成闭环。
+  - 输出：
+    1. 具体说明：修改后的源文件、命令输出、工具审计事件和构建/测试报告。
+    2. 代码/文档定位：agent/agent.zip::main.py:491-558；agent/agent.zip::agents/model/visual_transport.py:801-843
+    3. 详细解释：controller 汇总 turn/validation 状态，transport 记录协议与时序元数据，最终交付可运行项目。
+
+STRATEGY-005 [ITERATION/EVALUATION] 模块 checkpoint、冷验证与有限修复循环
+  - 状态：
+    1. 具体说明：confirmed；每模块执行 module_checkpoint，之后 verify_project；失败按 repair_attempts 重试，超限仍记录 unresolved 状态。
+    2. 代码/文档定位：agent/agent.zip::main.py:496-558；agent/agent.zip::core/checkpoints.py:24-85
+    3. 详细解释：checkpoint 是静态快速门，最终验证覆盖构建/启动/测试；repair 分支把 validation 目录和失败摘要交给模型。
+  - 作用：
+    1. 具体说明：用可重复证据约束生成质量，并把失败转化为针对性修复任务。
+    2. 代码/文档定位：agent/agent.zip::main.py:510-558；agent/agent.zip::core/validation.py:1-80
+    3. 详细解释：验证结果写入 state['validations']，模型收到具体路径和错误；成功才 commit verified snapshot。
+  - 输入/知识源：
+    1. 具体说明：源代码静态检查、依赖准备结果、单元/API/E2E 测试及启动探针。
+    2. 代码/文档定位：agent/agent.zip::core/validation.py:1-80；agent/agent.zip::core/evaluator_probe.py:1-70
+    3. 详细解释：验证器读取项目和测试结果生成报告，探针检查服务契约；这些报告成为修复 prompt 的事实输入。
+  - 选择/检索：
+    1. 具体说明：按 checkpoint 消息、verify_project 返回的 partial/failure 和剩余 repair_attempts 决定继续、修复或交付。
+    2. 代码/文档定位：agent/agent.zip::main.py:496-558
+    3. 详细解释：条件分支检查 partial、can_repair 和 deadline；没有基于相似案例的检索，只有当前运行证据驱动的重试。
+  - 生成/使用：
+    1. 具体说明：修复 turn 明确引用 validation-{attempt} 证据目录，模型对现有代码做局部补丁并再次验证。
+    2. 代码/文档定位：agent/agent.zip::main.py:549-558
+    3. 详细解释：repair prompt 把失败报告和当前模块上下文交还 coding thread，工具生成补丁后回到 verify_project。
+  - 输出：
+    1. 具体说明：module-checks、validation-* 报告、state.json、git snapshot 与最终应用。
+    2. 代码/文档定位：agent/agent.zip::main.py:378-406；agent/agent.zip::main.py:501-541
+    3. 详细解释：状态记录实现、验证和门控结果；成功写 verified commit，失败则保存 unresolved checks 供交付审计。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的选手静态内容中未发现向量索引、关键词检索、任务指纹 corpus 或外部知识库召回；requirements/module_index 属于结构化依赖筛选，不是 RAG。
+- CODE-REUSE：确认存在通用 template 的复制和增量工作区适配（agent/agent.zip::main.py:45-67、245-258）；未发现从 example/github 或 example/sheet 读取并直接复制题面实现的路径。提交内 applications zip 是产物/工作区快照，未作为 agent 生成时的输入被引用，静态运行链仍有少量动态 SDK 行为无法展开。
+- 图片视觉调用是否在本次任务实际发生：unresolved；代码支持明确委托时的视觉模型和缓存，但静态证据不能证明本次运行的环境变量或请求成功。
+分析完成

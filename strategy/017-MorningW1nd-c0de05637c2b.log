@@ -1,0 +1,224 @@
+核心策略分析：017-MorningW1nd-c0de05637c2b
+题面路径：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon
+题面范围：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon\\github；E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\example\\hackathon\\sheet
+作答路径：E:\\workplace\\hackathon\\visualizer\\anti-cheat\\cheat\\workspace\\017-MorningW1nd-c0de05637c2b
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+该提交的主链路是一个按 requirements.yaml 原子节点和依赖拓扑推进的 Octos 全栈代码生成器：先把需求树和 Playwright 公共规格映射到节点，再以独立或内联设计提示生成 .arc/design 合约，随后按规格大小在 tiny HTML、单响应文件块或带工具的会话中实现 frontend/backend。每个节点都经过构建、启动和所属 Playwright 规格，失败被压缩成特征、位置、观察、步骤和页面快照，再进入有限修复、改进提交和回滚；最后运行全套验收和启动演练。RAG 结论是未发现向量/语义语料库，只有按规格词命中数选择现有源码的轻量词法检索；代码复用确认存在于演进模式、依赖节点路由/数据和现有源码适配，未发现从题面示例仓库直接复制的实现路径。模型调用通过本地 LLM 代理按阶段、输入大小和工具需求路由，`.arc` traceability、事件、Git 提交和 Octos 会话目录保存中间状态。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求依赖拓扑驱动的分节点设计-实现编排
+  - 状态：
+    1. 具体说明：confirmed；入口实际读取需求树、展开 ATOMIC 节点并按依赖排序，随后为每个节点执行设计、实现和验收阶段。
+    2. 代码/文档定位：agent/agent.zip::main.py:8；agent/agent.zip::main.py:3076；agent/agent.zip::main.py:3169
+    3. 详细解释：模块文档明确给出 skeleton、design、implement、acceptance 的顺序；run() 调用 load_requirement_tree、topo_order 后逐项进入 node_cycle，因此这是可检查的主控制流而非注释中的泛化意图。
+  - 作用：
+    1. 具体说明：把包含依赖关系的完整题面拆成可单独消费上下文和测试的原子生成单元，并把前序节点设计传给后继节点。
+    2. 代码/文档定位：agent/agent.zip::requirement_order.py:49；agent/agent.zip::main.py:1853；agent/agent.zip::main.py:2417
+    3. 详细解释：topo_order 保证依赖先完成，ancestors_text 汇总已实现依赖的路由、页面和数据模型，NODE_PROMPT 再把这些信息与当前节点拼接，形成跨节点的提示链。
+  - 输入/知识源：
+    1. 具体说明：输入包括 requirements.yaml 的 id、描述、场景、依赖、父节点，以及节点对应的规格文件和已有设计。
+    2. 代码/文档定位：agent/agent.zip::main.py:235；agent/agent.zip::main.py:250；agent/agent.zip::main.py:1778；agent/agent.zip::main.py:1833
+    3. 详细解释：describe_node 将题面结构转换为带场景步骤的文本，requirements_context 追加父节点和状态规则，tests_prompt_for 选择该节点的规格及共享 helper，最终这些材料进入模型回合。
+  - 选择/检索：
+    1. 具体说明：先用依赖图做拓扑选择，再依据规格文件名的 REQ 编号把测试归属到节点，未能唯一归属的规格放入回归集合。
+    2. 代码/文档定位：agent/agent.zip::requirement_order.py:57；agent/agent.zip::requirement_order.py:70；agent/agent.zip::acceptance.py:43；agent/agent.zip::acceptance.py:84
+    3. 详细解释：依赖展开后只挑选所有前驱已完成的节点；map_specs_to_nodes 优先使用字面 id，其次使用层级别名，映射结果决定每次 node_cycle 的测试上下文和验收范围。
+  - 生成/使用：
+    1. 具体说明：设计阶段要求 JSON 路由、页面元素和数据模型，实施阶段在 NODE_PROMPT 中注入该设计或要求模型先写内联设计，再选择代码生成或工具会话。
+    2. 代码/文档定位：agent/agent.zip::main.py:2337；agent/agent.zip::main.py:2390；agent/agent.zip::main.py:2427；agent/agent.zip::main.py:2450
+    3. 详细解释：design() 解析回复中的 JSON 或 .arc/design 文件，node_cycle 将其序列化进实现提示；spec/context 大小决定 tiny、codegen 或工具分支，提示链因此直接决定下游文件产出方式。
+  - 输出：
+    1. 具体说明：输出是 .arc/design/<node>.json、frontend/backend 文件、节点验收结果和 design/implementation/test 状态事件。
+    2. 代码/文档定位：agent/agent.zip::main.py:2364；agent/agent.zip::main.py:2514；agent/agent.zip::arcbench_agent_runtime/events.py:22
+    3. 详细解释：save_design 写入设计和接口合约，acceptance_loop 返回节点 verdict，EventClient 将每个阶段转成 runner-events 和可持久化的状态，供后续节点及最终提交消费。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 需求规则、公共规格和运行时合同的提示注入
+  - 状态：
+    1. 具体说明：confirmed；仓库内有静态的需求状态规则、UI/会话/数据合同、架构合同、代码块格式和修复提示，并在回合构造时实际使用。
+    2. 代码/文档定位：agent/agent.zip::main.py:268；agent/agent.zip::main.py:975；agent/agent.zip::main.py:1080；agent/agent.zip::main.py:1168
+    3. 详细解释：这些常量不是结果说明而是被 requirements_context、NODE_PROMPT、REPAIR_PROMPT 和 verify_text 引用的模板；arc-policy 还声明 prompts 目录是运行时模板来源，故 generic 指导与题面专属规格都进入生成上下文。
+  - 作用：
+    1. 具体说明：约束模型遵守可访问性、持久化、认证隔离、前后端端口/构建契约，并要求保留未测试但由需求规定的行为。
+    2. 代码/文档定位：agent/agent.zip::main.py:975；agent/agent.zip::main.py:1063；agent/agent.zip::main.py:1080；agent/agent.zip::prompts/architecture-contract.md:1
+    3. 详细解释：UI_CONTRACT_CORE 规定控件和状态归属，UI_CONTRACT_DATA/SESSION 按题面关键词加入数据或会话规则，ARCHITECTURE_CONTRACT 规定 npm build、npm start、PORT 和错误处理，从而影响模型写出的页面与服务器。
+  - 输入/知识源：
+    1. 具体说明：知识源分为当前需求文本、公共 Playwright 示例及 helper、静态 prompt 模板和已有应用文件；题面/规格是任务专属，合同和格式是预置通用知识。
+    2. 代码/文档定位：agent/agent.zip::main.py:1222；agent/agent.zip::main.py:1266；agent/agent.zip::arc-policy.toml:1；agent/agent.zip::arc-policy.toml:115
+    3. 详细解释：locate_acceptance_tests 选择环境、workspace 或 bundle 中的 spec tree，acceptance_tests_prompt 描述其约束，arc-policy 将 prompts 目录绑定到内核；已有文件则由源码列表/上下文函数另行注入。
+  - 选择/检索：
+    1. 具体说明：按需求节点和 REQ 文件名选择规格，按题面关键词开关 session/data/performance 合同，并按 inline_spec_chars 限制内联规模。
+    2. 代码/文档定位：agent/agent.zip::main.py:1266；agent/agent.zip::main.py:1573；agent/agent.zip::main.py:1833；agent/agent.zip::arc-policy.toml:117
+    3. 详细解释：classify_tree 只在需求出现登录、密码、seed、option 等词时启用相应规则；tests_prompt_for 将节点 spec 与 helper 组合，超过内联上限时保留可读文件位置而不伪造内容。
+  - 生成/使用：
+    1. 具体说明：实现提示把当前需求、公共例子、架构合同、UI 合同、验证方式和端口规则拼成 NODE_PROMPT；小任务还可使用 tiny/codegen 专用模板。
+    2. 代码/文档定位：agent/agent.zip::main.py:986；agent/agent.zip::main.py:1004；agent/agent.zip::main.py:1117；agent/agent.zip::main.py:2417
+    3. 详细解释：CODEGEN_PROMPT 要求完整文件块和通用输入处理，TINY_PROMPT 只允许页面标记，NODE_PROMPT 则把同一组合同带入工具回合；这些预置规则直接塑造模型生成和修复的边界。
+  - 输出：
+    1. 具体说明：产生的是带完整规格/合同的模型请求、设计 JSON 和可解析的应用文件块，而不是独立的知识库答案。
+    2. 代码/文档定位：agent/agent.zip::main.py:1716；agent/agent.zip::codegen.py:20；agent/agent.zip::main.py:2364
+    3. 详细解释：codegen_turn 将模板回复解析为相对路径文件，设计回合把 JSON 保存到 .arc/design；随后应用文件进入验收链，模板本身不会作为最终页面输出。
+
+STRATEGY-003 [RAG/RETRIEVAL] 按规格词命中数选择源码上下文的轻量检索
+  - 状态：
+    1. 具体说明：confirmed；实现了词法 token 提取、源码命中计数和预算内排序，但在已检查的静态代码中未发现 embedding、向量索引或语义检索实现。
+    2. 代码/文档定位：agent/agent.zip::main.py:422；agent/agent.zip::main.py:433；agent/agent.zip::main.py:454
+    3. 详细解释：spec_terms 只从规格中抽取标识符、路径和字符串，relevant_sources 用子串命中数排序；这确认了轻量文件检索，也限定了不能把它表述成向量 RAG。
+  - 作用：
+    1. 具体说明：为已有应用的单响应实现和无工具修复挑出最可能相关的后端入口、页面、JSON 状态和样式，减少一次请求需要重读的源码量。
+    2. 代码/文档定位：agent/agent.zip::main.py:433；agent/agent.zip::main.py:1631；agent/agent.zip::main.py:2441
+    3. 详细解释：源码预算先检查是否能完整放入 codegen 上下文，已有应用时再把 relevant_sources 追加到代码提示；命中上下文随后被模型用于保留架构并返回完整修改文件。
+  - 输入/知识源：
+    1. 具体说明：语料是当前 output_dir 下 frontend/backend 的 html、js、mjs、cjs、css、json 文件；查询是当前节点的需求和公共 spec 文本。
+    2. 代码/文档定位：agent/agent.zip::main.py:404；agent/agent.zip::main.py:407；agent/agent.zip::main.py:439
+    3. 详细解释：app_source_files 排除 node_modules、dist、.git 后收集源码，relevant_sources 对每个文件读取文本并计算规格词命中；没有外部知识库或题面示例仓库作为该检索语料。
+  - 选择/检索：
+    1. 具体说明：先计算每个文件的 spec term hits，再按 backend 优先、JSON 次优先、命中数降序和文件大小排序，直到 max_chars，超出的只列文件名。
+    2. 代码/文档定位：agent/agent.zip::main.py:442；agent/agent.zip::main.py:452；agent/agent.zip::main.py:455；agent/agent.zip::main.py:457
+    3. 详细解释：priority 使 backend/server.js 等入口先被提供，-hits 使包含 locator、route 或文本的页面靠前；预算耗尽时 omitted 列表告知模型仍存在但未注入的文件。
+  - 生成/使用：
+    1. 具体说明：命中文件以“Current source files”段落注入 codegen 实现/修复提示；若代码生成上下文不完整，则退回工具模式让模型自行读取。
+    2. 代码/文档定位：agent/agent.zip::main.py:463；agent/agent.zip::main.py:1653；agent/agent.zip::main.py:2441
+    3. 详细解释：relevant_sources 的完整文件块被拼到 compact prompt，codegen_repair_prompt 在发现省略或截断时返回 None，node_cycle 随即调用带工具的 turn，避免模型误把部分源码当成完整文件。
+  - 输出：
+    1. 具体说明：输出是按预算裁剪的源码上下文/省略清单和受其影响的完整文件块；不是持久化的向量索引或检索数据库。
+    2. 代码/文档定位：agent/agent.zip::main.py:463；agent/agent.zip::main.py:465；agent/agent.zip::main.py:1737
+    3. 详细解释：源码段落由模型消费，parse_file_blocks/write_files 将回复变成 frontend/backend 文件；因此检索只影响提示内容和代码适配，最终产物仍由代码生成分支写入工作区。
+
+STRATEGY-004 [CODE-REUSE] 演进模式和前序节点源码的模型适配
+  - 状态：
+    1. 具体说明：confirmed；已有 frontend/backend 时会进入 evolution，按需求指纹和真实测试识别无需重写的节点，并向后继节点提供已实现路由/数据；未确认存在从题面示例仓库直接复制代码。
+    2. 代码/文档定位：agent/agent.zip::main.py:3092；agent/agent.zip::main.py:3123；agent/agent.zip::main.py:2571；agent/agent.zip::main.py:1853
+    3. 详细解释：运行时首先比较 previous requirements，再对候选节点做无 LLM 的 acceptance probe；ancestors_text 只传“implemented/see code”或设计摘要，证据支持的是现有应用适配而非固定示例代码复制。
+  - 作用：
+    1. 具体说明：保留已通过的功能和共享路由/数据，在新增需求上做增量修改，避免每个节点从空白应用重建。
+    2. 代码/文档定位：agent/agent.zip::main.py:1141；agent/agent.zip::main.py:1157；agent/agent.zip::main.py:2408
+    3. 详细解释：NODE_PREAMBLE_EXTEND 明确要求 extend，EVOLUTION_NOTE 要求保留现有 route/label/behavior，node_cycle 再以 source_listing 和依赖设计作为修改起点。
+  - 输入/知识源：
+    1. 具体说明：输入是当前工作区源码、.arc/traceability/requirements.json 的旧记录、前序节点设计摘要和已有测试结果。
+    2. 代码/文档定位：agent/agent.zip::main.py:313；agent/agent.zip::main.py:323；agent/agent.zip::main.py:407；agent/agent.zip::main.py:1859
+    3. 详细解释：previous_requirement_records 读取旧需求表，node_fingerprint 只对节点内容哈希，source_listing/app_source_files 暴露当前实现；这些材料共同决定模型是扩展还是跳过。
+  - 选择/检索：
+    1. 具体说明：先以指纹相等标记 unchanged，再对其余节点运行所属 spec；完整通过者无需 LLM，未通过者才进入实现/修复。
+    2. 代码/文档定位：agent/agent.zip::main.py:323；agent/agent.zip::main.py:2571；agent/agent.zip::main.py:2586；agent/agent.zip::main.py:3127
+    3. 详细解释：already_passing_nodes 的 probe 使用真实应用和节点规格，结果加入 unchanged；这是一种基于可执行行为的复用选择，区别于只按文件名复制。
+  - 生成/使用：
+    1. 具体说明：模型通过 EVOLUTION_NOTE、ancestors_text 和 relevant_sources 读取并改写已有页面/服务器；若旧模板完全不通过，会先移到 .arc/template-discarded 再新建。
+    2. 代码/文档定位：agent/agent.zip::main.py:2408；agent/agent.zip::main.py:2441；agent/agent.zip::main.py:2551；agent/agent.zip::main.py:2561
+    3. 详细解释：有可用基线时提示要求只改当前节点并保留行为，代码生成分支只引用相关源码；没有任何 spec 通过时 discard_template 清理基线，避免把不可用模板当成准备好的代码库。
+  - 输出：
+    1. 具体说明：输出是增量修改后的 frontend/backend 文件、跳过节点的回归 verdict、以及每次修改的 Git 提交/可恢复快照。
+    2. 代码/文档定位：agent/agent.zip::main.py:2514；agent/agent.zip::main.py:2579；agent/agent.zip::main.py:2525
+    3. 详细解释：通过节点不再生成新代码但会记录测试状态，需修改的节点在验收前提交 pending acceptance；source snapshot 和 Git 使后续修复能回到既有实现。
+
+STRATEGY-005 [MODEL-ROUTING] 代理按阶段和请求形态路由模型
+  - 状态：
+    1. 具体说明：confirmed；实现了 OpenAI-compatible 本地代理、provider/model 环境读取、implement/repair/verify/design 阶段标记和可选 ordered model routes；实际采用的具体模型取决于运行时环境，静态仓库无法确定。
+    2. 代码/文档定位：agent/agent.zip::main.py:613；agent/agent.zip::main.py:2083；agent/agent.zip::llm_proxy.py:29；agent/agent.zip::llm_proxy.py:396
+    3. 详细解释：build_octos_env 选择 provider 并写 config，start_llm_proxy 启动代理；LlmProxy 解析可选规则，故路由机制确认，而没有 model-routes.json 时的最终模型值属于 unresolved。
+  - 作用：
+    1. 具体说明：把不同阶段的请求送到合适模型，按模型能力决定是否带工具/图像，并统一注入 reasoning、最大输出、提示裁剪和用量记录。
+    2. 代码/文档定位：agent/agent.zip::llm_proxy.py:70；agent/agent.zip::llm_proxy.py:112；agent/agent.zip::llm_proxy.py:433
+    3. 详细解释：route_request 根据 phase、输入字符数、tools/images 选择规则，inject_reasoning 针对 DeepSeek 设定思考模式，代理转发前还会做 token 与工具策略处理，直接影响每次生成请求。
+  - 输入/知识源：
+    1. 具体说明：输入是 OPENAI_API_KEY/OPENAI_BASE_URL/MODEL、OCTOS_ARC_MODEL_ROUTES 环境变量，以及请求 messages、工具 schema、phase 和图片/工具需求。
+    2. 代码/文档定位：agent/agent.zip::main.py:618；agent/agent.zip::main.py:621；agent/agent.zip::llm_proxy.py:58；agent/agent.zip::llm_proxy.py:80
+    3. 详细解释：配置从环境或可选 bundle 文件读取并先校验；请求阶段从消息和 tools 计算 chars、has_images、needs_tools，这些字段构成路由输入而不是题面检索结果。
+  - 选择/检索：
+    1. 具体说明：按配置顺序筛选 phase、max_input_chars、tools、images，命中后覆盖 model 和允许的参数；没有命中时保留调用者原请求。
+    2. 代码/文档定位：agent/agent.zip::llm_proxy.py:34；agent/agent.zip::llm_proxy.py:88；agent/agent.zip::llm_proxy.py:97；agent/agent.zip::llm_proxy.py:109
+    3. 详细解释：选择规则是显式白名单而非按模型名猜测，参数冲突会在配置解析时报错；因此 repair 可以选不同模型，但静态证据不能推出本次运行实际命中了哪条规则。
+  - 生成/使用：
+    1. 具体说明：每次 Flow.turn 先设置 proxy.phase 和请求预算；工具会话走 Octos stdio，代码生成把工具全部禁用并替换系统提示，代理再向上游发送变换后的 chat completion。
+    2. 代码/文档定位：agent/agent.zip::main.py:1517；agent/agent.zip::main.py:1721；agent/agent.zip::llm_proxy.py:447；agent/agent.zip::llm_proxy.py:455
+    3. 详细解释：phase 由 label 推导，codegen_turn 设置 no_tools/system_override，Handler 按顺序 trim、strip、replace、destream、route；模型返回文本或 tool calls 后交回对应 driver。
+  - 输出：
+    1. 具体说明：输出是上游模型回复、工具/代码生成文本和按请求记录的 token/模型/phase 用量日志。
+    2. 代码/文档定位：agent/agent.zip::llm_proxy.py:539；agent/agent.zip::llm_proxy.py:550；agent/agent.zip::main.py:2123；agent/agent.zip::main.py:942
+    3. 详细解释：代理把 provider usage 写入 .arc/llm-usage.jsonl 并将响应还给 OctosDriver；stdio 出错时在剩余时限内回退 chat，故模型输出仍能进入同一 Flow。
+
+STRATEGY-006 [TOOLS/EXECUTION] 工具会话与无工具文件块的双重执行路径
+  - 状态：
+    1. 具体说明：confirmed；Octos stdio 会话可调用工作区工具，代码生成回合明确禁用工具并解析文件块；受保护目录 hook、TurnMonitor 和源码路径校验共同约束写入。
+    2. 代码/文档定位：agent/agent.zip::octos_stdio.py:25；agent/agent.zip::main.py:1716；agent/agent.zip::guard.py:19；agent/agent.zip::main.py:582
+    3. 详细解释：OctosStdioSession 启动 serve --stdio 并传入 cwd，codegen_turn 使用 without_tools，TurnMonitor 记录工具调用/验证/保护路径，protected_hooks 还在内核前置拦截测试和需求文件。
+  - 作用：
+    1. 具体说明：工具模式让模型读文件、编辑代码和运行构建/请求；代码生成模式用一次响应产生完整文件，验收执行器则负责 npm build、npm start 和浏览器测试。
+    2. 代码/文档定位：agent/agent.zip::main.py:684；agent/agent.zip::main.py:1719；agent/agent.zip::acceptance.py:823；agent/agent.zip::acceptance.py:849
+    3. 详细解释：run_octos/stdio 传递提示给 Octos，parse_file_blocks/write_files 处理无工具回复，AppServer 把应用构建并在 smoke port 启动；三者构成从模型动作到可运行产物的执行链。
+  - 输入/知识源：
+    1. 具体说明：输入是模型提示、当前工作目录、节点规格/源码列表、工具策略和 protected prefixes；stdio turn 以 text input 启动。
+    2. 代码/文档定位：agent/agent.zip::octos_stdio.py:182；agent/agent.zip::octos_stdio.py:188；agent/agent.zip::main.py:1427；agent/agent.zip::main.py:1833
+    3. 详细解释：session/open 绑定 cwd，turn/start 发送完整文本，protected_prefixes 覆盖 .arc、需求和 tests，tests_prompt_for 提供规格位置或内联内容，模型据此决定读写和命令。
+  - 选择/检索：
+    1. 具体说明：按 spec 长度和现有源码是否适合上下文选择 tiny、codegen 或 tool mode；小任务的 minimal verify 还会从代理移除 shell 工具。
+    2. 代码/文档定位：agent/agent.zip::main.py:1604；agent/agent.zip::main.py:1631；agent/agent.zip::main.py:1672；agent/agent.zip::main.py:2427
+    3. 详细解释：codegen_context_fits 检查规格与全部源码大小，tiny_mode 先按 1500 字符阈值处理，node_cycle 再选择文件块或工具；verify_text/代理策略决定是否允许 shell。
+  - 生成/使用：
+    1. 具体说明：无工具路径要求 `<<<FILE relative/path>>>` 块并过滤绝对路径、.. 和非法路径；写 HTML 时补 charset，JavaScript 块在需要时尝试解析修复。
+    2. 代码/文档定位：agent/agent.zip::codegen.py:20；agent/agent.zip::codegen.py:30；agent/agent.zip::codegen.py:118
+    3. 详细解释：parse_file_blocks 将回复变成相对路径字典，write_files 创建父目录并写 UTF-8 文件，确保模型输出不会越出项目根；这一路径不执行模型代码，只把文本变成待验收源码。
+  - 输出：
+    1. 具体说明：输出包括 frontend/package.json、frontend/src、backend/package.json、backend/server.js、构建目录以及工具事件/应用日志。
+    2. 代码/文档定位：agent/agent.zip::main.py:342；agent/agent.zip::main.py:1742；agent/agent.zip::acceptance.py:840；applications/github.zip::frontend/package.json:5；applications/sheet.zip::backend/package.json:6
+    3. 详细解释：harness 可补写固定 manifest，codegen 写入模型返回文件，AppServer 执行前端复制构建并启动后端；两个应用压缩包中实际保留这些 build/start 产物，说明输出落在统一全栈布局。
+
+STRATEGY-007 [ITERATION/EVALUATION] Playwright 证据驱动的有限修复、回滚与全套复验
+  - 状态：
+    1. 具体说明：confirmed；每个节点最多按 repair_rounds 修复，验收通过才标记完成，重复失败、无改进、回归或时间/成本耗尽会停止或恢复最佳提交。
+    2. 代码/文档定位：agent/agent.zip::main.py:2206；agent/agent.zip::main.py:2246；agent/agent.zip::main.py:2287；agent/agent.zip::arc-policy.toml:63
+    3. 详细解释：acceptance_loop 每轮真实运行 specs，比较 passed、failure_signature 和 best_sha；策略文件把 rounds、stall_limit、regression_limit 固定为可审计阈值，故不是无限自评循环。
+  - 作用：
+    1. 具体说明：把构建/启动错误和浏览器行为失败转成可修复反馈，优先保留通过数最多的状态，最后用 grader-like 全套运行检查节点间回归。
+    2. 代码/文档定位：agent/agent.zip::main.py:2152；agent/agent.zip::main.py:2206；agent/agent.zip::main.py:2718；agent/agent.zip::main.py:2900
+    3. 详细解释：run_specs 先 build/start 再运行 Playwright 并恢复测试改动，final_acceptance 让所有 spec 共享一个服务进行并行验证，final_acceptance_passes 在预算内重复全套修复。
+  - 输入/知识源：
+    1. 具体说明：输入是测试结果、失败位置/观察/步骤、页面可访问性快照、浏览器诊断、失败源代码片段、慢测试和当前节点改动文件。
+    2. 代码/文档定位：agent/agent.zip::acceptance.py:279；agent/agent.zip::acceptance.py:326；agent/agent.zip::main.py:1906
+    3. 详细解释：failure_summaries 生成四字段失败摘要并附页面快照，failure_source_context 只引用唯一匹配的 spec 源码行，executable_acceptance_context 再加入当前 app 修改文件，修复提示因此基于观察而非猜测。
+  - 选择/检索：
+    1. 具体说明：通过节点所属 spec 运行局部验收；按失败签名检测停滞，零通过时可做一次全量重写，连续变差两轮恢复 best，代码生成重复失败后退回工具修复。
+    2. 代码/文档定位：agent/agent.zip::main.py:2247；agent/agent.zip::main.py:2256；agent/agent.zip::main.py:2300；agent/agent.zip::main.py:2280
+    3. 详细解释：normalized failure_signature 忽略耗时抖动但保留定位/观察，best_passed 和 best_sha 记录进步；这些选择条件决定下一次是 REPAIR_PROMPT、rewrite、工具模式还是终止。
+  - 生成/使用：
+    1. 具体说明：REPAIR_PROMPT 注入失败证据、需求、源码和 guard correction，随后用 codegen 完整重发文件或用工具局部编辑；每次有进步就提交。
+    2. 代码/文档定位：agent/agent.zip::main.py:2314；agent/agent.zip::main.py:2319；agent/agent.zip::main.py:2265；agent/agent.zip::main.py:2331
+    3. 详细解释：修复回合明确要求不破坏通过测试并由 harness 立即重跑；代码生成上下文不足时转工具，失败状态在最后恢复到 best_sha，从而把测试反馈闭环到下一轮生成。
+  - 输出：
+    1. 具体说明：输出是每节点 passed/total 与最终 verdict、测试 traceability 行、全套回归结果、启动 rehearsal 结果和最佳应用状态。
+    2. 代码/文档定位：agent/agent.zip::main.py:2517；agent/agent.zip::main.py:2988；agent/agent.zip::main.py:3027；agent/agent.zip::main.py:3214
+    3. 详细解释：record_full_suite 将结果按节点写回，rehearsal 用 grader-like 环境构建启动，run() 最后按 verdict 发出 test_passed/test_failed；应用目录保留选定的最佳代码而不是最后一次可能退化的修复。
+
+STRATEGY-008 [STATE/PERSISTENCE] .arc traceability、Git 快照与 Octos 会话状态
+  - 状态：
+    1. 具体说明：confirmed；运行时将需求、场景、接口、测试、节点状态和合约写入 `.arc/traceability`，并以 Git 提交/回滚保存应用阶段；Octos 另有 data-dir 会话状态和事件日志。
+    2. 代码/文档定位：agent/agent.zip::arcbench_agent_runtime/traceability.py:110；agent/agent.zip::arcbench_agent_runtime/events.py:22；agent/agent.zip::arcbench_agent_runtime/gitops.py:119；agent/agent.zip::octos_stdio.py:25
+    3. 详细解释：TraceabilityStore 的表按 JSON 原子写入，EventClient 同时写 runner-events，GitClient 管理提交，stdio 会话使用独立 data-dir；这些实现证明状态不是只存在模型上下文中。
+  - 作用：
+    1. 具体说明：支持演进运行比较旧需求、继承节点设计、在修复和回归中恢复最佳源码，并让平台读取每个节点的设计/实现/测试状态。
+    2. 代码/文档定位：agent/agent.zip::main.py:313；agent/agent.zip::main.py:323；agent/agent.zip::main.py:1969；agent/agent.zip::main.py:2514
+    3. 详细解释：旧 requirements 表提供 fingerprint 基线，Git HEAD 提供可恢复版本，last_repair_diff 识别上轮是否真的改动；acceptance verdict 再同步到 traceability，形成跨回合状态。
+  - 输入/知识源：
+    1. 具体说明：状态输入包括旧 `.arc/traceability/requirements.json`、当前需求树、设计 JSON、测试结果、Git HEAD、Octos session scope/data-dir 和 LLM usage。
+    2. 代码/文档定位：agent/agent.zip::main.py:313；agent/agent.zip::main.py:2364；agent/agent.zip::main.py:787；agent/agent.zip::main.py:2123
+    3. 详细解释：previous_requirement_records 和 save_design 读取/写入项目内状态，session_scope 决定 turn/node/run 的会话生命周期，usage 文件提供模型请求统计；这些状态会影响后续选择和预算。
+  - 选择/检索：
+    1. 具体说明：用节点内容 fingerprint 判断 unchanged，用 session_scope 决定何时复用 Octos 会话，用 best_sha 和失败轮次决定恢复哪个 Git 状态。
+    2. 代码/文档定位：agent/agent.zip::main.py:323；agent/agent.zip::main.py:787；agent/agent.zip::main.py:2248；agent/agent.zip::main.py:2281
+    3. 详细解释：状态选择分别服务于演进跳过、上下文生命周期和验收回滚；因此 persistence 参与了生成路径，而不只是事后日志。
+  - 生成/使用：
+    1. 具体说明：设计回合写 node contract/interface，测试回合 upsert test/pass 状态，每次节点或修复提交 Git，Octos tool/marker 事件追加到 `.arc/octos-events.jsonl`。
+    2. 代码/文档定位：agent/agent.zip::main.py:2364；agent/agent.zip::arcbench_agent_runtime/traceability.py:473；agent/agent.zip::arcbench_agent_runtime/traceability.py:613；agent/agent.zip::main.py:822
+    3. 详细解释：save_design 和 record_tests 把模型计划及执行结果写入可查询表，EventClient/GitClient 写事件和提交；下一节点通过 ancestors、旧指纹和源码读取这些产物。
+  - 输出：
+    1. 具体说明：输出包括 `.arc/traceability/*.json`、`.arc/runner-events.jsonl`、`.arc/octos-events.jsonl`、`.arc/llm-usage.jsonl`、Git 提交和最终 frontend/backend 文件。
+    2. 代码/文档定位：agent/agent.zip::arcbench_agent_runtime/context.py:8；agent/agent.zip::arcbench_agent_runtime/traceability.py:134；agent/agent.zip::main.py:834；agent/agent.zip::llm_proxy.py:555
+    3. 详细解释：路径常量和原子表写入确定持久化位置，driver 记录工具事件，代理记录 usage；这些状态被后续演进/修复读取，最终应用压缩包则携带生成后的前后端源码和数据文件。
+
+[未发现或未解决]
+- 语义/向量 RAG：在已检查的 agent/agent.zip 静态代码、配置和随附资源中未发现 embedding、向量数据库、BM25 或外部知识语料；确认存在的是 main.py:422-466 的规格词-源码命中排序。
+- 题面示例代码直接复用：在已检查的生成器路径中未发现读取 example/hackathon 或复制题面仓库组件的实现；确认的 CODE-REUSE 是已有工作区、前序节点和演进模板的模型适配。
+- 实际模型路由：机制和配置校验已确认，但本次提交未附 model-routes.json，最终 provider/model、命中的路由规则及外部服务返回内容依赖运行时环境，静态分析 unresolved。
+- Rust engine：main.py:3366-3369 提供 OCTOS_ARC_ENGINE=rust 分支，rust_engine.py:7-15 表明策略决策下沉到内核和 arc-policy/prompts；未执行该分支，具体内核回合只能按静态接口推断。
+分析完成

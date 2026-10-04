@@ -1,0 +1,198 @@
+﻿核心策略分析：026-RyanSanchez-50a8b78edbdd
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\026-RyanSanchez-50a8b78edbdd
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+该提交的主要生成策略是一个 Python 异步软件工厂：先把 requirements.yaml 解析为需求树和种子事实，调用架构模型生成 JSON blueprint，再按 unit 并行派发带工具的编码代理，随后集成、构建、浏览器门禁、修复和深化。准备知识主要来自 prompts.py 中固定技术栈、质量规则、公式库说明和 blueprint；未发现向外部语料库建立索引或按语义检索的 RAG。代码复用体现为内置 kernel、模板和现有基线的扩展/复制约束，而不是从远程仓库检索代码；其具体复用范围由工厂文件和受保护文件集合决定。
+
+[策略清单]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 需求树到并行单元的分阶段代理流水线
+  - 状态：
+    1. 具体说明：confirmed；Factory.run 先解析需求、规划 blueprint，再 build_units、integrate、gate、verify、repair、deepen、finalize，编码代理由 run_agent 以工具调用循环驱动。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:54；agent/agent/factory/pipeline.py:88；agent/agent/factory/agent.py:36
+    3. 详细解释：这些调用顺序把输入需求转换为架构计划、多个实现单元和后续反馈阶段，形成端到端生成链。
+  - 作用：
+    1. 具体说明：confirmed；将大任务拆为可并行的垂直 slices，并在共享工作区集成。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:181；agent/agent/factory/pipeline.py:430
+    3. 详细解释：plan 产出 units 与依赖，build_units 依据依赖调度代理，降低单个上下文承担全部功能的需要。
+  - 输入/知识源：
+    1. 具体说明：confirmed；requirements.yaml 的 Spec.compact、seed_facts、leaf ids，以及 prompts.STACK/QUALITY_RULES/WORKFLOW。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:142；agent/agent/factory/prompts.py:7；agent/agent/factory/spec.py:104
+    3. 详细解释：Spec 将描述、场景和 GIVEN 合并为提示材料，固定提示提供工程约束，再传给架构和单元代理。
+  - 选择/检索：
+    1. 具体说明：confirmed；按 leaf_ids、unit depends_on 和拓扑状态选择工作单元；没有向量或关键词语料检索。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:311；agent/agent/factory/pipeline.py:330
+    3. 详细解释：状态字典只决定依赖就绪顺序，需求内容由 blueprint 全量注入；这属于编排选择而非 RAG。
+  - 生成/使用：
+    1. 具体说明：confirmed；architect_system/architect_task 生成 JSON blueprint，unit_system/unit_task 将其与需求包交给工具代理修改文件。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:109；agent/agent/factory/prompts.py:184；agent/agent/factory/agent.py:73
+    3. 详细解释：模型先产出结构化计划，后续每轮 assistant tool_calls 通过 Toolbox 写入代码并可继续读取上下文。
+  - 输出：
+    1. 具体说明：confirmed；输出为 blueprint.json、注册路由后的应用源码、各阶段报告和最终可构建工作区。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:83；agent/agent/factory/tools.py:54
+    3. 详细解释：计划持久化到 .arc/blueprint.json，工具写入页面/路由，SharedState.write_app 生成 App.tsx，最终交付应用。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 固定提示、公式库和模板内核注入
+  - 状态：
+    1. 具体说明：confirmed；STACK、QUALITY_RULES、WORKFLOW 是预先编写的通用工程知识，FORMULA_LIB 在需要时加入 HyperFormula 规则，kernel 是只读模板。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:7；agent/agent/factory/prompts.py:36；agent/agent/factory/prompts.py:150
+    3. 详细解释：这些内容在当前任务前已存在，作为系统提示和脚手架约束，直接影响代理生成的 API、无障碍文本和公式实现。
+  - 作用：
+    1. 具体说明：confirmed；统一技术栈、可访问性、持久化、seed、路由和公式实现，减少代理自由度。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:7；agent/agent/factory/prompts.py:36
+    3. 详细解释：质量规则逐条规定控件角色、首屏导航、错误消息和保存语义，代理据此写入产品代码。
+  - 输入/知识源：
+    1. 具体说明：confirmed；环境变量 ARC_FORMULA_LIB、kernel 文件、requirements 文本和 baseline_summary。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:59；agent/agent/factory/pipeline.py:75；agent/agent/factory/prompts.py:150
+    3. 详细解释：公式需求可自动启用库说明，已有基线摘要和内核说明被注入规划/实现提示。
+  - 选择/检索：
+    1. 具体说明：inferred；通过文本计数和正则判断是否启用 HyperFormula，并按 unit 过滤 API/routes/shared。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:59；agent/agent/factory/prompts.py:184
+    3. 详细解释：这是规则路由和 blueprint 过滤，不是外部知识召回；未发现索引、embedding 或 top-k 选择。
+  - 生成/使用：
+    1. 具体说明：confirmed；提示函数把固定知识拼接到 system/user messages，代理据此调用 write_file/edit_file/register_route。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:178；agent/agent/factory/prompts.py:221
+    3. 详细解释：同一组约束进入架构和单元生成阶段，随后落实为前后端源码和路由。
+  - 输出：
+    1. 具体说明：confirmed；生成符合固定契约的页面、API、种子数据及 HyperFormula 公式处理。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:36；agent/agent/factory/prompts.py:150
+    3. 详细解释：输出形态由提示中的精确角色、响应 shape 和库调用要求约束，成为最终应用行为。
+
+STRATEGY-003 [TOOLS/EXECUTION] 受控文件工具与构建/浏览器执行反馈
+  - 状态：
+    1. 具体说明：confirmed；Toolbox 暴露 list/read/search/write/append/edit/register_route/check/run_e2e/finish，且用 owned、PROTECTED 和路径白名单限制写入。
+    2. 代码/文档定位：agent/agent/factory/tools.py:21；agent/agent/factory/tools.py:100；agent/agent/factory/tools.py:180
+    3. 详细解释：代理不能任意覆盖内核或越出 backend/src、frontend/src 等目录，工具结果回到对话上下文。
+  - 作用：
+    1. 具体说明：confirmed；让模型检查现状、增量编辑源码、注册页面并验证构建/端到端测试。
+    2. 代码/文档定位：agent/agent/factory/tools.py:100；agent/agent/factory/workspace.py:270
+    3. 详细解释：工具把自然语言计划转成实际文件变更，check 和 run_e2e 将运行时错误反馈给后续轮次。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入是工作区文件、代理 ownership、共享路由状态以及构建/测试输出。
+    2. 代码/文档定位：agent/agent/factory/tools.py:31；agent/agent/factory/tools.py:54
+    3. 详细解释：read/search 读取现有实现，SharedState 保存路由和 stubs，执行工具返回可消费的错误证据。
+  - 选择/检索：
+    1. 具体说明：confirmed；按路径规范化、所有权和受保护集合决定可写文件；没有语义检索。
+    2. 代码/文档定位：agent/agent/factory/tools.py:21；agent/agent/factory/tools.py:39
+    3. 详细解释：_norm 与 PROTECTED 形成安全边界，工具调用选择由代理当前上下文决定。
+  - 生成/使用：
+    1. 具体说明：confirmed；write_file/append_file/edit_file 改写源码，register_route 更新 App.tsx，check/build 执行验证。
+    2. 代码/文档定位：agent/agent/factory/tools.py:100；agent/agent/factory/tools.py:54；agent/agent/factory/workspace.py:270
+    3. 详细解释：生成文本先落盘，再由构建和 Playwright 运行，结果作为下一轮工具上下文。
+  - 输出：
+    1. 具体说明：confirmed；输出是源码文件、路由注册、dist 构建产物、测试报告和日志。
+    2. 代码/文档定位：agent/agent/factory/workspace.py:270；agent/agent/factory/workspace.py:385
+    3. 详细解释：build_frontend 与 acceptance suite 产出可观察结果，供集成和修复阶段消费。
+
+STRATEGY-004 [MODEL-ROUTING] 单一主模型的架构/单元/验证标签路由与重试
+  - 状态：
+    1. 具体说明：confirmed；LLM 从 MODEL 读取一个模型名，按 label 区分 architect、unit、verify 等阶段；同一客户端可并发请求。
+    2. 代码/文档定位：agent/agent/factory/llm.py:51；agent/agent/factory/llm.py:53；agent/agent/factory/llm.py:79
+    3. 详细解释：模型身份由环境变量决定，label 仅用于统计和阶段标记，未见按任务选择多个模型端点。
+  - 作用：
+    1. 具体说明：confirmed；为计划、代码生成、审查和修复提供统一 chat-completions 接口，并支持工具调用。
+    2. 代码/文档定位：agent/agent/factory/llm.py:79；agent/agent/factory/llm.py:92
+    3. 详细解释：chat 将 messages、tools、max_tokens 和可选 JSON mode 传给端点，返回文本及 tool_calls。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入为各阶段 messages、工具 schema、模型环境配置和 thinking/streaming 开关。
+    2. 代码/文档定位：agent/agent/factory/llm.py:79；agent/agent/factory/llm.py:106
+    3. 详细解释：请求体携带阶段提示和工具定义；配置控制模型、流式方式及思考参数。
+  - 选择/检索：
+    1. 具体说明：confirmed；仅按调用方 label 和 JSON/tool 参数路由，没有候选模型评分或知识检索。
+    2. 代码/文档定位：agent/agent/factory/llm.py:79；agent/agent/factory/llm.py:106
+    3. 详细解释：所有阶段共享 self.model，差异来自提示和工具集合；失败按异常类别重试。
+  - 生成/使用：
+    1. 具体说明：confirmed；非流式或流式 chat-completions 产生 content/tool_calls，失败指数等待最多六次。
+    2. 代码/文档定位：agent/agent/factory/llm.py:79；agent/agent/factory/llm.py:92
+    3. 详细解释：模型输出被 run_agent 转成 assistant 消息并派发工具，形成文件生成和反馈闭环。
+  - 输出：
+    1. 具体说明：confirmed；输出包括文本、工具调用、finish_reason、usage 统计及阶段日志事件。
+    2. 代码/文档定位：agent/agent/factory/llm.py:113；agent/agent/factory/llm.py:182
+    3. 详细解释：调用结果进入代理消息历史或 blueprint 解析，usage 被累计用于预算和阶段决策。
+
+STRATEGY-005 [ITERATION/EVALUATION] 检查点、门禁、修复和深化循环
+  - 状态：
+    1. 具体说明：confirmed；流水线在单元构建后集成，运行 gate/verify/smoke_and_repair/deepen，并以 checkpoint 保存可恢复状态。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:100；agent/agent/factory/pipeline.py:105；agent/agent/factory/pipeline.py:662
+    3. 详细解释：每个阶段都可能产生新提交，失败可恢复到最近集成状态，最终再 finalize。
+  - 作用：
+    1. 具体说明：confirmed；用构建、Playwright 门禁和自测结果驱动重试、回滚和质量改进。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:576；agent/agent/factory/pipeline.py:594；agent/agent/factory/pipeline.py:807
+    3. 详细解释：修复前后比较 passed/gate failures，若变差则恢复 before_commit，避免错误修复覆盖好状态。
+  - 输入/知识源：
+    1. 具体说明：confirmed；输入为 build 输出、测试 JSON、崩溃页面、失败证据和当前 git checkpoint。
+    2. 代码/文档定位：agent/agent/factory/workspace.py:360；agent/agent/factory/pipeline.py:779
+    3. 详细解释：acceptance 结果按测试汇总失败，repair/deepen 将这些证据写入后续代理任务。
+  - 选择/检索：
+    1. 具体说明：confirmed；依据剩余时间、token cap、失败数量和 rounds 决定是否继续验证/深化/修复。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:116；agent/agent/factory/pipeline.py:125
+    3. 详细解释：预算与 left() 条件是停止规则，失败数用于 gate/repair 分支，属于反馈选择。
+  - 生成/使用：
+    1. 具体说明：confirmed；代理读取失败上下文，编辑文件后重新 build、smoke 或 gate；可在失败时 reset checkpoint。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:779；agent/agent/factory/pipeline.py:807
+    3. 详细解释：修改不是一次性生成，而是由测试证据驱动的增量修补和回滚；代理据此重新读取相关文件并把修复结果送回下一轮构建。
+  - 输出：
+    1. 具体说明：confirmed；输出为通过/失败计数、测试报告、集成提交和最终源码状态。
+    2. 代码/文档定位：agent/agent/factory/workspace.py:403；agent/agent/factory/pipeline.py:891
+    3. 详细解释：这些结果既用于停止判断，也决定最终交付哪个 checkpoint。
+
+STRATEGY-006 [RAG/RETRIEVAL] 未发现外部 RAG；工作区内按需读取
+  - 状态：
+    1. 具体说明：confirmed；在已检查的 agent/factory 与应用静态内容中未发现 embedding、向量库、索引构建或 top-k 语义召回；存在 list/read/search 文件工具。
+    2. 代码/文档定位：agent/agent/factory/tools.py:100；agent/agent/factory/prompts.py:178
+    3. 详细解释：search 是工作区正则搜索，提示把需求/blueprint 直接注入上下文，故不足以构成 RAG。
+  - 作用：
+    1. 具体说明：confirmed；信息获取依赖需求全量摘要、基线摘要和代理主动文件读取。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:75；agent/agent/factory/tools.py:100
+    3. 详细解释：这些机制帮助代理了解当前源码，但没有独立语料库检索阶段。
+  - 输入/知识源：
+    1. 具体说明：confirmed；requirements.yaml、baseline_summary、kernel 及当前工作区文件。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:54；agent/agent/factory/workspace.py:1
+    3. 详细解释：来源是任务输入和本地工程文件，未见网络或外部知识源；这些内容由代理读取后直接服务于当前生成回合，并在对话历史中持续提供上下文。
+  - 选择/检索：
+    1. 具体说明：confirmed；文件选择由代理发起 list/read/search，正则返回 path:line；无向量相似度或排序召回。
+    2. 代码/文档定位：agent/agent/factory/tools.py:100
+    3. 详细解释：工具结果是即时上下文，不写入检索索引，也没有 corpus/query/top-k 管线；因此只能说明按需文件定位，不能称为持久化知识召回。
+  - 生成/使用：
+    1. 具体说明：confirmed；读取结果直接追加为 tool 消息，供后续模型生成编辑调用。
+    2. 代码/文档定位：agent/agent/factory/agent.py:73
+    3. 详细解释：模型消费 tool result 后继续调用编辑工具，信息路径是对话历史到源码变更。
+  - 输出：
+    1. 具体说明：confirmed；没有 RAG 专属产物；最终仍是 blueprint、应用源码和验证产物。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:83；agent/agent/factory/tools.py:54
+    3. 详细解释：因此 RAG 结论为在已检查静态内容中未发现，不能推断运行时绝对不存在隐藏服务。
+
+STRATEGY-007 [CODE-REUSE] 内核、模板和基线的受控复用
+  - 状态：
+    1. 具体说明：confirmed；工厂把 kernel 复制/准备为共享只读基础，并在 baseline 模式只保留不存在的文件、要求已有文件小改扩展。
+    2. 代码/文档定位：agent/agent/factory/workspace.py:1；agent/agent/factory/pipeline.py:76
+    3. 详细解释：复用的是本地模板、认证/store/布局等基础设施和已存在应用文件，不是远程代码抓取；静态证据显示来源均位于提交工作区或随工厂打包的 kernel，代码复用路径可追溯。
+  - 作用：
+    1. 具体说明：confirmed；提供稳定的 store/auth/API shell，令单元代理集中生成特性页面和路由。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:7；agent/agent/factory/tools.py:21
+    3. 详细解释：提示明确 kernel 只读，PROTECTED 阻止重写，复用行为在生成链前置提供。
+  - 输入/知识源：
+    1. 具体说明：confirmed；agent/agent/factory/kernel、BUNDLED_TEMPLATE、workspace baseline 与现有应用文件。
+    2. 代码/文档定位：agent/agent/factory/workspace.py:20；agent/agent/factory/pipeline.py:76
+    3. 详细解释：这些本地资产被准备进输出工作区，作为代理读取和扩展的代码来源。
+  - 选择/检索：
+    1. 具体说明：confirmed；按文件是否存在、unit ownership 和 protected 集合选择复用或新建；未见按相似度挑选片段。
+    2. 代码/文档定位：agent/agent/factory/pipeline.py:76；agent/agent/factory/tools.py:21
+    3. 详细解释：baseline 分支把已存在文件从可覆盖清单移除，并通过提示要求小编辑，形成确定性复用规则。
+  - 生成/使用：
+    1. 具体说明：confirmed；代理读取 kernel/API 契约后在新页面、路由和业务模块中 import/use 它们，并通过 edit_file 扩展已有文件。
+    2. 代码/文档定位：agent/agent/factory/prompts.py:7；agent/agent/factory/tools.py:100
+    3. 详细解释：复用组件和契约进入生成上下文，产出的业务代码围绕这些接口组合。
+  - 输出：
+    1. 具体说明：confirmed；输出工作区包含 kernel 基础、各阶段新增源码、生成 App.tsx 及 git checkpoint。
+    2. 代码/文档定位：agent/agent/factory/tools.py:54；agent/agent/factory/pipeline.py:83
+    3. 详细解释：代码复用最终表现为可启动应用的共享基础和增量特性文件。
+
+[未发现或未解决]
+- PREPARED-KNOWLEDGE 中未发现针对单一外部项目的专用文档语料；固定 stack/quality/公式规则属于通用准备知识。
+- RAG/RETRIEVAL：在已检查的仓库静态内容中未发现外部索引、向量检索或语义召回；运行时隐藏服务无法由静态证据排除。
+- CODE-REUSE：确认存在本地 kernel、模板和 baseline 扩展；未发现从 URL 下载或远程仓库拉取代码的实现；代码复用仅限本地模板、kernel 与 baseline。
+- STATE/PERSISTENCE：agent.py 维护压缩后的消息历史，pipeline/workspace 维护 git checkpoint、.arc blueprint、应用 JSON store；这些是已检查到的状态机制。
+
+分析完成

@@ -1,0 +1,73 @@
+﻿核心策略分析�?05-jackyjiang-aa9b7e1f6cb0
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\005-jackyjiang-aa9b7e1f6cb0
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检�?[核心结论]
+主流程是“需求目录静态读取→TASK_MAP/关键词路由→命中则复制对�?payload，未命中则复�?template 并运�?contract_gen 的规则化生成→前端规范化与合规锚点→traceability/runtime 状态记录”。静�?payload 是主要任务实现来源，generic contract 模式�?requirements.yaml/.md 的树、场景和种子数据生成通用应用骨架。未发现向量库、embedding 或语义检索；RAG 在已检查静态内容中未发现。CODE-REUSE 明确存在：模板、六�?payload 目录和既有前后端组件通过复制/覆盖复用；同时存在模型介导摘要，但没有证据表明模型生成完整业务代码�?
+[绛栫暐娓呭崟]
+STRATEGY-001 [PROMPT-ORCHESTRATION] 闇€姹傞┍鍔ㄧ殑鍙岄€氶亾璺敱涓庣敓鎴愮紪鎺?  - 鐘舵€侊細
+    1. 具体说明：confirmed；`detect_task` 先检查显�?task_map，再�?spreadsheet/GitHub 强关键词路由，空结果进入 generic 模式�?    2. 代码/文档定位：agent/agent/main.py:143；agent/agent/main.py:156；agent/agent/main.py:180；agent/agent/main.py:339
+    3. 详细解释：这些分支决定下游使用固�?payload 还是 `contract_gen.py`，因此构成从题面文本到生成路径的主控制器�?  - 作用�?    1. 具体说明：将不同题面映射到专用实现或通用契约生成器，避免所有任务共用同一输出�?    2. 代码/文档定位：agent/agent/main.py:160；agent/agent/main.py:171；agent/agent/main.py:345
+    3. 详细解释：显�?ID 命中优先，sheet/github 分支使用不同关键词集合；无命中时调用动态生成，改变最终页面和后端的来源�?  - 输入/知识源：
+    1. 具体说明：环境变量、requirements 目录中的 yaml/yml/md/json 文本、嵌入式 TASK_KEYS/TASK_MAP �?payload 目录�?    2. 代码/文档定位：agent/agent/main.py:110；agent/agent/main.py:118；agent/agent/main.py:38
+    3. 详细解释：`_blob_from` 将文件名和截断文本拼成路由输入，任务词表和目录存在性提供预置知识�?  - 选择/检索：
+    1. 具体说明：confirmed；采用字面包含检查和按序关键词命中，没有向量或语义排序�?    2. 代码/文档定位：agent/agent/main.py:157；agent/agent/main.py:182
+    3. 详细解释：`in blob` �?`any(k in blob ...)` 直接返回任务键；因此 RAG/RETRIEVAL 在已检查静态内容中未发现�?  - 生成/使用�?    1. 具体说明：命中任务时复制 template 再覆�?payload；generic 时以 `contract_gen.py --no-llm` 处理需求树�?    2. 代码/文档定位：agent/agent/main.py:361；agent/agent/main.py:368；agent/agent/main.py:370
+    3. 详细解释：分支把路由结果转为文件操作和生成器调用，生成结果随后进入前端规范化�?  - 输出�?    1. 具体说明：output_dir 中的 frontend/backend 应用、运行日志与合规锚点�?    2. 代码/文档定位：agent/agent/main.py:365；agent/agent/main.py:380；agent/agent/main.py:422
+    3. 璇︾粏瑙ｉ噴锛氬鍒舵垨鐢熸垚鍚庣殑鐩綍鏄氦浠樼墿锛宍_compliance_anchor` 杩藉姞闇€姹傛憳瑕?杩借釜淇℃伅渚涘悗缁?runtime 娑堣垂銆?
+STRATEGY-002 [CODE-REUSE] 妯℃澘涓庨鍒?payload 鐨勫鍒惰鐩?  - 鐘舵€侊細
+    1. 具体说明：confirmed；仓库包�?`template`、`payloads/01_auth_session` �?`06_org_permissions`，运行时按任务复制并覆盖文件�?    2. 代码/文档定位：agent/agent/main.py:26；agent/agent/main.py:202；agent/agent/main.py:386；agent/agent/main.py:407
+    3. 详细解释：`copy_tree` 递归复制目录；静�?payload 被选中后成为业务实现主体，模板承担基础工程结构�?  - 作用�?    1. 具体说明：复�?React/Vite、Express/SQLite、测试配置及按领域拆分的页面路由，减少每题从零生成代码�?    2. 代码/文档定位：agent/agent/main.py:5；agent/agent/main.py:7；agent/agent/main.py:407
+    3. 详细解释：注释和目录结构共同表明模板提供全栈骨架，payload 提供领域文件；复制后再标准化以适配提交布局�?  - 输入/知识源：
+    1. 具体说明：仓库内 template �?payload 目录中的既有 JSX、JS、SQL、配置和 seed 文件�?    2. 代码/文档定位：agent/agent/main.py:26；agent/agent/main.py:387
+    3. 详细解释：这些文件在本地作为准备好的代码知识源，被直接读取并复制，不依赖外部 URL�?  - 选择/检索：
+    1. 具体说明：按任务键拼�?`PAYLOADS / task`，并检查目录是否存在及是否有文件�?    2. 代码/文档定位：agent/agent/main.py:386；agent/agent/main.py:389
+    3. 详细解释：选择规则是路由结果到目录名的一一映射，不是内容检索；缺失时记录检测失败�?  - 生成/使用�?    1. 具体说明：先复制通用 template，再�?payload 内容覆盖到输出目录，并在前端移除/恢复相应源文件�?    2. 代码/文档定位：agent/agent/main.py:229；agent/agent/main.py:255；agent/agent/main.py:275；agent/agent/main.py:407
+    3. 详细解释：`normalise_frontend` 处理 JSX/TSX 冲突和页面目录，最终文件直接作为应用源码�?  - 输出�?    1. 具体说明：由 template+payload 组成的可部署前后端目录�?    2. 代码/文档定位：agent/agent/main.py:365；agent/agent/main.py:407
+    3. 详细解释：输出目录被后续测试/提交流程消费；这是最直接的代码复用产物�?
+STRATEGY-003 [PREPARED-KNOWLEDGE] 需求树解析、种子提取与契约生成
+  - 鐘舵€侊細
+    1. 具体说明：confirmed；`contract_gen` 解析 requirements.yaml �?requirements.md，提取节点、场景和 seed，并按页面级节点生成应用�?    2. 代码/文档定位：agent/agent/contract_gen.py:37；agent/agent/contract_gen.py:53；agent/agent/contract_gen.py:152；agent/agent/contract_gen.py:165
+    3. 详细解释：解析器和提取器建立需求到页面/表单数据的中间结构，generic 分支使用该结构生成代码�?  - 作用�?    1. 具体说明：把题面 GIVEN/WHEN/THEN、页面节点和固定实体转成前端页面、后端契约及 seed 数据�?    2. 代码/文档定位：agent/agent/contract_gen.py:8；agent/agent/contract_gen.py:204
+    3. 详细解释：模块文档和函数分层显示其目标是结构骨架、种子注入和部署契约，而非预先实现某一题业务�?  - 输入/知识源：
+    1. 具体说明：requirements.yaml 优先、requirements.md 回退；字段包�?id/name/type/description/scenarios/seed�?    2. 代码/文档定位：agent/agent/contract_gen.py:37；agent/agent/contract_gen.py:53
+    3. 详细解释：`_load_requirements` 读取题面文件，解析器将文本转换为节点列表，成为后续生成的唯一主要动态知识源�?  - 选择/检索：
+    1. 具体说明：按文件存在性选择 YAML/Markdown，按节点 type 选择 FOLDER 页面�?ATOMIC 场景；没有索引或相似度检索�?    2. 代码/文档定位：agent/agent/contract_gen.py:40；agent/agent/contract_gen.py:152；agent/agent/contract_gen.py:160
+    3. 详细解释：选择是规则化全量解析与类型过滤，结果传给页面和表单生成函数；因此不构�?RAG�?  - 生成/使用�?    1. 具体说明：`--no-llm` 模式按需求域和种子生�?React/Express 文件；另有可�?LLM 摘要用于合规锚点�?    2. 代码/文档定位：agent/agent/main.py:370；agent/agent/contract_gen.py:208；agent/agent/main.py:429
+    3. 详细解释：主流程明确禁用 contract_gen �?LLM 生成，核心代码由规则模板产出；LLM 只在 `_compliance_anchor` 中总结需求�?  - 输出�?    1. 具体说明：frontend/、backend/、seed 数据及契�?追踪文件�?    2. 代码/文档定位：agent/agent/contract_gen.py:204；agent/agent/main.py:422；agent/agent/main.py:438
+    3. 详细解释：生成器写入输出目录，合规锚点将摘要写入产物日志，runtime 后续保存结构化需求状态�?
+STRATEGY-004 [MODEL-ROUTING] 鍗曟ā鍨嬫憳瑕佽皟鐢ㄤ笌澶辫触闄嶇骇
+  - 鐘舵€侊細
+    1. 具体说明：confirmed；`llm_call` 从环境变量读�?API key、base URL �?MODEL，进行一�?chat/completions 请求；缺少配置或异常返回 None�?    2. 代码/文档定位：agent/agent/llm_call.py:12；agent/agent/llm_call.py:14；agent/agent/llm_call.py:30；agent/agent/llm_call.py:33
+    3. 详细解释：可观察代码只支持单端点单模型调用，没有并行候选或二级模型路由�?  - 作用�?    1. 具体说明：为合规锚点生成五条核心特性摘要，辅助记录需求理解，不承担主要业务代码生成�?    2. 代码/文档定位：agent/agent/main.py:422；agent/agent/main.py:429
+    3. 璇︾粏瑙ｉ噴锛氳皟鐢ㄧ偣鎶?requirements 鏂囨湰鎷煎叆鐢ㄦ埛娑堟伅骞朵繚瀛樿繑鍥炴憳瑕侊紱generic 涓荤敓鎴愬凡閫氳繃 `--no-llm` 鏄庣‘涓庡叾鍒嗙銆?  - 杈撳叆/鐭ヨ瘑婧愶細
+    1. 具体说明：requirements.yaml 文本、固定英文摘要提示、环境变量中的模型端点配置�?    2. 代码/文档定位：agent/agent/main.py:425；agent/agent/llm_call.py:14
+    3. 详细解释：输入只来自题面和运行配置，未见检索文档或历史对话注入�?  - 选择/检索：
+    1. 具体说明：使用环境变�?`MODEL` 选择单一模型；无候选筛选、重排或 RAG 检索�?    2. 代码/文档定位：agent/agent/llm_call.py:16；agent/agent/llm_call.py:21
+    3. 详细解释：请求体直接填入一�?model 字段，返回第一�?choices 内容�?  - 生成/使用�?    1. 具体说明：发送一�?chat/completions 请求并读�?`choices[0].message.content`，异常时跳过摘要�?    2. 代码/文档定位：agent/agent/llm_call.py:20；agent/agent/llm_call.py:32；agent/agent/llm_call.py:34
+    3. 详细解释：模型输出只进入日志/合规锚点，未发现其被拼回源码生成链�?  - 输出�?    1. 具体说明：`Model-verified requirements summary` 文本�?None�?    2. 代码/文档定位：agent/agent/main.py:438
+    3. 详细解释：该文本作为审计/追踪信息保留；失败降级保证主流程继续�?
+STRATEGY-005 [TOOLS/EXECUTION] 鏂囦欢澶嶅埗銆佸瓙杩涚▼鐢熸垚涓庤繍琛屾椂宸ュ叿灏佽
+  - 鐘舵€侊細
+    1. 具体说明：confirmed；主程序使用 pathlib/shutil 复制文件，并通过 subprocess 调用 contract_gen；runtime 封装 git、事件和追踪存储�?    2. 代码/文档定位：agent/agent/main.py:202；agent/agent/main.py:368；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/runtime.py:18
+    3. 详细解释：这些工具把策略落地为文件系统产物和可追踪执行事件�?  - 作用�?    1. 具体说明：创建输出目录、运行规则生成器、标准化前端并记录阶段状�?提交历史�?    2. 代码/文档定位：agent/agent/main.py:202；agent/agent/main.py:370；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:52
+    3. 详细解释：工具层连接生成逻辑与持久化/版本控制，未见浏览器或网络工具被主生成流程调用�?  - 输入/知识源：
+    1. 具体说明：本�?template、payload、requirements 目录和环境路径参数�?    2. 代码/文档定位：agent/agent/main.py:110；agent/agent/main.py:229；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/context.py:8
+    3. 详细解释：工具只消费本地路径和配置，输出写入指定 output_dir �?`.arc`�?  - 选择/检索：
+    1. 具体说明：按路径、任务键及文件后缀筛选；没有网络页面抓取或外部资源选择�?    2. 代码/文档定位：agent/agent/main.py:126；agent/agent/main.py:386
+    3. 详细解释：`rglob` 和目录存在性检查决定输入集合，属于确定性文件遍历�?  - 生成/使用�?    1. 具体说明：`subprocess.run([py, cg, requirements, --output-dir, --no-llm])` 执行规则生成器；git/events SDK 写阶段记录�?    2. 代码/文档定位：agent/agent/main.py:368；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/runtime.py:31
+    3. 详细解释：子进程是唯一明确的生成执行边界，runtime 初始化事件、追踪和 git 客户端�?  - 输出�?    1. 具体说明：应用文件、运行日志、`.arc/runner-events.jsonl` �?traceability JSON 表�?    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/context.py:8；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:110
+    3. 详细解释：事件和追踪输出记录生成阶段与需求状态，为后续评估和提交提供输入�?
+STRATEGY-006 [ITERATION/EVALUATION] 鍚堣閿氱偣涓庨樁娈电姸鎬佸弽棣?  - 鐘舵€侊細
+    1. 具体说明：inferred；代码存在需求摘要、traceability 表和 design/implement/test 状态事件，但未见完整自动修复循环�?    2. 代码/文档定位：agent/agent/main.py:451；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:52；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:70
+    3. 详细解释：状态接口支持阶段性反馈，然而静态主流程没有根据失败结果重试生成的分支�?  - 作用�?    1. 具体说明：保存需求覆盖、测试通过/失败和运行状态，便于审计与后续人�?外部评估�?    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:148；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:75
+    3. 详细解释：快照和事件把当前状态结构化，但未改变已经生成的源码�?  - 输入/知识源：
+    1. 具体说明：requirements.yaml 的节点、场景、接口和测试记录，以�?runtime 阶段事件�?    2. 代码/文档定位：agent/agent/main.py:459；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:159
+    3. 详细解释：需求树先写�?requirements/scenarios 表，接口和测试由各阶�?SDK 写入�?  - 选择/检索：
+    1. 具体说明：按 req_id 键覆�?查询 JSON 表，�?phase/status 记录事件；未发现基于评分的候选选择�?    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:130；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:213
+    3. 详细解释：这是确定性状态读写，用于追踪而非检索生成知识�?  - 生成/使用�?    1. 具体说明：生成阶段发�?design/implement/test 事件，失败信息被写入事件流；没有代码自动修补逻辑的直接证据�?    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:52；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:61
+    3. 详细解释：事件由生成/测试调用方消费，主要作用是观测和状态同步�?  - 输出�?    1. 具体说明：`.arc/runner-events.jsonl`、traceability 下七�?JSON 表和 git 提交历史通知�?    2. 代码/文档定位：agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/events.py:104；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/traceability.py:13；agent/agent/arcbench-agent-runtime/src/arcbench_agent_runtime/gitops.py:160
+    3. 详细解释：这些持久化产物提供阶段结果和变更历史，但静态证据不足以确认自动重试或自我评估闭环�?
+[鏈彂鐜版垨鏈В鍐砞
+- RAG/RETRIEVAL：在已检查的 agent 源码、模板、payload �?runtime 静态内容中未发现向量索引、embedding、语义检索或外部语料库；关键词路由属于确定性匹配�?- CODE-REUSE：已确认存在本地模板�?payload 复制/覆盖；未发现通过 URL 下载第三方应用或运行时从外部仓库拉取代码�?- ITERATION/EVALUATION：存在测�?状态记录接口，但未解决是否由外�?runner 触发完整重试循环；主流程本身未显示自�?retry�?分析完成
+

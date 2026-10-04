@@ -1,0 +1,171 @@
+核心策略分析：046-删库跑路小分队-add24a00777d
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\046-删库跑路小分队-add24a00777d
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+提交物是一个以 `agent/agent.zip` 为生成器、以三个应用 ZIP 为阶段产物的离线生成系统。主流程在 `agent/main.py` 中读取 requirements DSL，先复制官方 template，再按任务类型分流：sheet 任务明确复制 ZIP 内 `reference/sheet_app` 并跳过 LLM；github 任务建立布局计划和模块工作单元，调用集中式提示词与 OpenAI 兼容模型写文件。生成后通过服务启动、构建和 Playwright 测试反馈驱动修复，失败工作单元可拆分、重排或重试。
+静态证据未发现面向题面内容的向量索引、关键词/语义检索或外部知识库查询；需求、夹具、种子和参考图描述是直接拼入提示词的准备知识。代码复用是明确存在的：官方模板和 sheet 参考实现被复制到输出目录，模型还会读取当前共享文件摘要以增量修改。以下结论只基于归档内源码和数据，未执行选手代码、未安装依赖、未访问 URL。
+
+[策略清单]
+STRATEGY-001 [CODE-REUSE] 官方模板与 sheet 参考实现分流
+  - 状态：
+    1. 具体说明：confirmed；脚手架从模板目录复制工程骨架，sheet 任务命中 `_apply_sheet_reference` 时复制 `reference/sheet_app`，随后直接完成运行。
+    2. 代码/文档定位：agent/agent.zip::agent/scaffold.py:100；agent/agent.zip::main.py:1481；agent/agent.zip::main.py:1485
+    3. 详细解释：`seed_from_agent_template` 遍历模板内容写入输出根目录；主流程对 sheet 任务在任何 LLM 生成前调用参考实现分支并 return，因此这是确定的端到端产物来源。
+  - 作用：
+    1. 具体说明：降低通用工程搭建成本，并让 sheet 题直接得到预先准备的高覆盖应用；github 仍保留模型生成路径。
+    2. 代码/文档定位：agent/agent.zip::main.py:1468；agent/agent.zip::main.py:1482-1489
+    3. 详细解释：模板先成为工程根，参考实现分支在 `arc.run_completed` 后退出，后续计划、模型调用、自测生成均不执行；这解释了不同任务的生成策略差异。
+  - 输入/知识源：
+    1. 具体说明：Agent ZIP 内 `template/`、`template.yaml` 以及 `reference/sheet_app/` 的源码、数据和前端资源。
+    2. 代码/文档定位：agent/agent.zip::agent/scaffold.py:50-66；agent/agent.zip::agent/scaffold.py:111-130；agent/agent.zip::main.py:1481-1487
+    3. 详细解释：模板位置由显式参数或 submission 自带目录解析，参考实现来自 submission 目录；这些文件是生成输入/直接产物，而不是运行时网络资源。
+  - 选择/检索：
+    1. 具体说明：具体选择规则是任务识别 `_is_sheet_task(rs)` 且 `_apply_sheet_reference(...)` 返回真；否则进入按节点的 LLM 路径。
+    2. 代码/文档定位：agent/agent.zip::main.py:1485-1494
+    3. 详细解释：这是条件分流而非搜索；sheet 条件优先级高于模式解析，github 任务没有该短路，因而采用计划和模块生成。
+  - 生成/使用：
+    1. 具体说明：模板文件被逐项复制并按排除规则写入 output；参考应用被复制/融合到 output，后续平台直接消费其工程文件。
+    2. 代码/文档定位：agent/agent.zip::agent/scaffold.py:115-130；agent/agent.zip::main.py:1485-1489
+    3. 详细解释：复制操作形成可构建的工程根；sheet 分支跳过模型，github 分支则把模板作为后续模块增量修改的基线。
+  - 输出：
+    1. 具体说明：输出目录中的官方模板工程，或 sheet 参考应用融合后的前后端文件，并记录 `sheet reference applied` 完成事件。
+    2. 代码/文档定位：agent/agent.zip::main.py:1487-1489；agent/agent.zip::agent/scaffold.py:204-208
+    3. 详细解释：这些文件是最终应用的直接来源；事件和输出目录交给后续评测，sheet 分支没有模型文本作为中间产物。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] DSL、契约、提示词和视觉描述的准备知识注入
+  - 状态：
+    1. 具体说明：confirmed；需求 YAML/DSL 被解析成模块、原子节点、锚点、夹具、种子和图片列表，并由集中模板构造成布局/模块/步骤提示词。
+    2. 代码/文档定位：agent/agent.zip::main.py:1473-1479；agent/agent.zip::agent/prompts.py:470-515
+    3. 详细解释：解析结果先进入 `layout_user` 等模板，再成为模型 user 消息；图片在启用视觉模型时先转为文字描述，说明知识注入是显式数据流。
+  - 作用：
+    1. 具体说明：把题面约束、种子记录、夹具和页面锚点转成模型可执行的工程要求，约束数据库、路由和 UI 生成。
+    2. 代码/文档定位：agent/agent.zip::agent/prompts.py:481-514；agent/agent.zip::main.py:1507-1519
+    3. 详细解释：提示词逐项列出模块、fixture 和 seed 值；计划把原子节点分组后交给生成器，形成从题面到文件修改的准备上下文。
+  - 输入/知识源：
+    1. 具体说明：requirements 目录中的原始需求树、fixture/seed 字段、内嵌图片引用、`prompts.py` 中的通用 UI/后端规则，以及可选视觉模型的描述。
+    2. 代码/文档定位：agent/agent.zip::main.py:1473-1479；agent/agent.zip::agent/prompts.py:493-514；agent/agent.zip::main.py:1636-1647
+    3. 详细解释：原始 DSL 通过 `rs` 提供领域数据，提示词模块提供预置规则；视觉模型只接收参考图并把描述回传主模型，未见外部知识库。
+  - 选择/检索：
+    1. 具体说明：没有 RAG 检索；选择由任务阶段和工作单元决定，图片/种子限制为提示词中列出的前若干项，模块描述按计划分组。
+    2. 代码/文档定位：agent/agent.zip::agent/prompts.py:502；agent/agent.zip::agent/prompts.py:504-515；agent/agent.zip::main.py:1511-1519
+    3. 详细解释：`seeds[:40]`、`images[:30]` 是截断式输入选择，不是索引搜索；计划按节点数形成工作单元，再把对应知识传入下一阶段。
+  - 生成/使用：
+    1. 具体说明：布局、模块、步骤和修复分别使用 `LAYOUT_SYSTEM`、`MODULE_SYSTEM`、`STEP_SYSTEM`、`FIX_SYSTEM` 与对应 user 构造器；模型输出采用文件块协议写回。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:454-508；agent/agent.zip::agent/stepwise.py:585-630
+    3. 详细解释：步骤类型选择 system prompt，user 中包含步骤锚点和当前错误；输出随后交给 codegen 解析/应用，准备知识因此直接影响代码修改。
+  - 输出：
+    1. 具体说明：输出为布局文件、模块文件、步骤文件和修复补丁，以及可追溯的需求树记录。
+    2. 代码/文档定位：agent/agent.zip::main.py:1507-1509；agent/agent.zip::agent/steps.py:471-504
+    3. 详细解释：需求树进入 Arc traceability，步骤清单落盘，模型生成的文件被应用到 output；这些中间产物共同构成最终工程上下文。
+
+STRATEGY-003 [PROMPT-ORCHESTRATION] 分层计划、原子步骤与共享中枢摘要
+  - 状态：
+    1. 具体说明：confirmed；系统支持整包模块模式和逐步模式，逐步模式把一个原子节点作为独立生成/验证单元，模块模式按最多四个节点分组。
+    2. 代码/文档定位：agent/agent.zip::main.py:1492-1505；agent/agent.zip::main.py:1511-1529；agent/agent.zip::agent/stepwise.py:698-710
+    3. 详细解释：模式由原子数和测试目录决定；步骤执行明确按分区独立推进、失败重跑、天然合并三阶段编排。
+  - 作用：
+    1. 具体说明：限制单次上下文规模，隔离失败范围，并让模型聚焦验收锚点；共享中枢摘要避免后续模块覆盖已有声明。
+    2. 代码/文档定位：agent/agent.zip::agent/prompts.py:526-534；agent/agent.zip::agent/stepwise.py:702-710
+    3. 详细解释：`hub_state_summary` 将当前 `api/index.ts`、`App.tsx` 等声明摘要注入模型；逐步循环让每个节点只承担自身改动，减少整文件重写风险。
+  - 输入/知识源：
+    1. 具体说明：工作单元节点、父依赖、UI/依赖锚点、测试文件映射、当前输出目录中的共享文件和上一轮错误。
+    2. 代码/文档定位：agent/agent.zip::agent/plan.py:54-72；agent/agent.zip::agent/steps.py:254-265；agent/agent.zip::agent/prompts.py:526-535
+    3. 详细解释：计划对象携带依赖闭包和 fixtures/images；步骤分解关联 spec 文件；共享摘要读取已有源码，构成跨阶段上下文。
+  - 选择/检索：
+    1. 具体说明：通过 `build_plan(nodes_per_item=...)` 分组，通过 `steps.decompose` 一节点一步，并按步骤类型选择 system prompt；没有语义检索。
+    2. 代码/文档定位：agent/agent.zip::main.py:1518-1529；agent/agent.zip::agent/stepwise.py:454-469
+    3. 详细解释：选择条件是节点粒度、是否有测试目录和 layout 类型；命中的步骤再带入对应 spec/锚点，而不是从语料库召回。
+  - 生成/使用：
+    1. 具体说明：每个模块/步骤调用 `llm.chat`，使用文件块协议解析后 `codegen.apply`；修复调用使用 FIX prompt 和错误上下文。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:500-509；agent/agent.zip::agent/stepwise.py:585-637
+    3. 详细解释：生成文本先经过统一代码应用器写入同一 output_dir；失败文本被包装为最小 TestOutcome 后再进入修复 prompt，形成链式编排。
+  - 输出：
+    1. 具体说明：工程文件、步骤清单 `steps/*.json`、模块尝试状态和 Arc design/implementation/test 事件。
+    2. 代码/文档定位：agent/agent.zip::agent/steps.py:471-504；agent/agent.zip::main.py:1830-1844；agent/agent.zip::agent/arc.py:123-146
+    3. 详细解释：文件写入共享工程，步骤清单保存编排结果，节点状态事件供覆盖率和评测消费。
+
+STRATEGY-004 [MODEL-ROUTING] 模型自探测、视觉旁路与调用级降级
+  - 状态：
+    1. 具体说明：confirmed；主模型从环境配置读取，先列 `/models`、探活并可测速/替换；视觉模型可选，负责图片转文字；LLM 客户端支持流式、推理档位和多类失败降级。
+    2. 代码/文档定位：agent/agent.zip::agent/model_search.py:174-223；agent/agent.zip::agent/model_search.py:489-579；agent/agent.zip::agent/llm.py:837-884
+    3. 详细解释：`resolve_model` 在真正生成前选择可用候选；`LLMClient` 统一构造 system/user 消息和模型参数，错误时切换流式/推理/温度设置。
+  - 作用：
+    1. 具体说明：降低平台注入模型不可用、端点慢、流式或推理参数不兼容造成的整局失败，并把视觉负载从主模型请求中移除。
+    2. 代码/文档定位：agent/agent.zip::main.py:1592-1604；agent/agent.zip::main.py:1636-1647；agent/agent.zip::agent/llm.py:1007-1064
+    3. 详细解释：探测缓存供自检和生成复用；视觉描述只传文本；异常分支记录后关闭不兼容能力或降低参数，继续同一生成阶段。
+  - 输入/知识源：
+    1. 具体说明：`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`MODEL` 及可选 `VISUAL_*` 环境配置，端点模型列表和探活响应。
+    2. 代码/文档定位：agent/agent.zip::agent/config.py:154-189；agent/agent.zip::agent/model_search.py:174-217
+    3. 详细解释：配置决定主/视觉客户端；端点返回的模型 ID 和速度测量结果成为路由依据，没有读取外部网页内容。
+  - 选择/检索：
+    1. 具体说明：先接受配置模型（列表命中或探活成功），否则按候选评分排序，逐个探活并用速度门槛筛选；一次运行用 `ProbeCache` 复用结论。
+    2. 代码/文档定位：agent/agent.zip::agent/model_search.py:503-575；agent/agent.zip::main.py:1596-1604
+    3. 详细解释：这是模型端点选择，不是题面 RAG；主模型和视觉模型的职责在配置与 `ImageDescriber` 分支中明确分离。
+  - 生成/使用：
+    1. 具体说明：将 system prompt、user prompt、可选图片内容、model、max_tokens、reasoning 参数交给 OpenAI 兼容 chat completion；响应正文交给代码生成器。
+    2. 代码/文档定位：agent/agent.zip::agent/llm.py:813-884
+    3. 详细解释：消息构造保持角色边界，流式响应累积正文；异常分支可去图重试、关流式、禁用推理或调整温度后再次调用。
+  - 输出：
+    1. 具体说明：模型文本/文件块、用量统计、trace 事件和最终选择的模型配置。
+    2. 代码/文档定位：agent/agent.zip::agent/llm.py:797-808；agent/agent.zip::agent/llm.py:1099-1104；agent/agent.zip::main.py:1601-1604
+    3. 详细解释：正文成为生成文件输入，usage 和路由事件写入 trace；模型选择结果通过替换配置传递到后续所有模块调用。
+
+STRATEGY-005 [TOOLS/EXECUTION] 受控文件生成、构建、服务探活与测试工具链
+  - 状态：
+    1. 具体说明：confirmed；代码应用器写文件，脚手架执行复制，selfcheck 启动 Node 服务、构建前端并运行 Playwright；Arc SDK 不可用时降级为本地 no-op。
+    2. 代码/文档定位：agent/agent.zip::agent/scaffold.py:115-130；agent/agent.zip::agent/selfcheck.py:319-379；agent/agent.zip::agent/selfcheck.py:938-1047；agent/agent.zip::agent/arc.py:92-111
+    3. 详细解释：工具调用集中在生成器内部且有超时/端口/环境设置；测试输出被解析为 TestOutcome，追溯 SDK 失败不会中断主流程。
+  - 作用：
+    1. 具体说明：把模型文本变成工程文件并验证可启动、可构建、可由浏览器测试；为修复阶段提供可定位的错误信号。
+    2. 代码/文档定位：agent/agent.zip::agent/selfcheck.py:949-973；agent/agent.zip::agent/selfcheck.py:1063-1068
+    3. 详细解释：测试采用固定 base URL、单 worker、超时和可选 grep；报告汇总通过/失败/超时，供下一次 FIX prompt 使用。
+  - 输入/知识源：
+    1. 具体说明：output_dir 工程、公开 tests 目录、Node/npm/Playwright 可执行文件、端口和环境变量。
+    2. 代码/文档定位：agent/agent.zip::agent/selfcheck.py:975-983；agent/agent.zip::agent/selfcheck.py:1005-1029
+    3. 详细解释：测试目录和工程输出是本地输入；脚本设置 `NODE_PATH`、base URL 和 JSON 报告位置后启动命令，不依赖提交代码提供的 URL。
+  - 选择/检索：
+    1. 具体说明：逐步模式用 `grep_pattern_for` 精确选择当前步骤用例，整包模式运行全部可发现 spec；无测试时明确跳过或回退整包生成。
+    2. 代码/文档定位：agent/agent.zip::agent/selfcheck.py:968-973；agent/agent.zip::main.py:1496-1500；agent/agent.zip::agent/selfcheck.py:975-978
+    3. 详细解释：选择规则由步骤 ID 到 spec 标题的正则映射决定，避免每步运行全套用例；测试缺失会改变编排模式而非伪造通过。
+  - 生成/使用：
+    1. 具体说明：模型文件块经 `codegen.apply` 写入，构建/服务/Playwright 由 bounded subprocess 执行，报告解析为结构化失败上下文。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:635-637；agent/agent.zip::agent/selfcheck.py:1022-1059
+    3. 详细解释：工具结果不直接当最终产物，而是转化为下一轮修复的输入，并在 trace 中保留退出码、失败数和超时信息。
+  - 输出：
+    1. 具体说明：工程文件、构建/服务日志、Playwright JSON 报告、TestOutcome 和 Arc 事件。
+    2. 代码/文档定位：agent/agent.zip::agent/selfcheck.py:995-1004；agent/agent.zip::agent/selfcheck.py:1063-1068；agent/agent.zip::agent/arc.py:148-159
+    3. 详细解释：这些输出分别被测试解析器、修复提示词和平台追溯层消费，形成可审计的生成执行记录。
+
+STRATEGY-006 [ITERATION/EVALUATION] 失败反馈、拆分重试与回归守护
+  - 状态：
+    1. 具体说明：confirmed；生成阶段按预算处理队列，超时单元有限次重入，较大失败单元拆半；逐步阶段每步生成后验证、修复并按轮次重跑。
+    2. 代码/文档定位：agent/agent.zip::main.py:1793-1809；agent/agent.zip::agent/stepwise.py:698-710；agent/agent.zip::main.py:1367-1446
+    3. 详细解释：队列、拆分配额和最大修复轮数是明确停止条件；失败信息被重新包装或收集后进入 FIX 调用，成功后才推进状态。
+  - 作用：
+    1. 具体说明：将模型超时、语法错误、缺锚点和测试失败转成局部修复任务，降低一次大输出失败导致全局零产出的概率，并保护自测预算。
+    2. 代码/文档定位：agent/agent.zip::main.py:1801-1808；agent/agent.zip::agent/stepwise.py:705-709；agent/agent.zip::main.py:1129-1145
+    3. 详细解释：预算不足时停止新生成保留测试时间；逐步失败在下一轮看到其他步骤已写入的代码，反馈因此具有跨轮累积效果。
+  - 输入/知识源：
+    1. 具体说明：Playwright 失败报告、服务日志、构建错误、当前源码上下文、步骤锚点和剩余时间/重试计数。
+    2. 代码/文档定位：agent/agent.zip::agent/selfcheck.py:1049-1068；agent/agent.zip::agent/stepwise.py:316-327；agent/agent.zip::main.py:1818-1827
+    3. 详细解释：`TestOutcome` 保存失败详情，`build_fix_context` 按错误关键词组织源码；队列计数和 deadline 决定是否继续。
+  - 选择/检索：
+    1. 具体说明：按失败类型选择 repair/recover/startup/frontend prompt；按节点数决定拆半；按 `max_fix_iterations`、时间预算和 `max_failures` 停止。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:585-630；agent/agent.zip::agent/selfcheck.py:963-973；agent/agent.zip::main.py:1367-1373
+    3. 详细解释：错误文本和阶段决定修复模板，队列拆分只对含多个节点的单元生效，停止条件防止无限调用或预算耗尽。
+  - 生成/使用：
+    1. 具体说明：修复模型收到失败摘要、定位源码和原步骤要求，输出同一文件块协议的最小修改；修复后重新构建/运行相关测试并执行回归。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:573-637；agent/agent.zip::agent/selfcheck.py:968-973
+    3. 详细解释：错误上下文先变成合成 TestOutcome，再经统一代码应用器写回；每轮结果影响下一轮是否通过及是否标记节点完成。
+  - 输出：
+    1. 具体说明：修复后的工程文件、逐步报告中的 PASSED/FAILED/REGRESSION 状态、测试 JSON 和节点状态事件。
+    2. 代码/文档定位：agent/agent.zip::agent/stepwise.py:190-238；agent/agent.zip::agent/selfcheck.py:1049-1068；agent/agent.zip::agent/arc.py:133-146
+    3. 详细解释：报告聚合通过、失败、回归和跳过；Arc 将实现/测试结果绑定需求节点，成为最终评测可消费的状态。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的 `agent/agent.zip` 源码和其归档数据中未发现向量库、倒排索引、嵌入计算或按题面查询外部语料；现有选择是 DSL 直接分组、列表截断和任务条件分流。
+- CODE-REUSE：已确认官方 template 与 sheet 参考实现的直接复制；未发现从网络下载其他项目或运行时解包外部 URL 的代码。ZIP 内已有应用源码被作为阶段产物保存，但本分析未将其误判为模型检索。
+- 外部运行结果：未执行选手代码、未安装依赖、未访问任何提交物中提供的 URL；因此运行时实际模型返回和测试通过率未验证，相关机制按静态代码标注为 confirmed/inferred。
+分析完成

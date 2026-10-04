@@ -1,0 +1,90 @@
+核心策略分析：029-CodeRun-8dd098b2fce0
+题面路径：E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon
+题面范围：E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon/github；E:/workplace/hackathon/visualizer/anti-cheat/cheat/example/hackathon/sheet
+作答路径：E:/workplace/hackathon/visualizer/anti-cheat/cheat/workspace/029-CodeRun-8dd098b2fce0
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+选手采用“需求解析与关键词风格选择→按原子需求建立模块→可选一次模型设计评审→复制预置应用资产→安装构建并进行 HTTP 探针验证”的工厂流水线。主要差异化机制是仓库内按领域准备的完整 GitHub/表格应用模板及其接口目录；静态代码中未发现向量、词法或语义检索索引，因此 RAG 不存在（已检查范围内未发现）。代码复用明确存在，且是生成最终应用的主路径；模型调用仅补充模块 rationale，并不直接生成应用代码。
+[策略清单]
+STRATEGY-001 [CODE-REUSE] 预置风格资产复制与需求接口映射
+  - 状态：
+    1. 具体说明：confirmed；`emit` 根据检测出的 flavour 从 `factory/assets/<flavour>` 复制完整 backend/frontend 树，随后由 descriptors 为每个原子需求登记接口与测试。
+    2. 代码/文档定位：agent/agent/factory/emitters.py:48；agent/agent/factory/emitters.py:57；agent/agent/factory/descriptors.py:106
+    3. 详细解释：复制调用和资产目录拼接直接建立了预置代码到输出工作区的因果链，接口表再把需求 ID 连接到复制后的路由、页面和测试文件，因此这是确认的端到端代码复用。
+  - 作用：
+    1. 具体说明：将同一套领域实现快速物化为 GitHub 或表格应用，并让追踪表记录每项需求对应的 API/UI 文件。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:94；agent/agent/factory/descriptors.py:109
+    3. 详细解释：工厂先调用 emit，再遍历返回的 interfaces/tests 写入追踪存储；生成结果不依赖模型输出的代码内容，而依赖模板及映射表。
+  - 输入/知识源：
+    1. 具体说明：输入是 `requirements.yaml` 解析出的原子需求、场景和 flavour 资产树；GitHub 与 sheets 的接口字典提供任务到文件的领域知识。
+    2. 代码/文档定位：agent/agent/factory/requirements.py:49；agent/agent/factory/emitters.py:13；agent/agent/factory/descriptors.py:28
+    3. 详细解释：RequirementDocument 从 YAML 建树，ASSETS 指向仓库内静态资产，接口字典按 REQ 编号给出具体路由和页面，三者共同构成复制和登记的输入。
+  - 选择/检索：
+    1. 具体说明：使用全量复制而非检索；flavour 由需求名称、描述和原子需求名中 GitHub/表格关键词计数决定。
+    2. 代码/文档定位：agent/agent/factory/planner.py:51；agent/agent/factory/planner.py:56；agent/agent/factory/emitters.py:49
+    3. 详细解释：detect_flavour 只比较两个固定 marker 集合，emit 不执行相似度、索引或候选排序；因此 RAG/RETRIEVAL 在已检查静态内容中未发现，代码复用是确定的全量模板选择。
+  - 生成/使用：
+    1. 具体说明：删除输出中的既有 backend/frontend 后，以 `shutil.copytree(..., dirs_exist_ok=True)` 将模板内容写入 workspace，并把映射结果包装为 EmitResult。
+    2. 代码/文档定位：agent/agent/factory/emitters.py:53；agent/agent/factory/emitters.py:57；agent/agent/factory/emitters.py:68
+    3. 详细解释：删除和复制改变实际作答目录，随后 EmitResult.files/interfaces/tests 被后续注册阶段消费，故模板代码直接成为最终生成物。
+  - 输出：
+    1. 具体说明：输出是可运行的 backend/frontend 文件树、按需求生成的接口记录和场景测试记录。
+    2. 代码/文档定位：agent/agent/factory/emitters.py:59；agent/agent/factory/__init__.py:102；agent/agent/factory/__init__.py:117
+    3. 详细解释：files 枚举复制后的文件，接口和测试随后写入 traceability；最终应用由这些文件启动，记录则供评估 UI 使用。
+STRATEGY-002 [PROMPT-ORCHESTRATION] 原子模块设计评审与确定性回退
+  - 状态：
+    1. 具体说明：confirmed；每个计划模块执行一次 `review_module`，有完整环境配置时走 chat completions，否则返回原始摘要的 deterministic 结果。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:84；agent/agent/factory/reasoning.py:56；agent/agent/factory/reasoning.py:58
+    3. 详细解释：调用点和 enabled 分支可见，模型失败、空答案或禁用均回退，因此模型评审是可选的编排步骤，不是生成主循环。
+  - 作用：
+    1. 具体说明：把每个原子需求压缩为模块级实现 rationale，并将该文字写入设计完成事件。
+    2. 代码/文档定位：agent/agent/factory/reasoning.py:60；agent/agent/factory/__init__.py:89
+    3. 详细解释：prompt 只要求最多三句话的实现方法，返回的 rationale 替换 module.summary 后进入事件流；emitters 不读取该文本生成代码。
+  - 输入/知识源：
+    1. 具体说明：输入是 module_id、标题、摘要和 requirement_ids，均来自需求文档和 planner 的原子拆分。
+    2. 代码/文档定位：agent/agent/factory/planner.py:69；agent/agent/factory/reasoning.py:64
+    3. 详细解释：planner 将每个 atomic Node 形成一个 ModulePlan，评审 prompt 再拼接模块字段；未发现额外知识库或任务语料注入。
+  - 选择/检索：
+    1. 具体说明：选择规则是按模块逐一调用，模型配置通过环境变量首个非空值选择；没有检索候选或多模型排序。
+    2. 代码/文档定位：agent/agent/factory/reasoning.py:16；agent/agent/factory/reasoning.py:36；agent/agent/factory/reasoning.py:67
+    3. 详细解释：BASE_URL、API key、MODEL 三组键仅做存在性检查和直接读取，随后固定发送一次请求；因此属于简单模型路由而非 RAG。
+  - 生成/使用：
+    1. 具体说明：构造 system/user 两条消息，要求架构师用三句话以内给出方案，温度 0.2、最多 220 token。
+    2. 代码/文档定位：agent/agent/factory/reasoning.py:60；agent/agent/factory/reasoning.py:69；agent/agent/factory/reasoning.py:73
+    3. 详细解释：模型文本仅作为 `DesignNote.rationale` 保存并用于事件消息；没有将文本拼接进 emit 代码或补丁操作。
+  - 输出：
+    1. 具体说明：输出为 DesignNote 及设计完成事件中的 rationale，失败时输出确定性摘要。
+    2. 代码/文档定位：agent/agent/factory/reasoning.py:23；agent/agent/factory/reasoning.py:87；agent/agent/factory/__init__.py:90
+    3. 详细解释：返回对象标记 source 为 model 或 deterministic，工厂截断后写入事件；应用文件输出仍由 STRATEGY-001 产生。
+STRATEGY-003 [TOOLS/EXECUTION] 构建、探针验证与追踪持久化闭环
+  - 状态：
+    1. 具体说明：confirmed；流水线依次登记需求、评审、复制、接口/测试、npm 安装构建、HTTP 探针验证并提交 Git。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:40；agent/agent/factory/__init__.py:55；agent/agent/factory/__init__.py:57
+    3. 详细解释：run 方法给出固定阶段顺序，验证和构建受环境开关控制但默认执行；事件、traceability 和 Git 共同保存过程状态。
+  - 作用：
+    1. 具体说明：通过 npm install/build 使复制资产可启动，再用本地 HTTP health、首页、工作簿和编辑器探针形成运行证据。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:139；agent/agent/factory/verify.py:104；agent/agent/factory/verify.py:146
+    3. 详细解释：构建阶段准备依赖和 dist，verify 启动 backend 并请求固定本地端点，探针结果打印到 runner stdout，连接生成物与评估证据。
+  - 输入/知识源：
+    1. 具体说明：输入包括输出 workspace 中的 package.json、生成的应用文件、端口环境和 `.arc` 运行时路径。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:142；agent/agent/factory/verify.py:148；agent/agent/arcbench_agent_runtime/context.py:41
+    3. 详细解释：构建按 backend/frontend package.json 判断，验证使用 workspace/backend，运行时路径由环境变量或默认 `.arc` 目录解析。
+  - 选择/检索：
+    1. 具体说明：工具选择是固定命令和固定探针端点，不存在代码搜索、向量检索或反馈样本筛选；端口在 3199、3200、3201 中择空。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:142；agent/agent/factory/verify.py:25；agent/agent/factory/verify.py:104
+    3. 详细解释：free_port 只解决本地端口冲突，探针请求集合静态写在脚本中；所以该闭环属于执行工具编排，RAG 仍为未发现。
+  - 生成/使用：
+    1. 具体说明：执行 npm install/build，写入 probe.js 和 Playwright 配置，启动 npm run start 后通过 Node HTTP 客户端读取状态。
+    2. 代码/文档定位：agent/agent/factory/__init__.py:146；agent/agent/factory/verify.py:152；agent/agent/factory/verify.py:163
+    3. 详细解释：这些命令消费 STRATEGY-001 的文件树并产生构建产物、探针脚本和运行日志；失败只打印诊断，不回写生成代码。
+  - 输出：
+    1. 具体说明：输出包括 `.arc/runner-events.jsonl`、traceability 表、Git 提交、`.probe/server.log` 和 `PROBE_RESULT` stdout。
+    2. 代码/文档定位：agent/agent/arcbench_agent_runtime/context.py:8；agent/agent/factory/verify.py:162；agent/agent/factory/verify.py:141
+    3. 详细解释：运行时默认持久化 runner 事件与追踪目录，验证保存服务器日志并打印探针 JSON；这些状态供后续评估读取，但没有发现自动重试或基于分数的修复。
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的代理源码、资产和运行时静态内容中未发现索引、向量库、BM25、语义检索或查询到生成的连接；仅有 flavour marker 全量选择。
+- PREPARED-KNOWLEDGE：已确认领域知识主要以 `factory/assets` 模板和 descriptors 接口字典存在；未发现独立 skills、few-shot 语料或动态知识库。
+- CODE-REUSE：已确认 `shutil.copytree` 直接复用预置 GitHub/sheets 实现；无法仅凭静态代码判断每个资产文件在真实运行中是否均被访问。
+- MODEL-ROUTING：已确认单一可配置 chat completions 端点和确定性 fallback；未发现并行模型、二级模型或结果融合。
+- ITERATION/EVALUATION：已确认一次性构建和 best-effort HTTP 探针；未发现按失败结果自动 retry、self-critique 或评分驱动修复循环。
+分析完成

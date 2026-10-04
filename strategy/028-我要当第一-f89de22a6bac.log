@@ -1,0 +1,115 @@
+﻿鏍稿績绛栫暐鍒嗘瀽锛?028-我要当第一-f89de22a6bac
+题面路径�?example/hackathon
+题面范围�?example/hackathon/github�?example/hackathon/sheet
+浣滅瓟璺緞锛?workspace/028-我要当第一-f89de22a6bac
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+该提交的主链路是读取 requirements.yaml，编译 ROOT/模块/场景索引，将冻结的合同和技能说明注入单一 Codex 编码线程，再通过受限工具生成前后端文件并运行检查。RAG：在已检查静态内容中未发现向量/关键词检索或外部语料库，只有 requirements 的确定性索引。代码复用：确认存在模板和脚手架复制，也存在既有输出的增量扩展路径；未发现按题目检索并复制成品代码的机制。
+[绛栫暐娓呭崟]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 冻结需求合同与接受性索引
+  - 状态锛?
+    1. 具体说明锛?_prepare_knowledge 写入源哈希、模块顺序、验收场景和运行合同，供后续提示词读取。
+    2. 代码/文档定位锛?    2. 浠ｇ爜/鏂囨。瀹氫綅锛?agent/agent/main.py:275; agent/agent/main.py:286
+    3. 详细解释锛?    3. 璇︾粏瑙ｉ噴锛?这些行把原始 YAML 转成冻结文档并记录哈希，保证模型接收的是结构化需求与验收边界，而不是临时猜测。
+  - 作用锛?
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?模块提示包含 ROOT 上下文、子树 JSON、验收索引和依赖顺序，作为实现决策依据。
+    2. 代码/文档定位锛?    2. 浠ｇ爜/鏂囨。瀹氫綅锛?agent/agent/main.py:222; agent/agent/main.py:250
+    3. 详细解释锛?    3. 璇︾粏瑙ｉ噴锛?提示构造先放入模块身份和全局约束，再放入编译后的 acceptance，直接连接需求输入与模型工具调用。
+  - 输入/知识源锛?
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?源文件由 load_root_modules 读取，技能目录与控制器规则由开发者指令拼接。
+    2. 代码/文档定位锛?agent/agent/main.py:102; agent/agent/main.py:202
+    3. 详细解释锛?YAML 是题目事实来源，HAIKNOW-LITE.md 与技能是通用指导；二者在进入模型前被合并成开发者消息。
+  - 选择/检索锛?
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?compile_acceptance 计算 leaf_order/module_order，_module_prompt 仅注入当前模块和已完成模块列表。
+    2. 代码/文档定位锛?agent/agent/core/requirements.py:33; agent/agent/main.py:222
+    3. 详细解释锛?选择规则是确定性依赖排序；它把对应子树和案例传给当前回合，未命中项不会被召回。
+  - 生成/使用锛?
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?提示要求实现完整当前 subtree、添加测试并记录接口位置，随后由 SDK 工具执行。
+    2. 代码/文档定位锛?agent/agent/main.py:263; agent/agent/main.py:270
+    3. 详细解释锛?这些约束把准备知识转成可执行编码任务，并要求产出测试与 progress 证据。
+  - 输出锛?
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?冻结文件和生成的应用源码共同构成可追踪交付物。
+    2. 代码/文档定位锛?agent/agent/main.py:275; agent/agent/main.py:318
+    3. 详细解释锛?控制器保存合同与 acceptance，运行时再将实现结果交给验证阶段，形成需求到产出的闭环。
+STRATEGY-002 [PROMPT-ORCHESTRATION] 单线程模块化提示编排
+  - 鐘舵€? confirmed：同一 coding thread 按模块顺序复用，并用 completed_ids、ROOT 上下文和最后模块集成提示分阶段编排。
+    1. 具体说明锛?_developer_instructions 定义全局规则，_module_prompt 定义每个模块的用户提示，implement_modules 循环调用。
+    2. 代码/文档定位锛?agent/agent/main.py:202; agent/agent/main.py:222; agent/agent/main.py:330
+    3. 详细解释锛?系统消息提供角色与安全边界，模块消息提供局部任务，单线程保留上下文并在末模块追加集成要求。
+  - 浣滅敤锛?把复杂题目拆成 ROOT 子树、依赖实现、测试和最终集成几个阶段。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?每回合明确模块编号、已完成模块、子树和验收案例，并要求返回变更证据摘要。
+    2. 代码/文档定位锛?agent/agent/main.py:228; agent/agent/main.py:273
+    3. 详细解释锛?这种编排将模型注意力限制在当前模块，同时保留全局约束和跨模块检查点。
+  - 杈撳叆/鐭ヨ瘑婧恅 输入包括 developer rules、模块 JSON、acceptance、原始需求目录和技能路径。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?提示显式拼接 requirements_dir、root_context、subtree、case index 以及技能说明。
+    2. 代码/文档定位锛?agent/agent/main.py:228; agent/agent/main.py:245
+    3. 详细解释锛?所有输入均来自提交内控制器生成的结构化资料或随附技能，不依赖网络召回。
+  - 閫夋嫨/妫€绱 选择当前 module.index 和 completed_ids，最后一个模块才加入全局集成指令。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?模块顺序来自 module_order，提示根据是否存在 completed_ids 分支化。
+    2. 代码/文档定位锛?agent/agent/main.py:222; agent/agent/main.py:250
+    3. 详细解释锛?条件分支决定是否注入首次全局上下文及既有模块列表，构成阶段路由。
+  - 鐢熸垚/浣跨敤锛?提示被交给 AgentRuntime/Codex SDK，模型通过 function/custom tools 进行读写和测试。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?execute_turn 将 prompt 和 label 送入 runtime，SDK 返回工具调用或文本结果。
+    2. 代码/文档定位锛?agent/agent/main.py:424; agent/agent/main.py:473
+    3. 详细解释锛?每次回合的提示都进入同一执行线程，工具效果写回工作区后再进入验证或修复。
+  - 杈撳嚭锛?输出是模块源码变更、progress.md 证据和模型回合记录，而非单个回答文本。
+    1. 具体说明锛?    1. 鍏蜂綍璇存槑锛?turns、implemented_modules 和验证状态写入运行 state，源码由工具直接落盘。
+    2. 代码/文档定位锛?agent/agent/main.py:318; agent/agent/main.py:515
+    3. 详细解释锛?控制器把提示编排结果转成持久化代码及检查事件，供下一个模块继续使用。
+STRATEGY-003 [MODEL-ROUTING] 视觉与编码模型路由及协议适配
+  - 鐘舵€? confirmed：VisualTransport 从环境选择 VISUAL_MODEL/MODEL，编码请求按协议策略发送，并支持候选模型回退。
+    1. 具体说明锛?模型名来自 selected，self.models 保存候选；视觉调用按候选序列尝试。
+    2. 代码/文档定位锛?agent/agent/agents/model/visual_transport.py:304; agent/agent/agents/model/visual_transport.py:474
+    3. 详细解释锛?    3. 璇︾粯瑙ｉ噴锛?路由配置决定请求端点和模型，失败时推进下一个候选，成功响应再进入上下文。
+  - 浣滅敤锛?为图像事实提取和编码生成分别提供模型传输层，并统一 Responses/Chat 协议。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?VisualTransport 构造视觉 prompt，ChatAdapter 将 SDK payload 转成 messages/tools。
+    2. 代码/文档定位锛?agent/agent/agents/model/visual_transport.py:476; agent/agent/agents/model/chat_adapter.py:121
+    3. 详细解释锛?视觉结果作为补充事实，编码请求则保留工具调用结构，二者共同服务实现线程。
+  - 杈撳叆/鐭ヨ瘑婧恅 环境变量、reference image 内容、developer/user messages、工具 schema 和 protocol policy。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?请求体包含模型、system prompt、用户图像消息；编码适配器读取 payload 的 instructions/tools。
+    2. 代码/文档定位锛?agent/agent/agents/model/visual_transport.py:476; agent/agent/agents/model/chat_adapter.py:121
+    3. 详细解释锛?这些输入在传输层被规范化为模型 API 请求，响应再被验证后返回控制器。
+  - 閫夋嫨/妫€绱 视觉候选按 self.models 顺序尝试；编码协议按 policy 映射并只保留允许工具。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?选择机制是环境配置加顺序回退，不是语义检索或动态评分。
+    2. 代码/文档定位锛?agent/agent/agents/model/visual_transport.py:586; agent/agent/agents/model/visual_transport.py:603
+    3. 详细解释锛?失败记录 fallback 并继续下一个模型，工具过滤则在发送前删除未授权工具。
+  - 鐢熸垚/浣跨敤锛?模型生成视觉补充文本或编码 tool calls，ChatAdapter 校验并缓存规范化 assistant 消息。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?响应被解析成 content/tool_calls、usage 和 finish_reason，再交给 SDK 执行。
+    2. 代码/文档定位锛?agent/agent/agents/model/chat_adapter.py:209; agent/agent/agents/model/chat_adapter.py:295
+    3. 详细解释锛?协议校验避免无效工具进入执行器；有效调用才影响项目文件和后续上下文。
+  - 杈撳嚭锛?输出包括视觉 supplement、模型响应记录、工具调用结果和 transport.jsonl/visual-cache.json。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?成功视觉结果写入 cache 与 supplement，编码响应写入事件统计。
+    2. 代码/文档定位锛?agent/agent/agents/model/visual_transport.py:554; agent/agent/agents/model/visual_transport.py:566
+    3. 详细解释锛?这些产物既能作为后续提示上下文，也提供模型选择和调用次数的审计证据。
+STRATEGY-004 [TOOLS/EXECUTION] 受限工具执行与模板/既有工作区复用
+  - 鐘舵€? confirmed：控制器复制 starter template/scaffold，并通过 SDK 受限 coding tools 读写、测试和修复输出。
+    1. 具体说明锛?copy_template_contents/copy_skills_to_output 复制模板与技能；restrict_tools 过滤工具。
+    2. 代码/文档定位锛?agent/agent/main.py:59; agent/agent/main.py:82; agent/agent/agents/model/visual_transport.py:603
+    3. 详细解释锛?    3. 璇︾粯瑙ｉ噴锛?模板复制提供基础应用，工具过滤限制模型可用动作，二者共同支撑生成而非题目代码检索。
+  - 浣滅敤锛?建立可编辑输出目录并让模型通过文件、shell、测试工具完成实现和验证。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?模板内容递归复制，工具调用在当前 project_dir 执行并留下源码和检查结果。
+    2. 代码/文档定位锛?agent/agent/main.py:66; agent/agent/main.py:318
+    3. 详细解释锛?    3. 璇︾粏瑙ｉ噴锛?输出目录先具备通用脚手架，随后模型只需增量编辑需求相关文件，减少从零生成成本。
+  - 杈撳叆/鐭ヨ瘑婧恅 template、competition/scaffold、bundled skills，以及增量模式下已有 output_dir 内容。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?prepare_output 选择模板和脚手架；提示在 incremental 模式要求先检查既有应用。
+    2. 代码/文档定位锛?agent/agent/main.py:97; agent/agent/main.py:236
+    3. 详细解释锛?这些是预置代码与项目资产，能被直接复制或由模型扩展；静态证据未表明按相似题目挑选外部成品。
+  - 閫夋嫨/妫€绱 依据固定目录白名单和 incremental 标志选择复制范围，工具白名单决定可执行动作。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?复制跳过 node_modules/dist 等目录，技能只允许三个 arcbench skill。
+    2. 代码/文档定位锛?agent/agent/main.py:66; agent/agent/main.py:87
+    3. 详细解释锛?    3. 璇︾粏瑙ｉ噴锛?选择规则是路径和模式条件，非基于任务内容的检索；模型工具则从声明列表过滤。
+  - 鐢熸垚/浣跨敤锛?模型调用工具读写文件、执行检查，必要时在同一输出目录修复失败实现。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?execute_turn/recover 组合回合和修复，工具效果直接改变输出源码。
+    2. 代码/文档定位锛?agent/agent/main.py:424; agent/agent/main.py:477
+    3. 详细解释锛?    3. 璇︾粹瑙ｉ噴锛?工具层把模型计划变成实际文件和命令结果，修复回合消费失败证据后再次编辑。
+  - 杈撳嚭锛?最终输出为应用源码、测试、构建产物及 .arc/.haiknow 证据文件。
+    1. 具体说明锛?    1. 鍏蜂綋璇存槑锛?源码由工具落盘，运行状态和测试事件写入 evidence 目录。
+    2. 代码/文档定位锛?agent/agent/main.py:318; agent/agent/main.py:516
+    3. 详细解释锛?    3. 璇︾粏瑙ｉ噴锛?这些输出被冷启动验证和交付阶段消费，形成从模板到可运行应用的交付链。
+[鏈彂鐜版垨鏈В鍐砞
+- RAG/RETRIEVAL：在已检查的提交静态内容中未发现向量索引、文档嵌入、关键词召回或外部语料检索；requirements 的拓扑索引属于确定性编译，不是 RAG。
+- CODE-REUSE：确认模板/scaffold 复制和 incremental 既有工作区扩展；未解析到按题目相似度选择外部应用的代码复用路径。agent.zip 与 vendor 二进制未展开，压缩包内部是否含额外策略 unresolved。
+- ITERATION/EVALUATION：确认存在 recover、repair_attempts、Vitest/Playwright/build 检查与最终冷验证；具体运行结果未执行本次选手代码，因此实际通过率 unresolved。
+- STATE/PERSISTENCE：确认内存 history、视觉 cache、.arc 事件和 .haiknow 合同持久化；跨任务学习记忆未发现。
+鍒嗘瀽瀹屾垚
+鍒嗘瀽瀹屾垚

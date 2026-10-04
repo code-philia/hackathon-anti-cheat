@@ -1,0 +1,95 @@
+核心策略分析：006-gto-6464bd228ca6
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\006-gto-6464bd228ca6
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+
+[核心结论]
+主要策略是按题目名称路由到内置任务包，将完整预置应用复制到输出目录，再针对修复计划选中的一个需求和已有补丁调用 DeepSeek Harness 审查、局部修补；GitHub 分阶段任务直接复制预置应用，不调用模型。确认存在直接代码复用与预置任务知识。未发现向量库、语义搜索或从外部语料动态检索的 RAG；需求树按 ID 确定性选段，属于轻量文件选择而非典型 RAG。构建和语法检查提供最终反馈，运行时行为未执行验证。
+
+[策略清单]
+STRATEGY-001 [CODE-REUSE] 按任务包复制完整应用并区分回放与修复
+  - 状态：
+    1. 具体说明：confirmed，题名映射任务包，分阶段 GitHub 直接回放，其他任务以完整 seed 应用为修复起点。
+    2. 代码/文档定位：agent/agent/main.py:77；agent/agent/main.py:105；agent/agent/main.py:120
+    3. 详细解释：映射表给出预置代码目录；分阶段分支复制前后端并立即返回，修复分支先覆盖输出前后端，再进入模型流程。
+  - 作用：
+    1. 具体说明：以已有前后端覆盖主要应用实现，缩小模型工作量至局部核查。
+    2. 代码/文档定位：agent/agent/main.py:107；agent/agent/main.py:124
+    3. 详细解释：copytree 把已有源码置入交付目录；后续模型在该目录工作，因此成品主体来自预置应用。
+  - 输入/知识源：
+    1. 具体说明：tasks 下各任务 seed/frontend、seed/backend，以及无修复计划时的通用 template。
+    2. 代码/文档定位：agent/agent/main.py:88；agent/agent/main.py:117；agent/agent/main.py:126
+    3. 详细解释：任务包由题名映射定位；修复时复制 seed，非修复且输出缺前端时才复制 template。
+  - 选择/检索：
+    1. 具体说明：读取 requirements.yaml 的 name 精确映射五类任务，并依据阶段题名或 repair-plan 分支。
+    2. 代码/文档定位：agent/agent/main.py:78；agent/agent/main.py:85；agent/agent/main.py:105；agent/agent/main.py:116
+    3. 详细解释：不匹配题名会抛错；匹配后固定选择本地 seed，不对候选代码做相似度排序。
+  - 生成/使用：
+    1. 具体说明：copytree 直接复制完整前后端，修复分支再允许模型在副本中改动。
+    2. 代码/文档定位：agent/agent/main.py:108；agent/agent/main.py:122；agent/agent/main.py:177
+    3. 详细解释：阶段分支复制即完成；修复分支先删除输出目录中的旧前后端，再复制 seed 并让 harness 在输出目录运行。
+  - 输出：
+    1. 具体说明：输出目录的 frontend/backend 应用源码与 Git 提交。
+    2. 代码/文档定位：agent/agent/main.py:110；agent/agent/main.py:112；agent/agent/main.py:189
+    3. 详细解释：阶段回放和修复完成后均提交输出目录；提交是交付状态，不是新知识库。
+
+STRATEGY-002 [PREPARED-KNOWLEDGE] 预置修复计划与需求树定向切片
+  - 状态：
+    1. 具体说明：confirmed，本地 repair-plan 指定单个需求 ID 和失败证据，再从 YAML 需求树抽取目标段落。
+    2. 代码/文档定位：agent/agent/main.py:57；agent/agent/tasks/github/repair-plan.json:2；agent/agent/tasks/sheet/repair-plan.json:2
+    3. 详细解释：计划文件确实存在并指向 GitHub 成员管理与 Sheet 数据验证相关目标；入口验证计划与题名一致。
+  - 作用：
+    1. 具体说明：把广泛题面收敛为已有故障的局部审核任务。
+    2. 代码/文档定位：agent/agent/main.py:67；agent/agent/main.py:131；agent/agent/main.py:153
+    3. 详细解释：targets 经需求树校验后仅生成选中小节，修复提示要求审查补丁与直接调用方。
+  - 输入/知识源：
+    1. 具体说明：运行时 requirements.yaml、任务包 repair-plan.json、local-repair-evidence.patch。
+    2. 代码/文档定位：agent/agent/main.py:61；agent/agent/main.py:103；agent/agent/main.py:135
+    3. 详细解释：YAML 提供需求内容，JSON 提供目标与失败叙述，补丁复制进输出规范目录供模型读取。
+  - 选择/检索：
+    1. 具体说明：按 ID 在 YAML 树中查找目标节点，附加祖先摘要，拒绝重复或祖先重叠目标。
+    2. 代码/文档定位：agent/agent/main.py:30；agent/agent/main.py:35；agent/agent/main.py:43；agent/agent/main.py:49
+    3. 详细解释：这是确定性的结构化筛选，没有嵌入、检索索引或相关性排序；选段传入生成规范文件。
+  - 生成/使用：
+    1. 具体说明：把选中需求渲染为 .arc-spec/<ID>.md，并把失败证据拼入修复提示。
+    2. 代码/文档定位：agent/agent/main.py:16；agent/agent/main.py:133；agent/agent/main.py:162
+    3. 详细解释：场景步骤和父级背景被格式化成文本；模型接收规范文件路径及修复证据，随后用工具读取。
+  - 输出：
+    1. 具体说明：输出目录中的需求切片 Markdown 与补丁副本，作为模型的局部上下文。
+    2. 代码/文档定位：agent/agent/main.py:133；agent/agent/main.py:136；agent/agent/main.py:177
+    3. 详细解释：两个文件进入输出目录 .arc-spec；harness 提示明确要求读取它们，再评估现有代码。
+
+STRATEGY-003 [PROMPT-ORCHESTRATION] 单模型定向审查及构建失败补修
+  - 状态：
+    1. 具体说明：confirmed，修复路径使用 DeepSeek Harness、Bash-only 配置逐需求运行，构建失败时追加一次补修调用。
+    2. 代码/文档定位：agent/agent/main.py:141；agent/agent/main.py:164；agent/agent/main.py:181
+    3. 详细解释：入口拼装实现或修复提示，在输出目录调用模型；构建反馈才触发额外会话。
+  - 作用：
+    1. 具体说明：让模型核查已有补丁及相关调用链，并处理真实构建错误。
+    2. 代码/文档定位：agent/agent/main.py:154；agent/agent/main.py:158；agent/agent/main.py:183
+    3. 详细解释：修复提示限制审查范围为所选需求与补丁；构建 stderr 被送入 final-build 会话供修复。
+  - 输入/知识源：
+    1. 具体说明：预置应用、需求切片路径、失败证据、补丁和 npm 构建 stderr。
+    2. 代码/文档定位：agent/agent/main.py:124；agent/agent/main.py:162；agent/agent/main.py:177；agent/agent/main.py:183
+    3. 详细解释：复制后的源码位于 cwd；首轮提示指向规范文件，只有构建失败才额外注入错误末尾文本。
+  - 选择/检索：
+    1. 具体说明：固定 provider，MODEL 环境变量可覆盖默认模型；按选中 sections 顺序逐个会话执行。
+    2. 代码/文档定位：agent/agent/main.py:165；agent/agent/main.py:166；agent/agent/main.py:175
+    3. 详细解释：没有多模型竞争或动态回退；session_id 使用需求 ID，保证每个切片对应一次调用。
+  - 生成/使用：
+    1. 具体说明：sdk-minimal harness 在输出目录以 Bash 工具进行文件审查修改，之后执行构建与 Node 语法检查。
+    2. 代码/文档定位：agent/agent/main.py:169；agent/agent/main.py:171；agent/agent/main.py:177；agent/agent/main.py:188
+    3. 详细解释：模型拥有输出副本作为工作目录；程序随后检查前端构建及后端语法，构建失败才重试。
+  - 输出：
+    1. 具体说明：经模型可能修改的应用副本、构建检查结果与最终 Git 提交。
+    2. 代码/文档定位：agent/agent/main.py:179；agent/agent/main.py:181；agent/agent/main.py:190
+    3. 详细解释：finish_reason 只打印日志；构建检查可引导再修复，最终把输出目录提交，未见自动化功能测试门槛。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查的仓库静态内容中未发现向量索引、外部语料库或语义检索；仅有 YAML 需求 ID 选择。
+- MODEL-ROUTING：未发现多模型路由；仅固定提供商和可配置默认模型。
+- STATE/PERSISTENCE：输出应用、.arc-spec 文件、Git 提交及各应用自身存储构成状态；未发现跨任务学习记忆。
+- ITERATION/EVALUATION：确认构建失败补修和 Node 语法检查；未发现入口运行端到端浏览器测试的调用。
+- TOOLS/EXECUTION：代码声明模型使用 Bash 与本地构建工具；本次分析未执行选手代码，实际模型编辑轨迹无法从静态仓库完全确认。
+分析完成

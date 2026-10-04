@@ -1,0 +1,92 @@
+﻿核心策略分析�?007-rainy-d260910fea32
+棰橀潰璺緞锛?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围�?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github�?E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+浣滅瓟璺緞锛?E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\007-rainy-d260910fea32\agent\agent
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[鏍稿績缁撹]
+该提交的主要策略是成熟应用增量审查：先按 `mature-plan.json` 校验并复制带 SHA-256 的 GitHub/Sheet 应用输入，再按 REQ 分组把优先源码和需求交给模型；只有公开本地诊断确实失败时才允许模型输出受限 EDIT/FILE 修复，修复后重新运行构建、路由、后端和任务检查，失败则恢复快照。RAG/RETRIEVAL：在已检查的提交静态内容中未发现向量索引、语义检索或外部语料检索；存在基于任务组、优先路径和需求焦点的确定性源码筛选。代码复用：confirmed，成熟应用源码被按声明清单恢复并作为修复输入，另有生成器模板/检查器复用，但该主流程明确把成熟源码标为本次模型未生成输入。
+
+[绛栫暐娓呭崟]
+STRATEGY-001 [PREPARED-KNOWLEDGE] 成熟应用包与任务需求分组驱动
+  - 状态
+    1. 具体说明锛?confirmed：`mature-plan.json` 固化 github/sheet 的检查清单、REQ 模块组和 priority_paths，`main.py` 校验模式及每个文件哈希后恢复声明输入。
+    2. 浠ｇ爜/鏂囨。瀹氫綅锛?main.py:115-125；main.py:137-162；mature-plan.json:3-103
+    3. 详细解释锛?哈希校验和任务选择建立了生成前的可信输入边界；恢复出的应用成为后续模型审查和修复的工作材料，而不是从空白脚手架生成。
+  - 作用锛?
+    1. 具体说明锛?把公共需求拆成可审查的 REQ 组，并限制每组应优先查看的前后端路径及可执行诊断。
+    2. 浠ｇ爜/鏂囨。瀹氫綅锛?main.py:414-425；mature-plan.json:41-102
+    3. 详细解释锛?每个组只选对应需求模块，收集指定源码上下文后才发起审查，减少无关文件进入生成链并使修复范围可追踪。
+  - 输入/知识源
+    1. 具体说明锛?输入包括 `requirements.yaml` 的需求树、成熟应用文件及计划中的本地检查名称和优先源码路径。
+    2. 浠ｇ爴/鏂囨。瀹氫綅锛?main.py:387-400；main.py:420-423
+    3. 详细解释锛?需求树被加载并记录哈希，源码按阶段收集；这些材料共同构成审查提示的事实来源。
+  - 选择/检索
+    1. 具体说明锛?按需求标题选择 github 或 sheet，再按 `module_ids` 精确选择组内模块，按 `priority_paths` 选上下文。
+    2. 浠ｇ爴/鏂囨。瀹氫綅锛?main.py:128-134；main.py:414-423
+    3. 详细解释锛?这是确定性路由和路径筛选，不是语义检索；选中的上下文直接传入模型审查请求。
+  - 生成/使用锛?
+    1. 具体说明锛?需求、源码上下文和本地失败日志被组合成结构化审查 payload，并要求模型只返回 JSON findings。
+    2. 代码/文档定位：main.py:318-360
+    3. 详细解释：payload 同时携带公共要求、源码、失败结果和响应字段契约，模型据此识别具体缺陷而非自由发挥。
+  - 输出锛?
+    1. 具体说明锛?输出是按组记录的 `public_source_review` findings，以及可供后续修复的 requirement_id、paths 和证据字段。
+    2. 代码/文档定位：main.py:369-381；main.py:452-453
+    3. 详细解释：解析器验证需求 ID、路径和证据后才接受 finding；接受结果进入修复或 unresolved 记录，形成可审计产物。
+STRATEGY-002 [PROMPT-ORCHESTRATION] 结构化模型审查与受限修复协议
+  - 状态
+    1. 具体说明锛?confirmed：系统使用两阶段提示词，先以 `REVIEW_PROMPT` 生成最多两个证据化 JSON finding，再以 `MATURE_REPAIR_PROMPT` 要求小范围 EDIT/FILE 块。
+    2. 代码/文档定位：main.py:33-94；main.py:358-360；main.py:469-474
+    3. 详细解释：审查和修复被分离，修复提示强调保留功能、权限和持久化，并通过 allowed_paths 把模型输出约束到发现涉及的文件。
+  - 作用：
+    1. 具体说明：将模型从自由代码生成器变成证据驱动的审查员和局部修复器。
+    2. 代码/文档定位：main.py:38-61；main.py:85-93
+    3. 详细解释：要求精确需求引用、源码引用、输入序列、期望/实际行为，缺证据或不确定时返回空 findings，降低无关重写。
+  - 输入/知识源
+    1. 具体说明：提示输入包含公共需求、当前前后端源码、公开诊断失败日志、保护路径和响应契约。
+    2. 代码/文档定位：main.py:318-354
+    3. 详细解释：这些字段把领域规则、当前实现和验证边界显式注入模型上下文；修复阶段还加入 finding 的 source_review_evidence。
+  - 选择/检索
+    1. 具体说明：模型 finding 必须通过 JSON 解析、需求 ID、路径数量/后缀、源码证据和公共失败复现门槛。
+    2. 代码/文档定位：main.py:197-229；main.py:232-247；main.py:273-292
+    3. 详细解释：非法响应整体拒绝或逐项标记，路径限制在 frontend/backend 可编辑源码；没有当前失败诊断的 finding 不触发修复。
+  - 生成/使用：
+    1. 具体说明：模型通过 `request_model_completion` 返回 JSON 审查结果，之后调用 `generate_and_apply` 应用协议化源码变更。
+    2. 代码/文档定位：main.py:358-369；main.py:469-475
+    3. 详细解释：审查响应先检查 finish_reason 和字段，再把修复上下文及范围送入生成器；任何协议或应用错误都恢复快照。
+  - 输出：
+    1. 具体说明：输出包括 validated findings、应用变更批次、被拒响应的诊断代码和 unresolved 修复记录。
+    2. 代码/文档定位：main.py:438-453；main.py:477-492；generator/model_audit.py:184-197
+    3. 详细解释：模型输出不会直接成为最终结果；只有被应用并哈希记录的文件才计入变更，失败则保留原因并恢复原始源码。
+STRATEGY-003 [ITERATION/EVALUATION] 本地检查、失败授权、快照回滚与状态审计
+  - 状态
+    1. 具体说明锛?confirmed：每轮执行前端 build、route-render、backend-startup 及计划检查；修复后再次验证，检查退化或见证失败未修复就回滚。
+    2. 代码/文档定位：main.py:251-270；main.py:483-496
+    3. 详细解释：这是明确的 plan-act-review 循环，验证结果决定接受、恢复或 unresolved，而不是仅凭模型文本宣称成功。
+  - 作用：
+    1. 具体说明：把可观察的 UI/API/数据库诊断作为修复授权和质量门槛，并保护已通过检查不被后续修复破坏。
+    2. 代码/文档定位：main.py:273-292；main.py:483-493
+    3. 详细解释：只有执行过且失败的指定检查可作为 reproduction witness；修复必须让该 witness 通过且不能损失既有通过项。
+  - 输入/知识源
+    1. 具体说明：评估输入来自 `mature-plan.json` 的检查列表、当前输出工作区源码和隔离临时数据库/构建环境。
+    2. 代码/文档定位：mature-plan.json:4-39；main.py:253-268
+    3. 详细解释：计划规定哪些公开诊断可运行，后端启动使用临时 ARC_DB_FILE；检查日志经过裁剪后进入后续审查上下文。
+  - 选择/检索
+    1. 具体说明：按前端构建的先决条件执行任务检查，并把通过/失败状态映射为 finding 是否可修复。
+    2. 代码/文档定位：main.py:257-266；main.py:455-465
+    3. 详细解释：构建失败会阻断后续任务检查；模型声称的问题若无同名已执行失败检查，则记录 unresolved 而不修改源码。
+  - 生成/使用：
+    1. 具体说明：修复应用后立即运行全套 validate，并比较修复前后通过集合；不满足条件时调用 `RepairSnapshot.restore`。
+    2. 代码/文档定位：main.py:466-496
+    3. 详细解释：快照包住每次变更，after 检查同时验证 witness 和回归；成功才提交 git，失败则回到修复前状态。
+  - 输出：
+    1. 鍏蜂綋璇存槺：输出 `.arc/mature-result.json`、链式 `.arc/model-audit` 事件、检查状态和 unresolved 列表。
+    2. 代码/文档定位：main.py:497-511；generator/model_audit.py:69-105
+    3. 详细解释：结果报告区分 runnable、官方评分未知和未解决项；审计日志记录请求摘要、响应哈希、变更文件哈希及检查结果，支持跨步骤追踪。
+
+[鏈彂鐜版垨鏈В鍐砞
+- RAG/RETRIEVAL：在已检查的选手仓库静态内容中未发现向量数据库、embedding、倒排索引或外部语料检索；确认存在的是基于任务/REQ/priority_paths 的确定性上下文选择，不能等同于 RAG。
+- CODE-REUSE：成熟应用源码由 `restore_declared_input` 按 `mature-plan.json` 哈希清单复制并作为 declared input；生成器还复用模板和检查脚本。静态证据不能证明运行时每个文件均被模型再次改写，但能确认直接源码恢复和模型介导局部修复两条路径。
+- MODEL-ROUTING：确认存在单一 `model` 参数、审查与修复两种调用阶段及预算限制；在已检查代码中未发现多模型并行、候选投票或语义路由。
+- TOOLS/EXECUTION：确认有 npm install、Node 检查、前端测试、临时数据库、源码快照和 git 提交等执行工具；本次分析未执行选手代码。
+- STATE/PERSISTENCE：确认 `.arc/model-audit` 链式日志、requirements traceability、mature-result 和同一运行 checkpoint/快照机制；未发现跨提交学习记忆或外部向量缓存。
+鍒嗘瀽瀹屾垚

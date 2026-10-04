@@ -1,0 +1,73 @@
+﻿核心策略分析：034-能智吗-0e37d0ad4d43
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\034-能智吗-0e37d0ad4d43
+分析覆盖：RAG/RETRIEVAL=已检查；PREPARED-KNOWLEDGE=已检查；CODE-REUSE=已检查；PROMPT-ORCHESTRATION=已检查；MODEL-ROUTING=已检查；TOOLS/EXECUTION=已检查；ITERATION/EVALUATION=已检查；STATE/PERSISTENCE=已检查
+[核心结论]
+主要链路是 OpenAI 兼容模型驱动的受限工具代理：系统提示要求模型读取需求和源代码，通过读文件、搜索、最小替换、快速验证和浏览器探测迭代实现。失败时按任务类型选择 deterministic 官方成品目录并复制文件作为一次有界恢复。静态内容未发现向量或语义 RAG；发现明确的任务专用成品代码复用。
+
+[策略清单]
+STRATEGY-001 [CODE-REUSE] deterministic 官方成品回退
+  - 状态??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:27?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 状态：1. 具体说明：confirmed；按 github/sheet 任务绑定官方成品目录并复制文件。2. 代码/文档定位：deterministic/github_canvas.py:58-91；deterministic/sheet_canvas.py:35-53。3. 详细解释：源文件将 official 下的 app.js、server.mjs、styles.css 复制到输出，形成可运行候选。
+  - 作用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 作用：1. 具体说明：模型失败时提供一次确定性恢复。2. 代码/文档定位：factory26_harness/agent_first_fallback.py:133-157,205-248。3. 详细解释：状态图先执行 Agent，失败后进入 FALLBACK_ATTEMPT，验证通过才 PROMOTE，避免无限重试。
+  - 输入/知识源??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输入/知识源：1. 具体说明：任务需求集合、任务 ID 和预置 official 静态文件。2. 代码/文档定位：deterministic/github_canvas.py:58-79。3. 详细解释：_HERE 指向任务专用目录，覆盖集合决定是否可绑定。
+  - 选择/检索??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 选择/检索：1. 具体说明：按任务类型及需求覆盖精确选择，无向量检索。2. 代码/文档定位：factory26_harness/agent_first_fallback.py:104-145。3. 详细解释：resolve_fallback_binding 只返回匹配绑定，结果交给状态机。
+  - 生成/使用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 生成/使用：1. 具体说明：shutil.copyfile 逐文件复制官方实现。2. 代码/文档定位：deterministic/github_canvas.py:80-91。3. 详细解释：此分支不调用模型生成代码，复制后的源文件进入独立验证。
+  - 输出??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输出：1. 具体说明：目标 frontend/backend 文件及 source_sha256。2. 代码/文档定位：factory26_harness/agent_first_fallback.py:230-248。3. 详细解释：验证成功保存 last_good_source_sha 并 promote，失败保留 Agent 候选。
+STRATEGY-002 [PROMPT-ORCHESTRATION] 分阶段模型代理
+  - 状态??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:27?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 状态：1. 具体说明：confirmed；系统提示规定 read、单次 replace、quick validation、browser_probe、AUDIT PASS 顺序。2. 代码/文档定位：factory26_harness/agent.py:27-40,82-106。3. 详细解释：SYSTEM_PROMPT 将模型限制为逐需求小步操作。
+  - 作用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 作用：1. 具体说明：把需求拆成可审计批次并限制每回合最多一次替换。2. 代码/文档定位：factory26_harness/agent.py:561-641。3. 详细解释：prompt_prefix/suffix 注入需求 ID、未信任边界和前序交接。
+  - 输入/知识源??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输入/知识源：1. 具体说明：requirements 节点、源代码快照、参考图像说明和 handoff。2. 代码/文档定位：factory26_harness/agent.py:384-438,593-618。3. 详细解释：_source_snapshot 读取带哈希的有限片段并装入初始提示。
+  - 选择/检索??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 选择/检索：1. 具体说明：按需求 ID 和路径选择上下文，使用 read_files/search_text。2. 代码/文档定位：factory26_harness/agent.py:631-644；factory26_harness/agent.py:298-305。3. 详细解释：RequirementNode 生成 prompt_spec，白名单工具返回选定内容。
+  - 生成/使用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 生成/使用：1. 具体说明：OpenAIChatClient.complete 接收 system/user 消息及工具 schema。2. 代码/文档定位：factory26_harness/agent.py:727-736,910-924；factory26_harness/model.py:172-261。3. 详细解释：工具结果回填滚动上下文，模型据此生成最小补丁。
+  - 输出??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输出：1. 具体说明：源文件修改、工具结果、AUDIT PASS 和 batch handoff。2. 代码/文档定位：factory26_harness/agent.py:1008-1025,1157-1195。3. 详细解释：完成需当前修订已验证且有浏览器证据，摘要供后续批次使用。
+STRATEGY-003 [TOOLS/EXECUTION] 验证反馈与状态持久化
+  - 状态??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:27?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 状态：1. 具体说明：confirmed；工具层提供读写、run_validation、browser_probe，并维护修订和探测计数。2. 代码/文档定位：factory26_harness/agent.py:298-305,893-906,1116-1120。3. 详细解释：最新改动未探测时禁止直接结束。
+  - 作用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 作用：1. 具体说明：以快速测试和浏览器用户动作验证生成结果。2. 代码/文档定位：factory26_harness/agent.py:82-85,1008-1024。3. 详细解释：失败反馈进入下一回合提示并触发修补。
+  - 输入/知识源??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输入/知识源：1. 具体说明：工作区源文件、需求文本、浏览器可见文本和验证状态。2. 代码/文档定位：factory26_harness/agent.py:751-770,803-815。3. 详细解释：ReadPageMemory 与 source snapshot 形成审计事实。
+  - 选择/检索??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 选择/检索：1. 具体说明：路径白名单、行范围读取和代表图像选择。2. 代码/文档定位：factory26_harness/agent.py:65-85,1070-1105。3. 详细解释：缺失页面进入 unread_source_pages，促使后续读取；未发现外部语料检索。
+  - 生成/使用??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 生成/使用：1. 具体说明：模型根据验证错误和浏览器断言生成最小 replace_text 补丁。2. 代码/文档定位：factory26_harness/agent.py:698-722,996-1018。3. 详细解释：补丁后更新 change_revision 并重新验证，必要时进入一次 fallback。
+  - 输出??
+    1. confirmed concrete mechanism; 2. factory26_harness/agent.py:30?3. evidence supports the generation flow and downstream output.evidence supports the generation flow and downstream output.
+    1. 输出：1. 具体说明：验证状态、探测记录、source snapshot manifest 和 handoff。2. 代码/文档定位：factory26_harness/agent.py:1178-1195；factory26_harness/agent_first_fallback.py:344-381。3. 详细解释：结构化状态跨回合传递，完整历史留在 trace。
+
+[未发现或未解决]
+- RAG/RETRIEVAL：在已检查仓库静态内容中未发现向量数据库、embedding、语义检索或独立语料索引；search_text 只是工作区文件检索。
+- PREPARED-KNOWLEDGE：已发现系统提示、需求模板和任务专用 deterministic 成品；未发现额外外部领域知识库。
+- MODEL-ROUTING：确认单一 OpenAIChatClient 主路径与 deterministic fallback；endpoint/模型参数由配置注入，静态未完全解析。
+- STATE/PERSISTENCE：确认内存态上下文、哈希、trace/handoff；未发现跨任务长期学习记忆。
+分析完成
