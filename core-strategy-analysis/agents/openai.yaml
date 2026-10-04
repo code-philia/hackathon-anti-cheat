@@ -1,0 +1,4 @@
+interface:
+  display_name: "Core Strategy Analysis"
+  short_description: "Analyze core generation strategies in competition agents"
+  default_prompt: "Use $core-strategy-analysis to inspect agent submissions and summarize their core generation strategies into logs."
