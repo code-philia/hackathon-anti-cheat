@@ -1,0 +1,26 @@
+反作弊审查：027-全村的希望-fd28f325c70f
+题面路径：example\hackathon
+题面范围：example\hackathon\github；example\hackathon\sheet
+作答路径：workspace\027-全村的希望-fd28f325c70f
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 选手代理运行时全量读取并注入了包含 GitHub 与 Sheet 应用行为契约的预置领域材料，构成针对题面任务的直接模板知识使用，同时匹配 github 与 sheet 两个任务。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料规定 page-data、共享记录、缓存刷新、编辑器、异步写入、认证、记录卡片、导航、Seed/权限状态以及 GIVEN/WHEN/THEN 测试映射等具体应用实现约束，而非通用框架 API；定位：workspace\027-全村的希望-fd28f325c70f\agent\agent\competition\instructions.md:23
+  - 检索方案：(4)无检索机制（全量使用）；说明：profile_instructions 直接读取整个 instructions.md，没有按题面关键词或任务范围筛选；定位：workspace\027-全村的希望-fd28f325c70f\agent\agent\core\profile.py:25
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：读取的材料被拼接进 developer instructions，随后作为代理模型上下文参与实现生成；定位：workspace\027-全村的希望-fd28f325c70f\agent\agent\main.py:208
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：其中的 RecordCard、记录/所有者/子对象权限、登录流程和原始 journey 约束与本次 github/sheet 题面应用直接对应，不能视为一般网页开发常识。
+  - 综合判断：材料专门编码了本次两类应用的界面、数据与测试行为，并通过全量提示注入供模型复用，满足 TEMPLATE-DIRECT 的直接预置领域知识条件，判定为 error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 代码定义了独立的视觉模型配置槽位，且运行时还可回退到其他环境变量；当前静态证据无法确认最终有效端点是否始终属于获准模型服务。
+  - workspace\027-全村的希望-fd28f325c70f\agent\agent\agents\model\visual_transport.py:296-309：读取 VISUAL_BASE_URL、VISUAL_API_KEY、VISUAL_MODEL，并按 VISUAL_BASE_URL/OPENAI_BASE_URL/BASE_URL 与 VISUAL_API_KEY/OPENAI_API_KEY 选择视觉模型端点和密钥。
+  - workspace\027-全村的希望-fd28f325c70f\agent\agent\main.py:193-197：代理传输层还会把 loopback base_url 写回 OPENAI_BASE_URL；需人工确认该内部代理及视觉槽位的实际部署是否均为允许的模型路径。未发现明文密钥或已证实的未授权外部模型调用，故保留为 warning。
+
+WARNING-002 [INSPECTION-GAP] 三个大文件未完成逐字静态扫描：vendor/landrun/landrun-linux-amd64、vendor/landrun/landrun-linux-arm64 与 agent/agent.zip 均超过扫描器大小限制。
+  - C:\Users\user\AppData\Local\Temp\anti_scan_027.json:580：扫描器记录 landrun-linux-amd64 超过可扫描范围。
+  - C:\Users\user\AppData\Local\Temp\anti_scan_027.json:585：扫描器记录 landrun-linux-arm64 超过可扫描范围。
+  - C:\Users\user\AppData\Local\Temp\anti_scan_027.json:605：扫描器记录 agent/agent.zip 超过可扫描范围；已对归档目录及部分文本做只读检查，但无法保证所有二进制/归档内容语义均已核验。
+
+判决：作弊

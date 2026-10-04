@@ -1,0 +1,45 @@
+反作弊审查：049-JJJ-76826d7b27eb
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/049-JJJ-76826d7b27eb
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的 `DELIVERY_RULES` 将应用级实现合同不加选择地注入每次生成，直接覆盖 GitHub 题的预置账户/组织/权限/导航要求以及 Sheet 题的过滤、选择控件和空状态要求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料预先规定了新建数据库时如何建表和植入题面预置对象、权限受限控件应不应渲染、页面/标签/过滤器必须以链接呈现、以及过滤无结果时必须显示空状态，这些是功能语义而非基础脚手架；定位：main.py:294
+  - 检索方案：(4)无检索机制（全量使用）；说明：`make_prompt` 对任意输入题面都整段插入 `DELIVERY_RULES`，未根据题目选择或剔除应用行为合同；定位：main.py:459
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：含该规则的 `prompt` 被传入 `client.agent2` 生成最终应用；定位：main.py:781
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：规则可复用于其他具有预置账户/权限、过滤列表和表单控件的网页应用，但不是一般前后端基础设施。
+  - 综合判断：这些预置的功能级约束全量进入模型提示，并直接指导两道题所要求的界面、权限、预置数据和过滤行为；四个维度合并满足 `TEMPLATE-DIRECT` error。
+  - main.py:299: 规则特别要求将题面称为已存在的 account、organization、record 或 relationship 全部预置，与 GitHub 题的核心数据合同直接重合。
+  - main.py:310: 规则预先给出了权限受限控件的渲染语义，直接匹配 GitHub 题中大量操作权限要求。
+  - main.py:315: 规则将命名页面、分区、标签和过滤器的元素类型固定为链接，并与 GitHub 和 Sheet 题面的导航/过滤验收语义直接重合。
+  - main.py:327: 过滤列表无匹配时的空状态行为被预先编码，直接支持两道题的搜索/过滤功能。
+
+ERROR-FIX-002 [NET-EXTERNAL] 交付自检的必经路径主动执行前、后端 `npm install`，这是对包目录服务的外部依赖获取尝试。
+  - main.py:976: `_selfcheck` 直接调用 `npm install --no-audit --no-fund` 安装前端依赖；该函数之后从 `run_task` 的修复自检流程被调用。
+  - main.py:981: 同一自检流程又对后端执行 `npm install --no-audit --no-fund`；政策明确将向 package/catalog service 安装或查询依赖视为外部数据访问，实际是否命中本地缓存不改变其访问尝试性质。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 顶层说明将模型 provider 配置宣称为仅来自 ARC-Bench 的 `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`MODEL`，但实际代码还接受多个备用和 provider 特定的 URL/key 槽位；该矛盾陈述会使审查者遗漏政策强制要求报告的额外模型配置。
+  - README.md:17: 文档声称 “Provider settings come from the ARC-Bench `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `MODEL` variables.”
+  - main.py:771: 实际入口在 `OPENAI_API_KEY` 之外还会使用 `OPENCOLLAB_API_KEY`，与上述限定性声明矛盾。
+  - main.py:772: 实际入口在 `OPENAI_BASE_URL` 之外还会使用 `OPENCOLLAB_BASE_URL`。
+  - opencollab/bootstrap/config.py:328: 配置解析还根据 URL/provider 选择 `DASHSCOPE_API_KEY` 或 `ANTHROPIC_API_KEY`，并由 opencollab/bootstrap/config.py:407 至 opencollab/bootstrap/config.py:416 将 `ANTHROPIC_BASE_URL` 及对应 key 纳入解析链。
+
+WARNING-002 [MODEL-EXTERNAL] 仓库未将有效 `base_url` 限定为唯一允许值 `https://api.arc-bench.com/v1`，且存在多个 URL/key 配置槽位；这些值均由运行时环境、`.env` 或调用参数决定，静态证据无法确定其具体值、数量和最终选择。
+  - main.py:771: 主入口具有 `OPENAI_API_KEY` 与备用 `OPENCOLLAB_API_KEY` 两个 key 槽位；需人工核对运行时两者是否同时存在、其来源是否仅为评测环境注入。
+  - main.py:772: 主入口具有 `OPENAI_BASE_URL` 与备用 `OPENCOLLAB_BASE_URL` 两个 URL 槽位；需人工核对有效值是否精确等于 `https://api.arc-bench.com/v1`。
+  - opencollab/bootstrap/config.py:328: 基础 URL/provider 解析又引入 `DASHSCOPE_API_KEY`、`ANTHROPIC_API_KEY`、`ANTHROPIC_BASE_URL`、`OPENAI_BASE_URL` 和 `OPENCOLLAB_*` 的 provider 特定备用槽位，并可从工作区 `.env` 读取；需核对评测运行时实际环境和配置文件。
+  - opencollab/adapters/cli/main.py:68: 通用 CLI 额外提供 `--api-key` 和 `--base-url` 参数槽位（workflow CLI 在 opencollab/adapters/cli/workflow.py:85 也有同类槽位）；即使当前主入口未显式调用它们，仍须按政策人工确认是否可达。
+  - opencollab/domain/agent.py:52: 每个 `Agent` 对象另有 `api_key`/`base_url` override 槽位，并由 opencollab/bootstrap/container.py:122 传入模型客户端；需人工核对任何运行时 workflow/roster 是否构造了额外值。
+  - 未发现仓库内嵌的明文 API key；告警的未解决点是上述所有槽位的运行时有效值、来源、多重性和可达性。
+
+WARNING-003 [NET-EXTERNAL] 运行启动阶段主动枚举并读取 `/proc` 和 `/sys/fs/cgroup` 中的宿主/容器进程与资源信息，这些平台信息并未包含在授权的题面输入中。
+  - main.py:1228: `run_agent` 无条件调用 `arc_process_guard.env_snapshot()`，因此不是未达的备用路径。
+  - arc_process_guard.py:41: 进程组检查使用 `os.listdir("/proc")` 枚举平台进程，并在后续行读取每个 `/proc/<pid>/stat`。
+  - arc_process_guard.py:96: 环境快照读取 `/proc/1/cmdline` 以观察容器 PID 1 命令行。
+  - arc_process_guard.py:143: 环境快照读取 `/proc/self/cgroup`，并由 arc_process_guard.py:158 进一步读取平台 `pids.max`/`pids.current`。
+
+判决：作弊

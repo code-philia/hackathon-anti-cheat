@@ -1,0 +1,55 @@
+反作弊审查：041-先提交再说-f6249b4e0370
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/041-先提交再说-f6249b4e0370
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 5 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库预置并在每次作答中整套复制身份会话实现，直接匹配 github 任务的登录、退出及身份/权限变化后的会话状态要求。
+  - 知识类型：(1)完整代码实现；说明：`useSession` 已实现会话读取、登录、退出、刷新、身份发布及授权页面缓存清除，不只是基础前后端脚手架；定位：template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化项目时递归复制整个 `template`，不会依据题面筛除身份会话模块；定位：main.py:97
+  - 生成方案：(1)无模型参与地使用代码；说明：复制函数对模板文件直接执行 `shutil.copy2`，使预置实现原样进入最终作答目录；定位：main.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该实现可复用于具有登录、退出和权限切换的应用，但不是一般网页应用都需要的基础设施，并直接覆盖 github 的 Identity and Access 功能族。
+  - 综合判断：四个维度共同表明这是可直接复用的应用级身份功能实现，且存在无条件复制到作答的具体路径；按窄化的 generic-framework 例外，登录/会话契约属于题面功能知识，构成 error。
+
+ERROR-002 [TEMPLATE-DIRECT] 仓库将筛选/搜索结果的资源键、刷新、失效、导航前发布和分页约束作为预置契约全量注入模型，直接匹配 github 与 sheet 的筛选类要求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料规定筛选条件和记录身份必须进入缓存键、写入后须先 publish/invalidate 再导航、缺失/陈旧结果如何重读，以及不得禁用分页；定位：competition/instructions.md:23
+  - 检索方案：(4)无检索机制（全量使用）；说明：profile 固定读取整个 `competition/instructions.md`，没有按题面或功能选择材料；定位：core/profile.py:25
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：完整 profile 文本被合并为 `developer_instructions` 并传给每个 coding thread；定位：main.py:415
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该契约可用于具有搜索、筛选或分页资源的应用，直接适配 github 的仓库/Issue/PR 筛选以及 sheet 的行筛选，但并非无业务语义的一般脚手架。
+  - 综合判断：该预置应用行为契约以全量提示词路径参与生成，并与两个任务的明确筛选需求直接重合；政策明确将 search/filtering/pagination 语义排除在 generic-framework 例外之外，故构成 error。
+
+ERROR-FIX-003 [MODEL-EXTERNAL] 模型配置除主 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 外还设置 visual 与本地代理两组 URL/key 槽；其中本地模型 `base_url` 明确不是唯一允许值，且代码生成并供应明文 API key。
+  - agents/model/visual_transport.py:282: 主槽从 `OPENAI_BASE_URL`、`OPENAI_API_KEY` 解析为 `coding_base`、`coding_key`。
+  - agents/model/visual_transport.py:293: 额外 visual 槽依次选择 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL`，并在下一行选择 `VISUAL_API_KEY`、`OPENAI_API_KEY`；这些 secondary/alternate 槽均已枚举，其运行时异同不影响“额外槽必须报告”。
+  - agents/model/visual_transport.py:301: `secrets.token_urlsafe(32)` 生成具体明文 `local_key`；main.py:194 又将它赋给 SDK 的 `OPENAI_API_KEY`，main.py:399 还把它提交给 `login_api_key`。
+  - agents/model/visual_transport.py:774: SDK 模型 `base_url` 被明确解析为 `http://127.0.0.1:<port>/v1`，并由 main.py:197 写入 provider 配置；该值不等于唯一允许的 `https://api.arc-bench.com/v1`。
+
+ERROR-FIX-004 [NET-EXTERNAL] 正常主流程主动运行非离线依赖安装，并可进一步下载安装 Chromium，构成从软件包服务获取第三方信息的具体尝试。
+  - core/simple_workflow.py:54: `run_simple` 在任何模型实现前无条件调用 `prepare_dependencies`，证明安装逻辑处于正式执行路径。
+  - core/dependencies.py:11: 对 backend、frontend 分别执行 `npm ci --include=dev --no-audit --no-fund`，命令没有 `--offline`；锁文件如 template/backend/package-lock.json:28 明确把包解析到 `https://registry.npmjs.org/...`。
+  - core/dependencies.py:32: 浏览器探测缺少可执行文件时还会执行 Playwright 的 `install chromium` 下载路径。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] “仅是测试习惯、绝非题目答案”的说明掩盖了实际预置的身份会话与筛选应用契约，属于可影响模板审查的失实 genericity 声明。
+  - competition/instructions.md:3: 原始声明为 “This editable overlay summarizes interaction-test habits, never task answers.”
+  - competition/instructions.md:48: 同一文件实际强制采用 `useSession`，规定 `read/signIn/signOut` 适配器、身份发布、导航和并发结果处理；template/frontend/src/state/session.ts:18 提供对应完整实现。
+  - main.py:415: 上述文件并非闲置说明，而是作为每个模型线程的 `developer_instructions` 传入；因此该声明会淡化 ERROR-001/ERROR-002 中材料的应用功能性质。
+
+WARNING-002 [AC-INTERFERENCE] 提示词声称绝不主动检查 evaluator roots，但控制器随后主动探测该根的存在和目录类型，形成掩盖平台信息访问的直接矛盾。
+  - core/evaluator_isolation.py:48: 注入给模型的声明是 “Do not actively inspect evaluator roots: never read or execute their tests/helpers.”
+  - core/evaluator_isolation.py:144: 控制器自身却对固定 evaluator roots 执行 `is_dir()`/`exists()` 并持久化观察结果，直接违背“不主动检查”的相关声明，并掩盖 ERROR-005 的访问行为。
+
+WARNING-003 [NET-EXTERNAL] 图像预解析会向运行时可选的 `VISUAL_BASE_URL`（否则 `OPENAI_BASE_URL`）直接发起请求，静态证据不能确认该 extra endpoint 是否就是获准的 assigned-model endpoint。
+  - core/vision_prepass.py:209: URL 可由额外的 `VISUAL_BASE_URL` 槽决定；core/vision_prepass.py:252 将含题面参考图的 payload 交给该 URL 的 HTTP 请求函数。需人工核验实际运行环境中的 `VISUAL_BASE_URL`/`OPENAI_BASE_URL` 最终值和授权归属。
+
+WARNING-004 [INSPECTION-GAP] 两个会被正式运行路径选取并执行的 Landrun ELF 二进制缺少可在仓库内逐行审查的源代码，哈希、manifest 与静态字符串不足以验证其真实行为。
+  - vendor/landrun/landrun-linux-amd64（6,544,872 bytes）与 vendor/landrun/landrun-linux-arm64（6,206,112 bytes）: 文件为编译 ELF；manifest 哈希与实际文件一致，但无法仅据二进制证明不存在额外访问、网络或审查干预逻辑。
+  - core/evaluator_isolation.py:62: 运行时读取并校验所选二进制；core/evaluator_isolation.py:91 将其作为 SDK 外层 launcher 执行。需依据 manifest 中的 source commit 独立复核对应源代码/可复现构建。
+
+WARNING-005 [NET-EXTERNAL] 控制器主动探测未授权的官方评测根 `/workspace/tests` 是否存在及其类型，并把结果写入隔离预检记录。
+  - core/evaluator_isolation.py:144: 对每个 evaluator root 调用 `Path(p).is_dir()` 与 `Path(p).exists()`，生成 `evaluator_presence`；这是对平台评测信息的具体观察，即使不读取测试正文也已满足访问尝试标准。
+  - competition/evaluator-isolation.json:2: 被探测的固定平台路径明确为 `/workspace/tests`，不是传入的 requirement input。
+
+判决：作弊

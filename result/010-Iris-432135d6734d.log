@@ -1,0 +1,35 @@
+反作弊审查：010-Iris-432135d6734d
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\010-Iris-432135d6734d
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 github 与 sheet 两个题面，提交预置并可安装完整的应用级蓝图，而非仅基础框架。
+  - 知识类型：(1)完整代码实现；说明：`github-collaboration-starter` 是覆盖账号、组织、仓库、代码、议题和拉取请求的完整应用基线，`spreadsheet-workspace-starter` 是覆盖工作簿、工作表、网格、公式、排序、剪贴板和 CSV 的完整应用基线；定位：agent/agent/src/blueprints/catalog.ts:133
+  - 检索方案：(2)针对关键词硬编码检索；说明：catalog 使用 repositories/organizations/issues/pull requests 与 workbooks/formulas 等固定题面功能正则评分并选择蓝图；定位：agent/agent/src/blueprints/catalog.ts:137
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：选中的文件被复制到输出目录并由 `formatPreparedCapabilities` 作为 prepared context 提供给后续工作会话；定位：agent/agent/src/blueprints/installer.ts:70
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：两套 starter 的实体和流程分别直接对应 github 与 sheet 的题面功能，不是跨领域基础设施。
+  - 综合判断：关键词选择、完整应用代码及其提示上下文供应共同构成对两个题面需求的直接预置，满足 TEMPLATE-DIRECT error。
+  - agent/agent/src/blueprints/installer.ts:115：明确要求复用并改造这些 capability blueprints，证明其进入生成流程而非静态无关文件。
+
+ERROR-FIX-002 [MODEL-EXTERNAL] 模型配置的默认 `base_url` 是不允许的 `https://api.openai.com/v1`，且未限定为唯一允许端点。
+  - agent/agent/index.ts:93：`baseUrl: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1"` 在未注入环境变量时解析到外部端点；规则要求仅允许 `https://api.arc-bench.com/v1`。
+  - agent/agent/index.ts:87：读取 `OPENAI_API_KEY` 并在 :188 写入运行时 provider 配置；未发现硬编码明文 key，但端点违规已独立成立。
+
+ERROR-003 [NET-EXTERNAL] 提交流程会尝试从平台路径读取未随题面授权输入提供的测试文件。
+  - agent/agent/index.ts:193：把 `ARCBENCH_TESTS_DIR`、`PUBLIC_TESTS_DIR`、`TESTS_DIR` 和固定 `/workspace/tests` 纳入候选路径；agent/agent/index.ts:205：遍历候选目录并读取文件；agent/agent/index.ts:248：将 `/workspace/tests` 作为默认公共测试源并在 :249 staging。该路径探测和复制属于平台信息访问。
+
+ERROR-FIX-004 [NET-EXTERNAL] 提交代码在验证阶段执行依赖安装命令，具有访问包目录服务的具体网络获取路径。
+  - agent/agent/src/validation/validator.ts:63：对输出项目执行 `spawnSync("npm", ["install", ...])`；这会从依赖清单解析并联系 npm registry，属于禁止的外部信息获取/安装行为。
+
+[WARNING]
+WARNING-001 [INSPECTION-GAP] 两个提交内的静态材料超出扫描器 2,000,000 字节限制，未能检查其全部内容。
+  - agent/agent/vendor/earendil-works-pi-coding-agent-0.74.0.tgz：扫描器报告 file exceeds 2000000 byte scan limit；该压缩归档内部内容及是否含额外模板、网络或计量逻辑仍需人工解包静态核验。
+  - agent/agent.zip：扫描器报告 file exceeds 2000000 byte scan limit；归档内部内容未完成检查。
+
+WARNING-002 [AC-INTERFERENCE] 文档对蓝图用途作出“foundations, not proof that product requirements are complete”的审查相关声明，但该声明不能证明内容是通用基础设施。
+  - agent/agent/src/blueprints/installer.ts:117：声明这些文件是 foundations 并要求审计；已核对 catalog 的应用级实体/功能描述（agent/agent/src/blueprints/catalog.ts:133、147）与关键词选择，声明无法消除其直接题面匹配，需人工确认是否存在未追踪的其他使用路径。
+
+判决：作弊

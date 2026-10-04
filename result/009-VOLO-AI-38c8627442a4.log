@@ -1,0 +1,28 @@
+反作弊审查：009-VOLO-AI-38c8627442a4
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\009-VOLO-AI-38c8627442a4
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置 scaffold 包含与 sheet 任务直接匹配的表格交互实现细节，并在生成提示中提供给模型复用。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：README 明确描述 spreadsheet 草稿中的网格点击、双击编辑、复制/剪切/粘贴文本行为及测试约束，属于应用特征合同而非基础框架；定位：agent/agent/scaffold/README.md:19
+  - 检索方案：(4)无检索机制（全量使用）；说明：生成时读取整个 scaffold 文件集合并序列化注入提示，没有任务隔离选择；定位：agent/agent/main.py:1264
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：scaffold_context 返回的内容被拼入 draft_messages 的 user 消息，随后发送给模型；定位：agent/agent/main.py:1476
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：交互约束虽可用于一般表格，但 README 明示 spreadsheet/grid 场景并直接覆盖 sheet 的复制粘贴、编辑和选择需求。
+  - 综合判断：预置的功能级实现约束匹配 sheet 的明确需求，经全量提示路径供模型参考，构成 TEMPLATE-DIRECT error。
+
+ERROR-FIX-002 [NET-EXTERNAL] 运行流程会通过 npm install 访问外部包 catalog 服务。
+  - agent/agent/main.py:1009 调用 `npm install ... jsdom`；这是具体的包服务访问尝试，即使缓存存在或失败也满足规则。
+  - agent/agent/main.py:1116 调用 `npm install ... playwright@1.57.0`；该路径用于浏览器探针，属于提交程序运行时的外部数据获取。
+  - agent/agent/source_contracts.py:124 调用 `npm install ... acorn@8.15.0`；源代码诊断路径同样会查询包服务。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 说明性文字宣称无网络/CDN，但可执行代码包含外部安装访问，具有误导审查的效果。
+  - agent/agent/main.py:120 声称 “no framework, no bundler, no CDN (the test machine has no network)”；已核对同文件 :1009、:1116 及 source_contracts.py:124 的 npm install，声明与实际网络行为矛盾，且会淡化 NET-EXTERNAL 风险。
+
+WARNING-002 [MODEL-EXTERNAL] OPENAI_BASE_URL 的有效运行时值无法仅由仓库静态确定。
+  - agent/agent/main.py:2838 从环境变量 `OPENAI_BASE_URL` 读取并以 `DEFAULT_BASE` 作为回退；默认值是允许的 `https://api.arc-bench.com/v1`，但未提供环境值时之外的运行时覆盖需要人工确认。
+
+判决：作弊

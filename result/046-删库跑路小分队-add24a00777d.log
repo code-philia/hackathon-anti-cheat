@@ -1,0 +1,34 @@
+反作弊审查：046-删库跑路小分队-add24a00777d
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/046-删库跑路小分队-add24a00777d
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对题面 `Core Requirements for an Online Spreadsheet Data Workspace`，程序在运行时检测到表格题后把仓库内预置的完整 `reference/sheet_app` 应用直接复制到输出，绕过模型生成并将全部原子需求标记为已实现。
+  - 知识类型：(1)完整代码实现；说明：`reference/sheet_app` 含前后端、公式、CSV、筛选排序、工作簿页面和 API 的可运行题面实现；定位：main.py:141-161
+  - 检索方案：(2)针对关键词硬编码检索；说明：`_is_sheet_task` 以 spreadsheet/worksheet/workbook 关键词判定题型后选择该材料；定位：main.py:131-139
+  - 生成方案：(1)无模型参与地使用代码；说明：`shutil.copytree` 直接将参考前后端铺入输出目录，随后跳过 LLM；定位：main.py:155-161、main.py:1485-1489
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：该参考实现明确是在线电子表格应用，包含本题专用页面、数据模型与行为。
+  - 综合判断：完整专用实现经关键词选择后无模型直接复制，实质解决 sheet 题面功能，满足 TEMPLATE-DIRECT error。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对题面 `Core Requirements for an Online Spreadsheet Data Workspace`，预置冻结规格台账被按表格关键词渲染为完整的可访问名称、路由、对话框、错误文案和选项清单并注入模型提示词。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：台账包含参考应用逐字可访问名、页面结构、对话框控件和错误文案等验收级契约；定位：agent/specs/__init__.py:80-127
+  - 检索方案：(2)针对关键词硬编码检索；说明：`appendix_if_sheet` 通过 worksheet/workbook/spreadsheet 等固定关键词选择并返回整段契约；定位：agent/specs/__init__.py:33-60、agent/specs/__init__.py:140-144
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：`module_user` 将契约块追加到每个模块的生成 prompt；定位：agent/prompts.py:602-610
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：内容不是基础框架，而是直接规定电子表格题的验收元素与交互契约。
+  - 综合判断：题面关键词定向选取的验收级实现约束被提供给模型复用，直接匹配 sheet 需求，满足 TEMPLATE-DIRECT error。
+
+ERROR-003 [TEMPLATE-DIRECT] 针对题面 `GitHub Collaboration Platform Core Requirements`，仓库内预置的 GitHub 专用结构契约按题面关键词注入生成提示词，包含登录/注册/找回密码、组织治理、API 字段、错误文案及种子数据等需求级实现细节。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：契约正文规定首页与 `/signin` 路由、表单字段、验证码、组织/团队/仓库控件、API 拼接和固定种子账号；定位：agent/specs/github_contract.py:62-77、agent/specs/github_contract.py:92-139
+  - 检索方案：(2)针对关键词硬编码检索；说明：`appendix_if_github` 用 `github`、登录、组织、pull request 等固定关键词判定并返回契约；定位：agent/specs/github_contract.py:27-59
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：GitHub 契约块在模块 prompt 中被追加给模型；定位：agent/prompts.py:611-617
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：虽可用于 GitHub 类应用，内容明确对应本题的页面结构、文案和种子关系，不是通用框架。
+  - 综合判断：定向检索并注入模型的专用功能契约直接覆盖 GitHub 题面要求，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 存在主模型之外的视觉模型配置槽位，且主/视觉 `base_url` 与 `api_key` 的有效值由环境变量提供，静态审查无法确认是否始终为唯一允许端点及平台注入凭据。
+  - agent/config.py:154-189：主配置读取 `OPENAI_API_KEY`/`OPENAI_BASE_URL`，并额外读取 `VISUAL_API_KEY`/`VISUAL_BASE_URL`/`VISUAL_MODEL`，三项齐全时构造第二个 `LLMConfig`；agent/llm.py:571-582 使用主配置建立客户端。需人工核验运行时所有 base_url 是否恰为 `https://api.arc-bench.com/v1`、视觉槽位是否启用及其 key 是否为平台注入值。依据规则，额外配置槽位在静态无法解析时保留 MODEL-EXTERNAL warning。
+
+判决：作弊

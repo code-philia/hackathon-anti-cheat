@@ -33,6 +33,39 @@ TEMPLATE_FIELDS = {
     ),
     "综合判断": re.compile(r"^  - 综合判断：.+"),
 }
+MOJIBAKE_FRAGMENTS = (
+    "鍙嶄綔寮",
+    "棰橀潰",
+    "浣滅瓟",
+    "瀹℃煡",
+    "鎽樿",
+    "鍒ゅ喅",
+    "璇存槑",
+    "锛",
+    "銆",
+    "鈥",
+    "閸欏秳",
+)
+
+
+def read_report(path: Path) -> tuple[str | None, list[str]]:
+    try:
+        text = path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError as error:
+        return None, [f"report is not valid UTF-8: byte {error.start}: {error.reason}"]
+
+    errors = []
+    if "\ufffd" in text:
+        errors.append("report contains Unicode replacement characters (U+FFFD), indicating lost text")
+    private_use_count = sum("\ue000" <= character <= "\uf8ff" for character in text)
+    if private_use_count:
+        errors.append(f"report contains {private_use_count} private-use character(s), indicating encoding corruption")
+    if re.search(r"\?{3,}", text):
+        errors.append("report contains a run of three or more question marks, indicating lost text")
+    found_fragments = [fragment for fragment in MOJIBAKE_FRAGMENTS if fragment in text]
+    if found_fragments:
+        errors.append(f"report contains likely Chinese mojibake: {', '.join(found_fragments[:5])}")
+    return text, errors
 
 
 def finding_blocks(lines: list[str]) -> list[tuple[int, int, re.Match[str]]]:
@@ -53,9 +86,10 @@ def finding_blocks(lines: list[str]) -> list[tuple[int, int, re.Match[str]]]:
 def validate(path: Path) -> list[str]:
     if not path.is_file():
         return [f"report does not exist: {path}"]
-    lines = path.read_text(encoding="utf-8").splitlines()
-    text = "\n".join(lines)
-    errors = []
+    text, errors = read_report(path)
+    if text is None:
+        return errors
+    lines = text.splitlines()
     if "[ERROR]" not in lines:
         errors.append("missing [ERROR] section")
     if "[WARNING]" not in lines:

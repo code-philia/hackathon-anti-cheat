@@ -1,0 +1,44 @@
+反作弊审查：001-bugtakue-0b23afbd83fb
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\001-bugtakue-0b23afbd83fb
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 github 题目预置了覆盖账户、组织、仓库、分支、Issue 与 Pull Request 等要求的完整前后端产品，并按题目根名称精确选中后直接复制到作答目录。
+  - 知识类型：(1)完整代码实现；说明：预置前端直接实现题面要求的注册字段、逐项错误和“Create account”等可访问控件，后端还硬编码固定验证码 `123456` 等专用行为，属于可运行的完整 GitHub 仿制应用；定位：agent/agent/deterministic/github_product/official/app.js:139
+  - 检索方案：(1)针对题面硬编码检索；说明：`matches` 将需求树根名称与 `GitHub Collaboration Platform Core Requirements` 及三个固定 Stage 名称精确比较，形成明确的题面指纹选择；定位：agent/agent/deterministic/github_canvas.py:71
+  - 生成方案：(1)无模型参与地使用代码；说明：命中后通过 `shutil.copyfile` 把预置 `app.js`、`styles.css`、`server.mjs` 直接写入最终应用目录，随后 fallback 流程会提升该 staged 应用；定位：agent/agent/deterministic/github_canvas.py:91
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：模板同时编码题目专属根名称、REQ 覆盖清单、固定验证码、精确错误文本、分支保护和 PR 审查/合并工作流，不能视为一般网页基础设施。
+  - 综合判断：四个维度共同表明这是由题面名称精确触发、无需模型生成即可直接交付的完整题目实现，且覆盖 github 任务的明确需求，因此构成 TEMPLATE-DIRECT error。
+  - agent/agent/factory26_harness/qualifier.py:870：fallback 执行路径实际调用绑定的 `apply`，通过后在第 877 行把 staged 产品提升为作答结果；仓库中的 production trace 亦记录 `github-baseline` 成功恢复，佐证该模板具有实际使用路径。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对 sheet 题目预置了覆盖工作簿、工作表、单元格、公式、排序筛选、数据验证与数据透视表的完整前后端产品，并按题目根名称精确选中后直接复制到作答目录。
+  - 知识类型：(1)完整代码实现；说明：预置前端在同一实现中提供 `Import CSV`、`Export CSV`、`Sort range`、`Create filter`、`Data validation`、`Create pivot table` 和 `Pivot table editor` 等题面专属完整交互；定位：agent/agent/deterministic/sheet_product/official/app.js:116
+  - 检索方案：(1)针对题面硬编码检索；说明：`matches` 仅在需求树根名称精确等于 `Core Requirements for an Online Spreadsheet Data Workspace` 时选中该产品；定位：agent/agent/deterministic/sheet_canvas.py:39
+  - 生成方案：(1)无模型参与地使用代码；说明：命中后通过 `shutil.copyfile` 将预置前端、样式和后端直接复制到最终应用结构；定位：agent/agent/deterministic/sheet_canvas.py:53
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：模板编码题目专属根名称、全部 REQ 覆盖清单、精确控件名称、数据验证错误文本、公式和数据透视表语义，远超通用脚手架。
+  - 综合判断：完整实现由固定题面指纹选择并无模型参与地直接交付，且逐项匹配 sheet 任务的明确要求，四个维度共同支持 TEMPLATE-DIRECT error。
+  - agent/agent/deterministic/sheet_product/official/server.mjs:429：后端实现题面规定的 0 到 100 特例错误文本及一般数值范围错误文本，进一步证明预置内容包含需求级行为合同；production trace 记录 `sheet-baseline` 被成功应用并覆盖全部 24 个要求。
+
+ERROR-003 [MODEL-METER-TAMPER] 仓库实现了以无业务意义的填充提示反复发起模型请求、把实际花费补足到配置目标值的计费注入机制，目的就是人工改变比赛测得的模型成本。
+  - agent/agent/factory26_harness/cost_calibration.py:117：请求内容由 `_filler(words)` 与固定的“Reply with the single word OK.”组成，且 `max_tokens` 仅为 1，不承担实现任务。
+  - agent/agent/factory26_harness/cost_calibration.py:161：循环按“目标花费减去已花费”计算剩余额度，并在第 169—171 行反推填充词数量后继续调用模型，直到接近目标花费。
+  - agent/agent/factory26_harness/qualifier.py:1991：`finally` 路径无论主流程成功与否都会调用 `cost_calibration.calibrate`；`FACTORY26_SPEND_TARGETS` 采用可被运行环境覆盖的 `setdefault`，因此该注入机制是可达的。现存 trace 中目标为空且本次被跳过，不消除仓库内明确为“top up”计费而设计的机制。
+
+ERROR-FIX-004 [NET-EXTERNAL] 验证流程允许生成的依赖清单触发未使用离线模式的 `npm install`，会尝试联系外部包服务获取第三方依赖。
+  - agent/agent/factory26_harness/checks.py:513：当 `dependencies` 或 `devDependencies` 非空时直接执行 `npm install --ignore-scripts --no-audit --no-fund`，命令没有 `--offline` 或等效的网络阻断。
+  - agent/agent/factory26_harness/checks.py:188：包策略接受最多 200 个普通依赖项，并未把依赖声明限制为本地已有内容；前端完整检查在第 569 行调用 `_npm_install`，后端启动检查在第 725 行再次调用，形成具体运行路径。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 代码中的“competition-safe bundle intentionally omits task-specific fallback modules”说明与实际打包清单及导入路径直接矛盾，会把禁止的题目专用模板伪装为提交包中不存在的可选本地实验材料。
+  - agent/agent/factory26_harness/agent_first_fallback.py:107：注释明确声称竞赛安全包会有意省略题目专用 fallback 模块，并把它们描述为仅供本地实验的可选内容。
+  - agent/agent/factory26_harness/submission_bundle.py:51：实际运行包白名单从此行开始连续包含 `deterministic/__init__.py`、两个 canvas 以及两套完整产品文件，直接否定“omits”声明。
+  - agent/agent/factory26_harness/agent_first_fallback.py:112：运行代码实际导入 `deterministic.github_canvas` 与 `deterministic.sheet_canvas`；该失实说明掩盖了 ERROR-001/002 所述模板路径，足以影响反作弊审查。
+
+WARNING-002 [MODEL-EXTERNAL] 除主 `OPENAI_API_KEY`/`OPENAI_BASE_URL` 配置外，仓库还定义了独立的 `VISUAL_API_KEY`/`VISUAL_BASE_URL` 模型网关槽位；当前入口将其清空，但按照政策，任何额外 URL/key 槽位都必须记录并人工核查运行入口是否可被绕过。
+  - agent/agent/factory26_harness/visual_reference.py:107：读取独立的 `VISUAL_API_KEY` 与 `VISUAL_BASE_URL`，第 114—116 行可据其构造 `explicit-vision-gateway`，第 249—258 行会向解析出的端点发起带该 key 的请求。
+  - agent/agent/main.py:26：标准入口在第 26—27 行把三个 `VISUAL_*` 变量置空，现存 trace 仅显示主网关主机为允许的 `api.arc-bench.com`；仍需人工确认评测是否始终经由此入口，以及不存在调用库入口或其他启动方式保留额外槽位的情况。
+
+判决：作弊

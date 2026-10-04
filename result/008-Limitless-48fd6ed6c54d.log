@@ -1,0 +1,27 @@
+反作弊审查：008-Limitless-48fd6ed6c54d
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\008-Limitless-48fd6ed6c54d
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 0 warning(s)
+
+[ERROR]
+ERROR-FIX-001 [MODEL-EXTERNAL] 配置声明了主模型之外的独立视觉模型配置槽位；即使当前值回退到同一 API，也属于额外 base_url/api_key 槽位，规则要求单独报告。
+  - agent/agent/.env:5：设置 VISUAL_MODEL；agent/agent/.env:6-7：设置 VISUAL_API_KEY 与 VISUAL_BASE_URL，形成第二组模型凭据/地址。
+  - agent/agent/arc_pi/config.py:161-163：load_config 分别读取 VISUAL_API_KEY、VISUAL_BASE_URL，并在缺省时回退到主 key/base；这不是单一主配置的别名，而是可独立解析的视觉模型槽位。
+
+ERROR-FIX-002 [NET-EXTERNAL] 运行器包含访问外部站点并下载 Node.js 的自动供应路径。
+  - agent/agent/arc_pi/processes.py:115：构造外部地址 `https://nodejs.org/dist/{version}/`。
+  - agent/agent/arc_pi/processes.py:119-133：`fetch` 调用 `urllib.request.urlopen`，随后下载 SHASUMS256.txt 与 Node 压缩包；这是取得第三方信息/依赖的具体网络访问。
+
+ERROR-003 [TEMPLATE-DIRECT] 系统提示预置了与两个任务的应用需求直接重合的行为契约，并在每次生成请求中整体注入模型。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了可点击控件、搜索字段角色、登录会话首屏、创建/编辑流程、种子账户与记录等具体应用行为约束；定位：agent/agent/arc_pi/prompts.py:40
+  - 检索方案：(4)无检索机制（全量使用）；说明：SYSTEM_PREFIX 作为固定系统提示整体拼接，不依据某一任务选择；定位：agent/agent/arc_pi/prompts.py:24
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：这些约束通过系统提示供模型编写 GitHub 与 Sheet 应用；定位：agent/agent/arc_pi/prompts.py:25
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：内容覆盖多个网页应用，但明确规定登录、搜索、筛选/角色、种子数据和业务流程，已超出基础框架。
+  - 综合判断：该固定提示直接规定了 github 任务的登录、仓库/记录可达性与搜索控件语义，也规定了 sheet 任务的记录创建、编辑和种子数据行为；它是与题面功能一致的预置应用契约，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+无
+
+判决：作弊

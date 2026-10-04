@@ -1,0 +1,38 @@
+反作弊审查：045-nnn45-85eb2ed85a89
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/045-nnn45-85eb2ed85a89
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置并直接复制完整的认证会话实现，明确提供 signIn/signOut 行为，直接匹配 github 任务 REQ-1-1-2（Sign In）与 REQ-1-2（Sign Out）。
+  - 知识类型：(1)完整代码实现；说明：`useSession` 已实现身份读取、signIn、signOut、成功后的授权页面缓存清理及首次会话读取，不只是基础框架原语；定位：template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：启动时递归复制整个 `template` 到每个输出工程，没有按题面或领域筛选该认证模块；定位：main.py:97
+  - 生成方案：(1)无模型参与地使用代码；说明：`copy_template_contents` 对不存在的目标文件直接执行 `shutil.copy2`，因此认证实现先于模型生成而进入最终作答；定位：main.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该实现可复用于具有登录、退出和受保护缓存的网页应用，但已编码题面明确要求的认证功能语义，并非仅有路由、构建或数据库连接基础。
+  - 综合判断：完整认证代码经全量、无模型复制路径进入作答，且开发提示还要求采用 `useSession` 处理 sign-in/sign-out；四个维度共同表明它对 github 明示认证需求形成直接预置实现，满足 TEMPLATE-DIRECT error。
+  - competition/instructions.md:48：开发提示明确要求模型将预置 `useSession` 用于 `signIn`/`signOut` 适配器及认证流程，进一步确认具体使用路径。
+
+ERROR-FIX-002 [NET-EXTERNAL] 控制器在正常工作流中主动从包服务安装依赖，并在浏览器缺失时执行 Playwright 下载，构成运行期间获取第三方信息的具体尝试。
+  - core/simple_workflow.py:50：依赖准备是模型实现前必经的正常工作流，并非仅存在于文档或 manifest。
+  - core/dependencies.py:11：对 backend 与 frontend 无条件执行未带 `--offline` 的 `npm ci --include=dev`，会查询或下载 npm 包服务内容。
+  - core/dependencies.py:32：浏览器缺失时执行 Playwright `install chromium`，形成另一条明确的外部下载路径。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除主 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 外还存在 visual 模型的额外 URL/key 槽位，静态代码无法确定运行时值与其是否和主配置相同。
+  - agents/model/visual_transport.py:284：额外读取 `VISUAL_BASE_URL` 与 `VISUAL_API_KEY` 槽位；其运行时值需要人工核对。
+  - agents/model/visual_transport.py:293：visual URL 依次从 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、额外的 `BASE_URL` 选择，且仅校验 URL 形态，没有静态强制为 `https://api.arc-bench.com/v1`。
+  - agents/model/visual_transport.py:294：visual key 优先采用独立 `VISUAL_API_KEY`，否则才回退主 `OPENAI_API_KEY`；需人工确认额外 key 槽位未注入另一具体密钥。
+
+WARNING-002 [INSPECTION-GAP] 两个会在运行时按架构选择并执行的预编译 Landrun ELF 超过静态扫描上限，无法从仓库源码完整验证其实际行为。
+  - vendor/landrun/manifest.json:10：声明并固定 `landrun-linux-amd64`，大小 6544872 字节；扫描器报告该文件超过 2000000 字节限制。
+  - vendor/landrun/manifest.json:17：声明并固定 `landrun-linux-arm64`，大小 6206112 字节；扫描器同样未完整扫描。
+  - core/evaluator_isolation.py:61：运行时按架构选中二进制、读取校验后复制并作为 SDK launcher；manifest 哈希与静态 strings 检查可确认完整性和部分符号，但不能替代对二进制语义的完整审查，需人工核对可信构建来源或源码可复现性。
+
+WARNING-003 [NET-EXTERNAL] 控制器主动探测平台官方测试根 `/workspace/tests` 的存在性与类型，并把观察结果写入 preflight 记录；该平台信息不属于授权题面输入。
+  - core/evaluator_isolation.py:144：对每个 evaluator root 调用 `Path(p).is_dir()` 与 `Path(p).exists()`，生成 `evaluator_presence`，属于对平台评测信息的主动观察。
+  - competition/evaluator-isolation.json:2：被探测的目标明确配置为官方评测根 `/workspace/tests`。
+  - core/simple_workflow.py:48：正常运行在依赖安装与模型调用前必定调用该 preflight，因此不是不可达的辅助代码。
+
+判决：作弊

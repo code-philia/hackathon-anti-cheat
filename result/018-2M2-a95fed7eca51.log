@@ -1,0 +1,38 @@
+反作弊审查：018-2M2-a95fed7eca51
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/018-2M2-a95fed7eca51
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库预置了完整的登录、登出、会话刷新及身份切换后授权缓存清理实现，该材料被整体复制到作答并明确指示模型接入，直接匹配 github 任务的 Identity and Access、Sign In 与 Sign Out 需求。
+  - 知识类型：(1)完整代码实现；说明：预置 `useSession` 实现包含 session read/signIn/signOut、竞态所有权及身份变更时的授权页面缓存清理，已是可直接复用的认证功能模块；定位：workspace/018-2M2-a95fed7eca51/template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化流程无条件地将整个 `template` 树复制到每个输出工作区，没有任务选择或特性检索；定位：workspace/018-2M2-a95fed7eca51/main.py:97
+  - 生成方案：(1)无模型参与地使用代码；说明：`copy_template_contents` 通过 `shutil.copy2` 把预置代码直接放入最终作答；此为主要路径，同时还存在提示词要求模型接入该模块的混合路径；定位：workspace/018-2M2-a95fed7eca51/main.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：它不含 GitHub 固有实体名称，但只适用于具有登录、登出和授权会话切换的应用，不属于基础跨领域脚手架。
+  - 综合判断：完整认证功能代码被全量直接复制，且 `competition/instructions.md:56` 要求在共享 provider 中接入其 read/signIn/signOut 并添加竞态测试；四轴合并表明它实质性解决 github 明示认证需求，符合 TEMPLATE-DIRECT error。
+
+ERROR-FIX-002 [MODEL-EXTERNAL] 模型调用链配置了与唯一允许值 `https://api.arc-bench.com/v1` 不同的本地 `base_url`，并在代码中生成、设置明文 API key。
+  - workspace/018-2M2-a95fed7eca51/agents/model/visual_transport.py:843: `self.base_url` 被确定构造为 `http://127.0.0.1:<port>/v1`，随后由 `main.py:193-198` 写入内层模型 provider 的 `OPENAI_BASE_URL`/`base_url`，不是政策允许的精确值。
+  - workspace/018-2M2-a95fed7eca51/agents/model/visual_transport.py:313: 代码使用 `secrets.token_urlsafe(32)` 生成具体 `local_key`，`main.py:195` 再将它作为 `OPENAI_API_KEY` 提供给 provider，满足“代码生成或提供具体明文 API-key 值”条件。
+
+ERROR-FIX-003 [NET-EXTERNAL] 主流程在模型作答前主动执行未设置离线模式的 `npm ci`，并在缺少浏览器时执行 Playwright 下载，会向包目录/下载服务获取第三方信息。
+  - workspace/018-2M2-a95fed7eca51/core/dependencies.py:11: `prepare_dependencies` 对 backend 和 frontend 均运行 `npm ci --include=dev --no-audit --no-fund`，没有 `--offline`；它由 `core/simple_workflow.py:55` 在必经的 tooling 阶段调用。
+  - workspace/018-2M2-a95fed7eca51/core/dependencies.py:32: 当本地 Chromium 缺失时，继续执行 `playwright ... install chromium`；同时预置 lockfile 如 `template/backend/package-lock.json:28` 明确把依赖解析到 `https://registry.npmjs.org/...`，因而不是仅有依赖声明而无操作路径。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除上述已确定的本地 provider 配置外，仓库还定义了主 coding 及额外 visual 的多个 URL/key 槽位，其运行时值、是否形成更多不同值无法从静态仓库确定。
+  - workspace/018-2M2-a95fed7eca51/agents/model/visual_transport.py:294: 主 coding 槽位直接消费 `OPENAI_BASE_URL` 与紧随其后的 `OPENAI_API_KEY`；需人工核验注入 URL 是否精确为 `https://api.arc-bench.com/v1` 且 key 仅来自评测环境。
+  - workspace/018-2M2-a95fed7eca51/agents/model/visual_transport.py:296: 额外声明 `VISUAL_BASE_URL` 和 `VISUAL_API_KEY` 槽位；需人工核验它们是否被设置及其实际值。
+  - workspace/018-2M2-a95fed7eca51/agents/model/visual_transport.py:305: visual URL 还会在 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`BASE_URL` 三个槽位中优先选择，key 则在 `VISUAL_API_KEY`、`OPENAI_API_KEY` 中选择；需核对所有五个槽位的注入源、取值及值的去重数量。
+
+WARNING-002 [INSPECTION-GAP] 仓库包含两个大型预编译 ELF 可执行文件，它们会被复制到输出并用作 SDK 启动器；本次遵守禁止执行选手代码的限制，无法对其内部行为完成源码级语义审查。
+  - workspace/018-2M2-a95fed7eca51/vendor/landrun/landrun-linux-amd64: 该 x86-64 ELF 大小 6,544,872 bytes，SHA-256 为 `6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6`；`vendor/landrun/manifest.json:10-14` 记录其上游来源与同一摘要，但不能替代对二进制内部行为的检查。
+  - workspace/018-2M2-a95fed7eca51/vendor/landrun/landrun-linux-arm64: 该 ARM64 ELF 大小 6,206,112 bytes，SHA-256 为 `365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d`；`vendor/landrun/manifest.json:17-21` 记录其上游来源与同一摘要，人工复核应使用可验证的上游源码/构建产物进行对照。
+
+WARNING-003 [NET-EXTERNAL] 控制器在运行时主动观测未授权平台评测目录 `/workspace/tests` 是否存在及其类型，构成对平台评分测试信息的具体探测。
+  - workspace/018-2M2-a95fed7eca51/core/evaluator_isolation.py:144: `preflight` 通过 `Path(p).is_dir()` 与 `Path(p).exists()` 观测每个 evaluator root，并把结果记录为 `evaluator_presence`；配置 `competition/evaluator-isolation.json:2` 将该 root 确定为 `/workspace/tests`。
+  - workspace/018-2M2-a95fed7eca51/core/simple_workflow.py:53: 该 `preflight` 在每次作答的必经主流程中运行；即使未读取具体测试内容，政策也将探测/观测未授权平台信息本身视为足够的访问尝试。
+
+判决：作弊

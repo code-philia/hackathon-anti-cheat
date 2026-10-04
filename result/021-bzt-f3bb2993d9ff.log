@@ -1,0 +1,29 @@
+反作弊审查：021-bzt-f3bb2993d9ff
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\021-bzt-f3bb2993d9ff
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 代理内置了与 github 和 sheet 两个题面直接相关的应用行为契约，并在生成提示词中提供给模型。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：契约逐项预置登录可达性、控件角色、剪贴板、seed 状态和错误反馈等验收级行为，超出通用框架；定位：agent/agent/main.py:764
+  - 检索方案：(4)无检索机制（全量使用）；说明：_FULL_CONTRACT_ITEMS 作为固定字符串直接拼接到模块提示词，不依赖题面选择；定位：agent/agent/main.py:1010
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：_module_prompt 使用该契约生成每个模块的模型 prompt；定位：agent/agent/main.py:1303
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：契约包含题面验收所需的实体可达性、命名冲突、seed 资格等具体实现约束。
+  - 综合判断：固定注入的验收级应用契约直接匹配 github 与 sheet 题面功能，并进入模型上下文，构成 TEMPLATE-DIRECT error。
+  - agent/agent/main.py:779：明确要求将题面中的 “Seed data” 逐字复制为后端状态，属于功能特定约束。
+
+ERROR-002 [TEMPLATE-DIRECT] 运行时把预置 template 目录的代码文件复制到选手输出，包含应用级 NamedForm、DataTable、EntityCard 等可复用实现。
+  - 知识类型：(1)完整代码实现；说明：template 目录是可直接运行的前后端代码包而非基础启动脚手架；定位：agent/agent/main.py:373
+  - 检索方案：(4)无检索机制（全量使用）；说明：每次运行均从 agent/agent/template 复制全部缺失文件；定位：agent/agent/main.py:404
+  - 生成方案：(1)无模型参与地使用代码；说明：shutil.copytree/copy2 将预置实现写入输出目录；定位：agent/agent/main.py:413
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：模板组件预设表单、实体卡片、数据表格行为，直接服务 github/sheet 的实体管理与表单需求。
+  - 综合判断：预置代码包被无条件复制并用于两个任务的应用产物，属于直接模板知识 error。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 代码注释/提示声称契约“task-agnostic”且“不含 task-specific content”，但同一契约含有题面验收和 seed 语义，足以淡化直接模板行为。
+  - agent/agent/main.py:1045：写入文件的说明文字声明 “no task-specific content”。
+  - agent/agent/main.py:779-787：实际契约要求按题面 Seed data 逐字重现 pinned、label、archived 等状态；与该声明矛盾，构成影响审查判断的误导性解释。
+
+判决：作弊

@@ -1,0 +1,54 @@
+反作弊审查：032-OUC-SOUND-TEAM-171469f81c5e
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/032-OUC-SOUND-TEAM-171469f81c5e
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 4 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 github 任务预置覆盖全部叶子需求的可运行 GitHub 协作平台，并以直接复制为作答起点
+  - 知识类型：(1)完整代码实现；说明：`github-collab-guide/references/` 明示包含后端、前端、种子、权限矩阵、路由、页面和测试；例如固定验证码、题面专用种子路径及分支保护文案均已编码，远超通用脚手架；定位：skills/github-collab-guide/SKILL.md:8
+  - 检索方案：(1)针对题面硬编码检索；说明：入口按题面名称 “GitHub Collaboration Platform / GitHub 类协作平台” 强制选择该指南；定位：main.py:408
+  - 生成方案：(1)无模型参与地使用代码；说明：运行提示明确要求把 `references/backend` 与 `references/frontend` 直接复制为起点，随后才修补需求差异；定位：main.py:412
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：指南自述覆盖该题 REQ-1~6 的全部 47 个叶子需求，预置题面专用账号恢复、种子、权限、Issue/PR 与分支保护语义。
+  - 综合判断：完整实现由题面名称精确选中并直接进入最终项目；知识专用度、选择方式和直接复用路径共同满足 TEMPLATE-DIRECT error，而非基本 Web 框架例外。
+  - skills/github-collab-guide/references/backend/routes/auth.js:10：直接定义题面固定验证码 `123456`。
+  - skills/github-collab-guide/references/backend/seed.js:51：直接预置题面指定的 `src/search.ts` 种子文件；完整种子还服务于历史、diff、搜索与 PR 场景。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对 sheet 任务预置覆盖全部叶子需求的可运行电子表格应用，并以直接复制为作答起点
+  - 知识类型：(1)完整代码实现；说明：`spreadsheet-app-guide/references/` 明示包含可构建后端、前端、种子、公式库、排序筛选、数据校验与透视表实现，覆盖全部 24 个叶子需求；定位：skills/spreadsheet-app-guide/SKILL.md:8
+  - 检索方案：(1)针对题面硬编码检索；说明：入口按 “Online Spreadsheet Data Workspace / 电子表格” 题名强制选择该指南；定位：main.py:407
+  - 生成方案：(1)无模型参与地使用代码；说明：指南要求逐文件或逐目录复制完整前后端为起点，并允许认为匹配时直接复制文件应用；定位：skills/spreadsheet-app-guide/SKILL.md:13
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：实现包含 `Q3 Sales` 专用种子、题面逐字 ARIA 名称、0-to-100 校验文案以及透视表失效文案，明显绑定本题验收契约。
+  - 综合判断：完整实现由题面指纹选中并直接复制，且包含大量逐字匹配的需求级行为，四轴共同支持 TEMPLATE-DIRECT error。
+  - skills/spreadsheet-app-guide/references/backend/seed.js:33：直接创建题面专用工作簿 `Q3 Sales`。
+  - skills/spreadsheet-app-guide/references/backend/api.js:19：直接编码题面指定的透视字段失效文案。
+  - skills/spreadsheet-app-guide/references/frontend/src/editor/Grid.jsx:112：直接实现题面指定的 `Worksheet grid` 角色与 ARIA 属性。
+
+ERROR-FIX-003 [MODEL-EXTERNAL] 缺省模型 API 地址硬编码为不允许的外部端点
+  - main.py:106：`OPENAI_BASE_URL` 未设置时解析为 `https://api.openai.com/v1`；政策仅允许精确值 `https://api.arc-bench.com/v1`。
+  - model_sources.py:942：该值被构造成实际请求 endpoint，并在后续追加 `/chat/completions`，不是无效文档示例。
+
+ERROR-FIX-004 [NET-EXTERNAL] 运行提示要求通过包管理器安装依赖，形成访问外部包服务的具体尝试
+  - main.py:381：完成标准明确要求亲自执行前后端两处 `npm install`，并在 main.py:383 要求为这些命令配置长超时。
+  - skills/github-collab-guide/SKILL.md:14：GitHub 专用模板再次要求复制后执行 `npm install`；skills/spreadsheet-app-guide/SKILL.md:14 对 sheet 模板作相同要求。
+  - tools/shell_tools.py:236：模型获得的 shell 工具会把所给命令交给真实子进程执行；该行为不是仅存在于依赖清单或防御性说明中。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 存在主凭据之外的 `ARCBENCH_API_KEY` 回退槽位，其运行时值与是否和主槽位相同无法静态确定
+  - main.py:104：代码依次读取 `OPENAI_API_KEY` 与额外的 `ARCBENCH_API_KEY`；需人工核验评测运行时两槽位的注入情况和值来源。
+
+WARNING-002 [MODEL-EXTERNAL] `--model` 提供另一套从本地数据库解析 endpoint 与 api_key 的模型配置路径，实际值和数量无法从提交静态确定
+  - main.py:102：只要传入 `--model` 就绕过环境变量配置并选择 `model_sources.db`。
+  - model_sources.py:330：数据库连接源接受任意 HTTP(S) `endpoint`；model_sources.py:342 同时读取对应 `api_key`，且表结构允许多条连接源。需人工核验运行时数据库是否存在、其中全部 endpoint/api_key 以及该参数是否可被启用。
+
+WARNING-003 [INSPECTION-GAP] 被优先执行的 4,770,392 字节 stripped ELF 文件无法完成源代码级核查
+  - vendor/rg：静态扫描因超过 2,000,000 字节上限跳过；文件类型为 x86-64 stripped ELF，SHA-256 为 `b8e26f8e9f8cf30701347b6025a2cdf0f9a59941f55e911c79a8e92b85720d47`。字符串与许可证表明其外观为 ripgrep，但不足以验证完整机器码行为。
+  - tools/search_tools.py:73：代码固定定位该二进制；tools/search_tools.py:103 将它置于系统 `rg` 之前，tools/search_tools.py:138 会实际启动它。需以可信构建产物哈希或源码重现构建人工确认。
+
+WARNING-004 [NET-EXTERNAL] 入口递归枚举、读取并向模型注入需求目录中的全部文件，未排除评分测试和评测辅助材料
+  - main.py:282：当平台传入需求目录时，代码通过 `path.rglob('*')` 收集目录内每一个文件，没有限定为 `requirements.yaml`。
+  - main.py:291：每个文件都进入解析或文本读取路径；main.py:295 把非需求树文件交给 `_read_text`，main.py:300 再把内容加入模型任务消息。
+  - main.py:5：提交约定本身把首个参数描述为 `requirement_path`，且 main.py:7 明确兼容“需求目录”；因此对同目录 `tests/`、helpers、断言或期望输出构成具体读取尝试，并可直接影响生成与修改。
+
+判决：作弊

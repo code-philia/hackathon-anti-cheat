@@ -1,0 +1,26 @@
+反作弊审查：026-RyanSanchez-50a8b78edbdd
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\026-RyanSanchez-50a8b78edbdd
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-002 [TEMPLATE-DIRECT] 预置提示词包含与本次 GitHub 与 Sheet 题目要求直接匹配的应用契约和验收细节，并作为系统提示词提供给模型生成实现。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：`QUALITY_RULES` 预置精确可访问名称、登录注册、主页导航、持久化、种子数据及工作簿/单元格流程；定位：agent/agent/factory/prompts.py:46
+  - 检索方案：(4)无检索机制（全量使用）；说明：该规则块作为固定提示词整体拼接，而非由运行时题目标识选择；定位：agent/agent/factory/prompts.py:80
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：`unit_system` 将 `QUALITY_RULES` 拼入模型系统提示词，模型据此生成代码；定位：agent/agent/factory/prompts.py:149
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：精确的 GitHub/SaaS 和 spreadsheet 控件、消息、种子记录及验收路径并非一般网页框架知识，直接对应本次两个任务。
+  - 综合判断：四个维度共同表明这是面向题目需求的预置应用契约，且通过系统提示词参与生成，构成 `TEMPLATE-DIRECT` error；匹配任务：`example/hackathon/github` 与 `example/hackathon/sheet`。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除主模型配置外还存在独立的视觉模型 URL/key 配置槽位，静态检查无法确定其运行时值是否为允许的 ArcBench 配置。
+  - agent/agent/factory/vision.py:30: 视觉客户端读取独立的 `VISUAL_API_KEY`，并回退到 `OPENAI_API_KEY`。
+  - agent/agent/factory/vision.py:31: 视觉客户端读取独立的 `VISUAL_BASE_URL`，并回退到 `OPENAI_BASE_URL`；需人工核实额外槽位的实际值及是否启用。
+  - agent/agent/factory/llm.py:53: 主客户端使用 `OPENAI_BASE_URL`，与视觉客户端形成额外 URL 槽位；环境变量未在仓库中解析为具体值，因此暂列 warning。
+
+WARNING-002 [NET-EXTERNAL] 代理流水线读取并复制选手工作区中保存的历史门禁测试，将评测材料重新注入后续生成和验证流程，属于访问未随授权需求输入提供的平台评测信息。
+  - agent/agent/factory/pipeline.py:351: `archive.glob('*acc-gate*.spec.js')` 枚举 `backend/test-archive` 中的历史门禁测试，随后第352行复制到 `test-e2e`，供后续阶段重检。
+  - applications/github-stage-3/backend/test-archive/stage-1791009224-acc-gate.spec.js:1: 归档文件实际含有以 `acc-gate` 命名的 Playwright 评测测试，证明访问目标不是普通应用源码。
+
+判决：作弊

@@ -1,0 +1,37 @@
+反作弊审查：035-apach-a0df180b0feb
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/035-apach-a0df180b0feb
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 sheet 任务预置了“以坐标名称定位 gridcell/cell”的验收代码，并将其全量复制进每次验收套件；该代码直接匹配工作表单元格的坐标命名与 ARIA 契约，测试结果随后进入应用修复链路。
+  - 知识类型：(2)代码片段；说明：预置的 `cell()` 直接用精确坐标名称查询 `gridcell` 或 `cell`，`control()` 也把这些角色作为可点击项目；这不是跨领域基础脚手架，而是表格/电子表格交互的可复用测试实现；定位：workspace/035-apach-a0df180b0feb/acceptance_assets/evogit-helpers.ts:100
+  - 检索方案：(4)无检索机制（全量使用）；说明：每个生成的测试工作目录均无条件复制 `evogit-helpers.ts`，并且测试生成提示固定要求导入它，不依据任务类型筛选；定位：workspace/035-apach-a0df180b0feb/acceptance.py:227
+  - 生成方案：(1)无模型参与地使用代码；说明：预置 helper 被直接复制并由 Playwright 测试执行；失败摘要再被拼入 `test_repair` 提示并用于改写最终应用，形成确定的作用路径；定位：workspace/035-apach-a0df180b0feb/tdd_loop.py:286
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该定位器可复用于电子表格或坐标命名的数据网格，但不属于一般网页应用所需的基础设施；其“坐标名 + gridcell”约束与 sheet 的单元格编辑、选择等要求直接一致。
+  - 综合判断：四个维度共同表明这是直接匹配 sheet 题面功能的预置代码，并通过本地验收与模型修复实质参与最终作答，因此满足 TEMPLATE-DIRECT error。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对 github 任务预置了登录落地页、会话与权限的应用行为契约，以及“随机 token + HttpOnly cookie + sessions.json”的实现方案，并把该材料送入代码生成。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：常量契约规定所有场景从 UI 登录、登录后页面列出记录、实现持久化会话与权限；备用架构进一步指定随机 token、HttpOnly cookie 和 `sessions.json` 的会话实现；定位：workspace/035-apach-a0df180b0feb/generated_application.py:238
+  - 检索方案：(4)无检索机制（全量使用）；说明：`contract_text()` 作为所有代码编写调用的固定前缀全量注入；架构调用失败时还会无条件采用上述备用架构，不存在按任务内容筛选该登录/会话知识的机制；定位：workspace/035-apach-a0df180b0feb/generated_application.py:382
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：架构计划经 `plan_text(plan)` 放入共享提示头，随后该提示头与当前单元一起调用模型生成源代码；定位：workspace/035-apach-a0df180b0feb/generated_application.py:452
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该知识可复用于具有账户登录和服务端会话的应用，但不是一般网页基础设施；它直接匹配 github 的 Identity and Access、登录后落地页、持久会话及权限需求。
+  - 综合判断：该预置材料不是单纯路由或数据库连接脚手架，而是政策明确排除在通用框架例外之外的登录/会话功能契约；它具有明确提示注入与生成路径，故构成针对 github 任务的 TEMPLATE-DIRECT error。
+
+ERROR-FIX-003 [NET-EXTERNAL] 主运行路径会主动通过 npm 安装项目依赖、安装 `@playwright/test`，并在缺少浏览器时从默认下载源或指定镜像下载 Chromium，属于运行期间访问外部包服务和下载第三方内容。
+  - workspace/035-apach-a0df180b0feb/generated_application.py:90：`build()` 在两个项目目录缺少 `node_modules` 或显式 `install=True` 时构造并执行 `npm install`；`generate()` 在 workspace/035-apach-a0df180b0feb/generated_application.py:434 以 `install=True` 调用该路径。
+  - workspace/035-apach-a0df180b0feb/app_runtime.py:126：`ensure_playwright()` 直接执行 `npm install ... @playwright/test@1.57.0`，而 `SuiteRunner` 初始化时会调用此函数。
+  - workspace/035-apach-a0df180b0feb/app_runtime.py:141：浏览器缺失时依次尝试默认下载源与明文指定的 `https://registry.npmmirror.com/-/binary/playwright`，并在 workspace/035-apach-a0df180b0feb/app_runtime.py:146 执行 Playwright 的浏览器安装命令；这是具体的外部下载尝试，而非仅有依赖清单。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 仓库以“包内没有任务名称、页面或答案，一切都由运行时题面派生”的审查相关表述否认预置任务知识，但源代码实际包含并使用直接匹配题面功能的表格定位代码和登录/会话生成契约，足以误导对模板违规的审查。
+  - workspace/035-apach-a0df180b0feb/README_929_V1.md:61：原文声称 “No task names, pages or answers are in the package. Everything is derived from the supplied requirement tree at runtime.”，这是关于预置材料来源与专用性的明确裁定相关主张。
+  - workspace/035-apach-a0df180b0feb/acceptance_assets/evogit-helpers.ts:100：实际预置了以坐标名称定位 `gridcell`/`cell` 的专用代码，并经 workspace/035-apach-a0df180b0feb/acceptance.py:227 全量复制到验收套件。
+  - workspace/035-apach-a0df180b0feb/generated_application.py:242：实际预置了 “Sessions: random token in an HttpOnly cookie mapped to a user id in sessions.json.”；架构失败时由 workspace/035-apach-a0df180b0feb/generated_application.py:343 直接选用，随后进入生成提示。该代码证据与上述“全部由题面派生”的主张矛盾，并掩盖 ERROR-001/ERROR-002 所述行为。
+
+WARNING-002 [MODEL-EXTERNAL] 唯一模型 `base_url` 槽位直接读取 `OPENAI_BASE_URL`，但代码未校验其运行时值是否严格等于允许值 `https://api.arc-bench.com/v1`，静态审查无法确定有效端点。
+  - workspace/035-apach-a0df180b0feb/core_utils.py:45：`base = os.environ.get("OPENAI_BASE_URL", "").strip()` 后在 workspace/035-apach-a0df180b0feb/core_utils.py:49 直接传给 `OpenAI(base_url=base)`；需要人工核验评测运行环境中该变量的实际值。仓库只发现这一处模型 `base_url` 槽位；`api_key` 也只有同函数读取的单一注入环境变量槽位，未发现硬编码明文 key 或额外 key 槽位。
+
+判决：作弊

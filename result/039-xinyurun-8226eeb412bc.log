@@ -1,0 +1,31 @@
+反作弊审查：039-xinyurun-8226eeb412bc
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/039-xinyurun-8226eeb412bc
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 向每个实现模型回合全量注入了编辑控件的预置行为契约，直接匹配 sheet 的单元格编辑要求（REQ-3-1-1），并匹配 github 的议题标题/描述编辑要求（REQ-5-2-2）。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置内容规定必须区分已提交值、草稿值和草稿原始归属者，选择变化不得写入，Enter/blur 只能提交一次，失败写入须保留最后成功状态；这些不是基础脚手架，而是可直接指导两道题编辑及失败回滚实现的状态机约束；定位：workspace/039-xinyurun-8226eeb412bc/main.py:821
+  - 检索方案：(4)无检索机制（全量使用）；说明：`_developer_instructions` 固定包含上述契约，所有实现线程均把该完整字符串作为 developer instructions 传入，没有按题目或功能筛选；定位：workspace/039-xinyurun-8226eeb412bc/main.py:2161
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：契约被放入实现模型的 developer instructions，模型随后在目标输出目录中编写当前需求模块；定位：workspace/039-xinyurun-8226eeb412bc/main.py:2158
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些规则可复用于带可编辑控件的网页，但其提交时序、原始归属、失败保值及跨消费者一致性已经规定具体功能语义，并直接覆盖 sheet 的 Enter/选择提交与失败保值，以及 github 编辑失败保留原值的要求。
+  - 综合判断：该材料虽能在同类编辑应用中复用，却超出基本前后端基础设施；它以无检索、每回合全量注入的方式实质指导题面明确要求的编辑状态和持久化失败行为，四个维度共同满足 TEMPLATE-DIRECT error。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:827：同一固定指令继续要求按题面角色/名称处理控件，并让显示、导出、历史和结构更新共享同一原始/派生表示，进一步直接覆盖 sheet 的导出、历史和结构联动语义。
+
+ERROR-FIX-002 [NET-EXTERNAL] 主流程在依赖缺失时执行 `npm ci` 或 `npm install`，构成运行期间查询并下载外部包注册服务数据的明确尝试。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:535：`ensure_project_dependencies` 构造并随后执行 `[npm, method, "--include=dev", "--no-audit", "--no-fund"]`；`method` 为 `ci` 或 `install`，不是仅检查本地清单的命令。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:554：代码在有锁文件时选择 `npm ci`，否则选择 `npm install`；仅当 `node_modules` 和内部安装指纹同时存在才会提前返回，而提交仓库未包含 `node_modules`。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:574：前端构建路径无条件调用上述依赖准备函数；后端启动检查也在 `main.py:609` 调用它，因此该外部依赖获取路径接入正常评测流程。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 主模型配置的唯一主 `base_url` 槽来自运行时环境，静态代码无法确认其有效值是否严格等于允许值 `https://api.arc-bench.com/v1`。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:793：主配置读取 `OPENAI_BASE_URL`，并在非空时于 `main.py:796` 写入 `openai_base_url` 覆盖项；需人工核验竞赛运行器实际注入值及 SDK 在空值时采用的端点。
+  - workspace/039-xinyurun-8226eeb412bc/main.py:2050：主 API key 槽只读取运行器注入的 `OPENAI_API_KEY`，并在 `main.py:2101` 交给 SDK 登录；未发现主流程硬编码明文 key，但仍应与上述 URL 的实际运行配置一并核验。
+
+WARNING-002 [MODEL-EXTERNAL] 仓库另含一套可独立执行的 OpenAI 示例客户端，形成主配置之外的额外 `base_url` 与 `api_key` 槽；其运行时值和是否会被调用无法静态确定。
+  - workspace/039-xinyurun-8226eeb412bc/examples/model_calling.py:9：额外客户端单独读取 `OPENAI_API_KEY`；这是主流程 SDK 登录槽之外的 key 配置位置。
+  - workspace/039-xinyurun-8226eeb412bc/examples/model_calling.py:10：同一示例单独读取 `OPENAI_BASE_URL`，在 `examples/model_calling.py:15` 传给 `OpenAI`，并于第 19、29 行发起两类模型请求；需人工确认该入口在比赛运行中不可达，并确认其 URL/key 实际值与来源。
+
+判决：作弊

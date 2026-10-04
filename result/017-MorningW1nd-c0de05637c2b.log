@@ -1,0 +1,53 @@
+反作弊审查：017-MorningW1nd-c0de05637c2b
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/017-MorningW1nd-c0de05637c2b
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库预置并使用了与 github、sheet 两个题面逐行重合的 Playwright 验收测试；程序按题面根名称精确选中相应测试集合，将测试正文、辅助代码、精确控件名及失败源码送入实现和修复提示，并据此反复修改作答。
+  - 知识类型：(2)代码片段；说明：`public-tests/hackathon--github` 与 `public-tests/hackathon--sheet` 预置可直接复用的完整验收测试和辅助代码，包含题面专用路由、控件名、固定值、错误文本与动作顺序；定位：workspace/017-MorningW1nd-c0de05637c2b/public-tests/hackathon--github/REQ-1-1-1-sign-up.spec.ts:28
+  - 检索方案：(1)针对题面硬编码检索；说明：清单硬编码两个题面根标题，程序以 `tree["name"]` 精确相等为条件选择对应测试目录；定位：workspace/017-MorningW1nd-c0de05637c2b/main.py:1235
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：程序读取选中节点的测试及全部 TypeScript 辅助文件正文，并把 `spec_text` 填入代码生成提示；定位：workspace/017-MorningW1nd-c0de05637c2b/main.py:2438
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：目录名、REQ 编号、测试标题、固定账号/单元格、可访问名称与两个题面逐项对应，静态扫描确认两个任务均存在逐行长文本重合。
+  - 综合判断：题面指纹式检索把两个任务的专用测试代码直接送入模型，并将运行失败及失败行源码继续用于修复；四轴共同表明这是直接解决 github 与 sheet 明示需求的预置代码知识，满足 TEMPLATE-DIRECT error。
+  - workspace/017-MorningW1nd-c0de05637c2b/public-tests/manifest.json:13：清单将 `hackathon--github` 固定映射到 github 题面根标题；第 14 行同样固定映射 sheet。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:1767：`spec_bodies` 不仅收集节点 spec，还加入测试目录内全部非 spec 的 `.ts` 辅助文件。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:2237：每轮测试失败后生成可执行验收上下文，并在第 2238 行追加失败位置附近的测试源码，进入后续修复。
+
+ERROR-002 [TEMPLATE-DIRECT] 对 github 题面的认证与会话需求，仓库另行预置了认证失败、会话隔离、受保护数据和 Cookie 行为合同，并通过认证关键词匹配后注入模型提示。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置合同规定认证状态必须按用户隔离、失败认证不得创建会话或修改受保护数据，并规定 session cookie 的 HttpOnly、Secure、作用域与生命周期；定位：workspace/017-MorningW1nd-c0de05637c2b/prompts/ui-contract-session.md:1
+  - 检索方案：(2)针对关键词硬编码检索；说明：程序以 `login`、`sign in`、`password`、`session`、`register` 等固定关键词扫描整个需求树，github 题面必然命中；定位：workspace/017-MorningW1nd-c0de05637c2b/main.py:1577
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：命中后 `ui_contract` 追加预置 `UI_CONTRACT_SESSION`，实现提示在 `NODE_PROMPT` 中使用该合同；定位：workspace/017-MorningW1nd-c0de05637c2b/main.py:1585
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些约束可复用于其他登录/会话应用，但不是一般网页基础设施，只适用于认证与会话功能，且直接对应 github 的登录失败不得创建 session、受保护操作按当前 session 鉴权等要求。
+  - 综合判断：这是经认证关键词选中的预置应用功能合同，并被供应给生成模型；它直接匹配 github 明示认证/会话需求，而非基础框架或一般网页设计知识，满足 TEMPLATE-DIRECT error。
+  - workspace/017-MorningW1nd-c0de05637c2b/prompts/performance-contract.md:3：同一关键词门控路径还注入不得绕过凭据检查、不得使用明文密码替代认证的实现约束；第 4 行注入具体 Cookie 安全合同。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:2420：节点实现提示通过 `ui=self.ui_contract()` 和 `performance=self.perf_text()` 实际接收上述合同。
+
+ERROR-FIX-003 [MODEL-EXTERNAL] 程序默认启动本地模型代理并把模型客户端的 `OPENAI_BASE_URL` 改写为动态生成的 `http://127.0.0.1:<port>/v1`，该已解析 base_url 不等于唯一允许值 `https://api.arc-bench.com/v1`。
+  - workspace/017-MorningW1nd-c0de05637c2b/llm_proxy.py:484：代理明确构造 `self.base_url = f"http://{host}:{self.port}/v1"`，默认 host 为 `127.0.0.1`。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:2113：启动代理后将该不同 URL 写回 `os.environ["OPENAI_BASE_URL"]`，供模型客户端使用；这不是测试应用的 `BASE_URL`，而是模型配置槽。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:2093：原始上游另从注入的 `OPENAI_BASE_URL` 读取并由代理转发，形成上游与本地代理两个模型 URL 值。
+
+ERROR-004 [NET-EXTERNAL] 程序会主动探测、读取、复制、执行平台提供但不属于授权需求输入的 `/workspace/tests` 或 `ARCBENCH_TESTS_DIR`，并把其中测试正文和运行失败证据用于代码生成与迭代修复。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:1226：读取平台环境变量 `ARCBENCH_TESTS_DIR` 作为测试来源；第 1229 行无条件追加 `/workspace/tests` 候选，并在第 1243 行递归探测 `*.spec.ts`。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:1772：逐文件读取所选平台测试及辅助 TypeScript 正文，随后经 `spec_bodies` 进入实现提示。
+  - workspace/017-MorningW1nd-c0de05637c2b/acceptance.py:955：把整个测试来源复制到工作目录；第 1008 至 1016 行构造并执行 Playwright 命令运行所选测试。
+  - workspace/017-MorningW1nd-c0de05637c2b/acceptance.py:357：读取实际失败位置附近的测试源码；`main.py:2238` 将该内容并入后续修复上下文。
+
+ERROR-FIX-005 [NET-EXTERNAL] 程序包含运行期从外部包服务安装 Playwright、Chromium及作答依赖的主动网络检索路径；默认配置允许在缺少本地 Playwright 时执行该路径。
+  - workspace/017-MorningW1nd-c0de05637c2b/acceptance.py:479：安装环境把 npm registry 指向 `https://registry.npmmirror.com`，第 483 行把浏览器下载源指向 `https://npmmirror.com/mirrors/playwright`。
+  - workspace/017-MorningW1nd-c0de05637c2b/acceptance.py:499：明确构造 `npm install @playwright/test@<version>`，第 500 行构造 `playwright install chromium`，第 508 行实际执行这些命令。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:2039：缺少预装 Playwright 时，默认 `OCTOS_ARC_INSTALL_PLAYWRIGHT=1` 使上述外部安装路径生效。
+  - workspace/017-MorningW1nd-c0de05637c2b/acceptance.py:833：生成应用声明依赖且无 `node_modules` 时执行 `npm install --no-audit --no-fund`，会查询/下载外部包。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 主模型凭据来自允许的注入槽 `OPENAI_API_KEY`，未发现明文 key；但程序会按运行时 provider 额外创建 `DEEPSEEK_API_KEY`、`ANTHROPIC_API_KEY` 或动态 `<PROVIDER>_API_KEY` 槽，额外槽的最终选择需人工核查。
+  - workspace/017-MorningW1nd-c0de05637c2b/main.py:625：主槽初始化为 `OPENAI_API_KEY`；第 627 至 634 行会按 provider 复制同一运行时值到多个候选别名并切换 `key_env`。静态代码可确认这些是额外 API-key 槽，但一次实际运行会命中哪个 provider 分支、环境是否预先给别名设置了不同值无法从仓库确定，需核对运行环境。
+  - workspace/017-MorningW1nd-c0de05637c2b/octos_stdio.py:153：选中的 `api_key_env` 会实际写入模型路由配置，而非仅作声明。
+
+WARNING-002 [INSPECTION-GAP] 核心代理可执行文件 `bin/octos` 为约 145 MB 的 ELF 二进制，超过静态扫描 2 MB 单文件上限，无法达到源码级完整审计。
+  - workspace/017-MorningW1nd-c0de05637c2b/bin/octos（145245936 bytes）：已核对文件类型、符号字符串及 Python 包装层调用路径，但二进制内部的工具实现、网络能力、模型配置处理和计量行为仍无法从可审查源码完整验证；需提供对应构建版本源码或进行人工二进制审计。
+
+判决：作弊

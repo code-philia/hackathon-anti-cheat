@@ -1,0 +1,40 @@
+反作弊审查：040-chengyuj94-e646a6c335be
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/040-chengyuj94-e646a6c335be
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的应用行为契约直接覆盖两个题面的明确需求，并被全量注入架构规划、代码生成及修复提示词：对 github 任务预置了登录、会话、首页/登录后记录列表、搜索及记录详情导航契约；对 sheet 任务预置了首页记录列表、持久化、直接重载以及精确 ARIA 角色/名称等契约。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：静态 CONTRACT 规定测试从首页进入、按种子凭据登录、首页及登录后页面列出记录链接、搜索与详情页直接重载保持相同持久数据，并规定精确可访问名称和角色；这些不是基础框架，而是直接匹配 github 的账户/仓库搜索与导航需求，以及 sheet 的工作簿入口、重载恢复和 ARIA 网格需求的应用行为约束；定位：workspace/040-chengyuj94-e646a6c335be/generated_application.py:187
+  - 检索方案：(4)无检索机制（全量使用）；说明：static_prompt_head 无条件拼接 contract_text()，没有根据题目或功能筛选，因而该整套预置契约进入每个代码生成阶段；定位：workspace/040-chengyuj94-e646a6c335be/generated_application.py:368
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：主生成循环把包含预置契约的 head 与当前源码和题面单元组合为 prompt，再调用 source_generation 模型生成并写入作答；定位：workspace/040-chengyuj94-e646a6c335be/generated_application.py:459
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些契约可复用于具有账户登录、记录搜索/详情导航或持久化可访问数据网格的同类网页，但并非一般网页应用都需要，且分别直接命中 github 与 sheet 的陈述需求。
+  - 综合判断：四个维度共同表明，这是一组全量、可执行使用路径明确的预置应用功能契约；其内容直接解决两个题面的需求语义，并进入模型代码生成流程，符合 TEMPLATE-DIRECT error。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:201：预置的 Discoverability 段进一步强制首页/登录后列表、记录名链接、搜索与直接重载行为。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:425：生成流程在处理任何 requirement unit 前构造并复用该静态 head。
+
+ERROR-FIX-002 [NET-EXTERNAL] 主生成流程强制运行 npm install，从包仓库下载前端依赖，构成运行期间访问外部包服务的具体尝试。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:90：build 在 install=True 时为 frontend 和 backend 构造并执行 npm install 命令。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:409：generate 对刚复制的模板明确调用 build(..., install=True)，不是仅存在于说明或未使用分支。
+  - workspace/040-chengyuj94-e646a6c335be/template/frontend/package-lock.json:24：锁文件把实际依赖解析到 https://registry.npmjs.org/，与上述安装命令共同确定外部下载目的地。
+
+ERROR-FIX-003 [NET-EXTERNAL] 本地验收流程会安装 @playwright/test，并在缺少浏览器时从默认 CDN 或显式镜像下载 Chromium，构成另一条独立的外部依赖/二进制获取路径。
+  - workspace/040-chengyuj94-e646a6c335be/app_runtime.py:126：ensure_playwright 执行 npm install @playwright/test@1.57.0。
+  - workspace/040-chengyuj94-e646a6c335be/app_runtime.py:141：浏览器安装依次尝试默认下载源及 https://registry.npmmirror.com/-/binary/playwright。
+  - workspace/040-chengyuj94-e646a6c335be/app_runtime.py:146：代码实际调用 Playwright CLI 的 install chromium-headless-shell 命令。
+  - workspace/040-chengyuj94-e646a6c335be/acceptance.py:215：SuiteRunner 初始化时调用 ensure_playwright，使该下载逻辑位于验收主路径中。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 源码把静态预置的应用行为契约描述为“derived only from the supplied requirements”，对材料来源和通用性作出与代码数据流相矛盾的反作弊相关声明，足以误导审查。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:187：静态 CONTRACT 在预置登录、记录导航、搜索、重载等规则之前宣称这些规则仅由输入题面派生，但该常量在读取任何题面之前已固定存在。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:165：检查常量定义可见这些规则是仓库内静态源码，而非运行时从 requirements.yaml 机械提取的结果。
+  - workspace/040-chengyuj94-e646a6c335be/generated_application.py:368：检查提示词数据流可见 contract_text() 被无条件全量拼入提示词，反证“仅由所给题面派生”的来源声明。
+  - workspace/040-chengyuj94-e646a6c335be/acceptance.py:93：测试生成提示词也作出“derived only from the supplied requirement text and scenarios”的同类声明，随后静态加入首页进入、登录、种子状态和默认记录导航规则。
+
+WARNING-002 [MODEL-EXTERNAL] 模型 base_url 完全取自运行时环境变量，静态审查无法确认其有效值是否严格等于唯一允许值 https://api.arc-bench.com/v1；需人工核查实际注入配置。仓库仅发现这一组主模型 base_url/api_key 槽，api_key 读取 OPENAI_API_KEY 且未发现明文密钥或额外槽。
+  - workspace/040-chengyuj94-e646a6c335be/core_utils.py:45：base 直接读取 OPENAI_BASE_URL，仓库中没有允许 URL 的固定默认值或校验。
+  - workspace/040-chengyuj94-e646a6c335be/core_utils.py:49：该未解析的 base 被直接传给 OpenAI(..., base_url=base)，需要以实际运行环境确认最终目的地。
+
+判决：作弊

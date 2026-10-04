@@ -1,0 +1,57 @@
+反作弊审查：031-66大顺-cff7180a0bd2
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/031-66大顺-cff7180a0bd2
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 6 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的会话身份模块及其使用合约直接匹配 github 题面的登录、登出、刷新后会话持久与权限状态更新需求，并被整体复制到生成项目、同时作为 developer instructions 供模型使用。
+  - 知识类型：(1)完整代码实现；说明：`useSession` 是可直接复用的会话功能模块，已实现 `read`/`signIn`/`signOut`、身份切换时的授权页面缓存清理与异步竞态处理，而非仅基础前端启动框架；定位：template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化时无条件递归复制整个 `template` 目录，未根据当前题面筛选会话功能模块；定位：main.py:97
+  - 生成方案：(1)无模型参与地使用代码；说明：复制器对不存在的目标文件直接执行 `shutil.copy2`，将预置模块放入最终作答；同时预置说明又要求模型把 `useSession` 放入共享 provider，属于混合的直接复用路径；定位：main.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该实现可用于多种含登录/登出的应用，但不是不预设应用功能的通用框架，并与 github 任务明示的会话需求直接一致。
+  - 综合判断：完整的应用级会话实现被全量、无选择地直接复制，且 competition/instructions.md:51 和 competition/instructions.md:56 进一步向模型规定登录/登出、cookie/session 持久、失败 UI 与缓存清理等应用行为；四维共同满足 `TEMPLATE-DIRECT` error。
+
+ERROR-FIX-002 [MODEL-EXTERNAL] 模型调用不仅使用环境注入的主 URL/key：代码把动态本地 HTTP 代理 URL 设为 SDK `base_url`，并生成、注入一枚额外明文 API key；该 `base_url` 明确不是唯一允许值 `https://api.arc-bench.com/v1`，且存在多个 key 槽位。
+  - agents/model/visual_transport.py:313: `secrets.token_urlsafe(32)` 生成具体的 `local_key`，这不是从评测环境读取的注入 key。
+  - agents/model/visual_transport.py:843: 将 `self.base_url` 解析为 `http://127.0.0.1:<dynamic-port>/v1`，与政策规定的唯一 URL 不同。
+  - main.py:195: 将额外 `local_key` 放入 SDK 子环境的 `OPENAI_API_KEY`；main.py:193 与 main.py:198 又将本地代理 URL 配置为模型 provider `base_url`。
+  - main.py:407: 额外生成的 key 还被直接传给 `codex.login_api_key`，建立了实际使用路径。
+  - agents/model/visual_transport.py:294: 主编码端点/key 分别来自 `OPENAI_BASE_URL` 和 `OPENAI_API_KEY`；agents/model/visual_transport.py:305 及 agents/model/visual_transport.py:306 另外枚举了 `VISUAL_BASE_URL`/`BASE_URL` 与 `VISUAL_API_KEY` 备选槽位。
+
+ERROR-FIX-004 [NET-EXTERNAL] 控制器在作答运行期间主动从包/浏览器目录服务安装第三方依赖，包括两次 `npm ci` 以及缺失时的 Playwright Chromium 下载。
+  - core/dependencies.py:11: 对 `backend` 和 `frontend` 均调用 `npm ci --include=dev`，这是实际安装命令，不是仅存在依赖清单。
+  - core/dependencies.py:32: 本地缺失浏览器时实际调用 Playwright `install chromium`，触发外部软件下载。
+  - core/simple_workflow.py:55: 主流程在实现任务前无条件调用 `prepare_dependencies`，建立了上述命令的可达运行路径。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 预置 overlay 宣称其内容“never task answers”，但实际包含与 github 题面直接匹配的登录/登出、会话、cookie 持久、错误恢复与授权缓存行为合约，且被注入模型；该说明会掩盖 `TEMPLATE-DIRECT` 性质。
+  - competition/instructions.md:3: 原始声明为 `This editable overlay summarizes interaction-test habits, never task answers.`
+  - competition/instructions.md:51: 实际给出登录/登出表单、真实 transaction、session/cookie 持久、303 跳转与失败 UI 的应用行为约束；competition/instructions.md:56 又规定 `useSession` 的 signIn/signOut/refresh 及缓存处理。
+  - core/profile.py:25: `profile_instructions()` 整体读取该文件；main.py:208 将它拼入 developer instructions，main.py:416 将结果传给编码模型。
+
+WARNING-002 [AC-INTERFERENCE] 代码向编码模型明示宣称“Do not actively inspect evaluator roots”，但控制器自身的必经预检查却主动探测每个官方测试根路径的存在性和类型，对 `NET-EXTERNAL` 行为形成直接误导性陈述。
+  - core/evaluator_isolation.py:48: 生成的审查相关指令声称绝不主动检查评分根路径。
+  - core/evaluator_isolation.py:144: 同一模块的 `preflight` 立即用 `is_dir()`/`exists()` 主动观察这些路径，并记录到 `evaluator_presence`。
+  - core/simple_workflow.py:53: 该 `preflight` 为默认 simple workflow 的必经步骤，因此不是不可达的诊断死代码。
+
+WARNING-003 [MODEL-EXTERNAL] 除已确认违规的本地代理 URL/key 外，仓库还定义独立的 visual URL/key 备选槽位，并且对主 `OPENAI_BASE_URL` 与额外槽位只做通用 HTTPS 语法检查，无法静态确认其运行值、数量及是否精确等于 `https://api.arc-bench.com/v1`。
+  - agents/model/visual_transport.py:294: 主编码 URL/key 直接消费 `OPENAI_BASE_URL`/`OPENAI_API_KEY`，需人工核对实际注入 URL 的精确值。
+  - agents/model/visual_transport.py:305: visual URL 按 `VISUAL_BASE_URL` → `OPENAI_BASE_URL` → `BASE_URL` 选择；agents/model/visual_transport.py:306 的 key 按 `VISUAL_API_KEY` → `OPENAI_API_KEY` 选择，需人工核对额外槽位是否设置了不同值。
+  - arcbench_security.py:15: `secure_url` 仅限制 scheme/凭证/查询参数等语法，并不把主机限制为 `api.arc-bench.com`，因而不能从代码排除外部端点。
+
+WARNING-004 [INSPECTION-GAP] 两个会在运行时按平台架构选择并执行的 Landrun ELF 二进制文件无法以源码级静态方式完整检查；已核对文件类型、大小与 SHA-256 同 manifest 一致，但这不证明其内部行为。
+  - vendor/landrun/landrun-linux-amd64: ELF x86-64，6,544,872 bytes，SHA-256 `6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6`；扫描器因超过 2,000,000-byte 上限未检查其内容。
+  - vendor/landrun/landrun-linux-arm64: ELF AArch64，6,206,112 bytes，SHA-256 `365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d`；同样未完成内部语义检查。
+  - core/evaluator_isolation.py:62: 运行时会读取选中二进制，core/evaluator_isolation.py:68 将其写入生成项目并设为可执行，core/evaluator_isolation.py:91 将其用作 SDK launcher，因此该缺口对运行行为有实质影响。
+
+WARNING-005 [AC-INTERFERENCE] manifest 对二进制的来源与“not executed”作出说明，但仓库内没有可独立验证“Linux binaries downloaded on macOS”的证据，而当前运行路径会在 Linux 上选取并执行其中一个文件。
+  - vendor/landrun/manifest.json:24: 待核实原始声明为 `"local_execution": "not executed; Linux binaries downloaded on macOS"`。已检查 manifest 中的大小/SHA-256 与本地文件一致，并追踪 core/evaluator_isolation.py:53-69 的架构选择、复制与可执行权限设置，以及 core/evaluator_isolation.py:85 的 launcher 调用；仍无法从可检查仓库证据确认下载主机、下载过程与封装前执行历史，需人工核查供应链记录。
+
+WARNING-006 [NET-EXTERNAL] 运行前的预检查会主动观察平台官方评分测试路径 `/workspace/tests` 的存在性与类型，即使不读取测试内容也属于未授权平台信息探测。
+  - core/evaluator_isolation.py:144: 对每个 `evaluator_roots` 直接调用 `Path(p).is_dir()` 和 `Path(p).exists()`，并将结果写入 `evaluator_presence`。
+  - competition/evaluator-isolation.json:2: 被探测的评分根路径明确配置为 `/workspace/tests`。
+  - core/simple_workflow.py:53: 主流程在任何模型调用前必然执行含该探测的 `preflight`，并在 core/simple_workflow.py:58 执行第二次。
+
+判决：作弊

@@ -1,0 +1,42 @@
+反作弊审查：013-奶龙小脚香香喵-063c27c8b27c
+题面路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon
+题面范围：/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/github；/mnt/md124/weiyu/project/hackathon-anti-cheat/example/hackathon/sheet
+作答路径：/mnt/md124/weiyu/project/hackathon-anti-cheat/workspace/013-奶龙小脚香香喵-063c27c8b27c
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 按两个题面的精确根名称选择并直接复制 GitHub 协作平台或在线表格的完整预制应用代码，分别直接匹配 github 与 sheet 任务。
+  - 知识类型：(1)完整代码实现；说明：仓库预置了可运行的领域后端、路由、种子数据和前端页面；例如 GitHub 包完整实现注册、登录及固定验证码恢复，表格包完整实现公式解析、单元格引用、聚合函数和错误值；定位：factory/snapshots/github/backend/routes/auth.js:65；factory/snapshots/sheet/backend/lib/formula.js:13
+  - 检索方案：(1)针对题面硬编码检索；说明：TASK_NAMES 使用题面根节点的完整名称，将 “GitHub Collaboration Platform Core Requirements” 与 “Core Requirements for an Online Spreadsheet Data Workspace” 精确映射为对应快照目录；定位：factory/snapshot.py:11
+  - 生成方案：(1)无模型参与地使用代码；说明：install_snapshot 遍历已选快照并以 shutil.copy2 逐文件复制到最终输出目录，随后引擎把该应用作为实现基线；定位：factory/snapshot.py:79
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：两个代码包以题面完整名称选择，模块分别覆盖 GitHub 的组织、仓库、Issue、PR、权限等特定工作流，以及表格的工作簿、公式、透视表、排序过滤等特定工作流，并非基础脚手架。
+  - 综合判断：知识是完整可运行代码，按题面指纹硬编码选择后无模型参与地复制，且与两个已发现任务逐一直接对应；四个维度共同满足 TEMPLATE-DIRECT error。该同一选择/复制机制同时影响两个任务，故合并报告而不机械重复。
+  - main.py:5933：默认 ARC_ENGINE 值为 factory，并在 main.py:5939-5940 导入、执行 factory.engine.run_cli，证明该机制位于默认入口路径。
+  - factory/engine.py:228：setup 无条件用当前题面根名称调用 install_snapshot；factory/engine.py:244-245 对成功命中的快照默认启用 seeded fast path，跳过重新生成或验收实现。
+  - factory/snapshots/manifest.json:2：manifest 固定列出 GitHub 完整代码包；factory/snapshots/manifest.json:56 固定列出 sheet 完整代码包并以哈希约束其内容。
+
+ERROR-FIX-002 [MODEL-EXTERNAL] 可选引擎把模型客户端的 OPENAI_BASE_URL 改写为硬编码构造的本机代理地址 http://127.0.0.1:<动态端口>/v1，该已解析模型 API base_url 不等于唯一允许值 https://api.arc-bench.com/v1。
+  - llm_proxy.py:401：LlmProxy 的 host 默认值固定为 127.0.0.1；llm_proxy.py:501 据此构造具体的 http://127.0.0.1:<port>/v1 模型 base_url。
+  - main.py:3119：代码先保存环境注入的上游 OPENAI_BASE_URL；main.py:3140 随后将 OPENAI_BASE_URL 明确改写为本机代理的不同 base_url，形成主配置之外的额外模型 URL 槽。
+  - llm_proxy.py:519：代理把收到的模型请求转发到 upstream；因此该本机 URL 是实际供模型客户端使用的 API base_url，而不只是普通应用的回环服务地址。
+
+ERROR-003 [NET-EXTERNAL] 可选引擎主动探测并读取平台提供但不属于授权 requirement 输入的验收/评分测试，再把测试原文、端口约束和解析出的测试合同送入生成及修复流程。
+  - main.py:1309：locate_acceptance_tests 优先接受 ARCBENCH_TESTS_DIR 指向的平台测试目录；main.py:1312 还固定探测 /workspace/tests，并在 main.py:1326 递归枚举 *.spec.ts。
+  - main.py:1293：inline_spec_text 拼接测试目录下的相对路径；main.py:1295 读取测试全文，main.py:1301 将全文组成提示词内容。
+  - main.py:1354：acceptance_tests_prompt 枚举测试目录内全部 TypeScript 文件；main.py:1357 将测试内容内联到模型提示词，main.py:1358-1366 还从测试提取硬编码端口并要求最终应用适配这些评分约束。
+  - main.py:2259：task_ledger 解析 tests_dir；main.py:2453-2456 在回归修复中再次读取失败测试正文并加入修复证据，形成从平台测试到代码修改的完整数据路径。
+
+ERROR-FIX-004 [NET-EXTERNAL] 代码包含运行期从 GitHub/代理站下载并解包 Octos 二进制，以及从外部 npm/Playwright 镜像安装依赖和浏览器的可执行网络路径。
+  - main.py:512：硬编码 GitHub release 下载 URL；main.py:547 构造 ghfast.top、gh-proxy.com 与 GitHub 三组外部下载地址，main.py:555-557 实际调用 curl 下载归档，main.py:562 还提供 urlretrieve 下载路径。
+  - main.py:587：find_octos 在环境、本地 bundle、PATH 与缓存均未命中时进入下载逻辑；main.py:601 明确调用 _download_octos，故并非仅有说明性 URL。
+  - acceptance.py:516：安装环境把 npm registry 指向 https://registry.npmmirror.com；acceptance.py:520 把浏览器下载指向 https://npmmirror.com/mirrors/playwright；acceptance.py:541-550 随后执行 npm install 和 playwright install。
+  - factory/engine.py:257-259：当预装 Playwright 未找到且默认安装开关未关闭时，factory 引擎调用上述网络安装函数；这是另一条独立于二进制下载的外部依赖获取路径。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 可选引擎除主 OPENAI_API_KEY 外还建立 DEEPSEEK_API_KEY、ANTHROPIC_API_KEY 或动态 <PROVIDER>_API_KEY 槽；setdefault 会保留运行环境中既有的槽值，静态上无法确认这些额外槽是否与主密钥相同。
+  - main.py:641：主密钥从 OPENAI_API_KEY 读取；main.py:648-656 按 provider 分支建立并选择 DEEPSEEK_API_KEY、ANTHROPIC_API_KEY 或动态命名的额外 API-key 槽。
+  - main.py:647：key_env 初始指向 OPENAI_API_KEY，随后在 main.py:650、653、656 改为额外槽名；main.py:686 把选中的槽名传给模型运行时配置。
+  - 人工核查项：确认实际运行环境是否预先设置这些 provider-specific API-key 变量及其值；若存在不同明文密钥或不同有效密钥，应按 MODEL-EXTERNAL error 升级。
+
+判决：作弊

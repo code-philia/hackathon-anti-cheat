@@ -1,0 +1,37 @@
+反作弊审查：003-chrislearn-861a136e5f21
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\003-chrislearn-861a136e5f21
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库为 github 与 sheet 两个题目预置了经审阅、冻结的完整 Playwright 测试套件、fixtures、app-design、domain-contracts、requirement-contracts 与 test-obligations，并按题面根名称硬编码选择后交给生成和修复模型使用，直接覆盖两个题目的明确需求与验收细节。
+  - 知识类型：(2)代码片段；说明：预置材料包括可直接运行的逐需求 Playwright spec、helpers/fixtures，以及实现级业务模型、领域契约和验收约束；定位：agent/agent/embedded_suites.py:79
+  - 检索方案：(1)针对题面硬编码检索；说明：`NAMES` 以两个题目的精确根标题分别映射到 `hackathon--github` 和 `hackathon--sheet`，`requested_name` 据此选择套件；定位：agent/agent/embedded_suites.py:14
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：程序读取选定 spec 与 helper 全文并由 `tests_prompt_for` 注入生成/修复上下文；定位：agent/agent/main.py:5823
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：选择键是两个题面的精确标题，套件还以 requirement hash、冻结文件 hash、逐题 case review 与专属业务模型绑定，对应 github 与 sheet 的具体需求而非一般网页基础设施。
+  - 综合判断：四个维度共同表明这是按题面指纹检索的、可直接驱动实现与修复的预置代码级知识；`main.py:4438-4456` 会物化并采用该冻结套件及业务模型，故构成 TEMPLATE-DIRECT error，而不是仅因仓库中存在历史材料。
+
+ERROR-002 [NET-EXTERNAL] 程序主动探测并读取平台提供但不属于授权 requirement 输入的验收/评分测试，随后把 spec、helper、端口和失败结果用于生成与迭代修复。
+  - agent/agent/main.py:2553: 优先读取 `ARCBENCH_TESTS_DIR`，这是平台测试目录的显式入口。
+  - agent/agent/main.py:2556: 将固定平台路径 `/workspace/tests` 加入候选并在 `main.py:2570` 递归探测 `*.spec.ts`，即使路径不存在也已形成具体访问尝试。
+  - agent/agent/main.py:2539: 对命中的测试文件执行 `read_text`；`main.py:5949-5951` 默认开启 inline 并把 spec/helper 内容加入模型提示，形成从未授权测试到代码生成/修复的完整数据流。
+
+ERROR-FIX-003 [NET-EXTERNAL] 程序包含并实际调用第三方网络下载路径：运行时从 GitHub 及代理镜像下载可执行归档，并在缺少 Playwright 时从 npm/Playwright 镜像安装包和浏览器。
+  - agent/agent/main.py:1570: 硬编码 `https://github.com/octos-org/...` 发布包 URL；`main.py:1605` 又构造 `https://ghfast.top` 与 `https://gh-proxy.com` 镜像，`main.py:1613-1620` 通过 curl 或 `urlretrieve` 发起下载。
+  - agent/agent/acceptance.py:711: 将 npm registry 指向 `https://registry.npmmirror.com`，并在 `acceptance.py:731-740` 执行 `npm install` 和 Playwright 浏览器安装；这属于运行期间从包服务获取第三方信息/依赖。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 提示文本把可能来自 `ARCBENCH_TESTS_DIR` 或 `/workspace/tests` 的平台测试统一宣称为“PUBLIC ACCEPTANCE TESTS”，掩盖了其真实来源和未授权性质，并引导模型把其中的路由、精确文本、错误文案和动作顺序当作可用 ground truth。
+  - agent/agent/main.py:2523: 原文称“PUBLIC ACCEPTANCE TESTS ... They define routes, hrefs, accessible names, option labels, exact texts, error wording and action order”，但选择逻辑在 `main.py:2553-2556` 优先指向平台环境变量及 `/workspace/tests`，该关于测试授权状态与来源的说明被代码直接否定。
+  - agent/agent/main.py:2527: 又声称 spec 已被完整引用、无需再读取；结合 `main.py:2539-2545` 的实际读取与拼接，这一表述会隐藏未授权测试进入提示词的数据流，足以影响反作弊审查。
+
+WARNING-002 [MODEL-EXTERNAL] 除主 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 外还存在可独立配置的视觉模型 endpoint/key 及 provider-specific key 槽位，静态仓库无法确定其运行时值与是否与主配置相同，需人工核验。
+  - agent/agent/main.py:4208: `VISUAL_BASE_URL` 接受任意语法有效的 HTTP(S) 地址，未静态约束为 `https://api.arc-bench.com/v1`；`main.py:4267` 单独消费 `VISUAL_API_KEY`。
+  - agent/agent/main.py:1733: 主 key 可被复制或映射到 `DEEPSEEK_API_KEY`、`ANTHROPIC_API_KEY` 以及动态 `${PROVIDER}_API_KEY`（`main.py:1735-1742`）；虽然源码未嵌入明文 key，且已知分支复制的是同一主值，但这些都是主配置之外的额外槽位。人工需确认运行环境未设置异源 `VISUAL_BASE_URL`/`VISUAL_API_KEY`，并确认 provider-specific 槽位没有被外部预置为不同 key。
+
+WARNING-003 [INSPECTION-GAP] 预编译可执行文件 `agent/agent/bin/octos` 超出扫描器单文件上限，且源码明确通过它物化冻结套件，无法仅凭静态源码确认其中是否还含其他模板、外部访问、模型配置或计量逻辑。
+  - agent/agent/bin/octos（104906264 bytes）: 二进制内容无法按原始源码逐行审查；`agent/agent/embedded_suites.py:101-108` 会执行该文件的 `arc generate-test-suite` 子命令。三个 zip 归档已逐条目 SHA-256 比对并与各自已展开目录完全一致，因此归档本身不再构成额外检查缺口；仍需人工提供该二进制的可审计源码或可信构建来源以关闭本项。
+
+判决：作弊

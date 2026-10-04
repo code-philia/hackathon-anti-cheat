@@ -1,0 +1,30 @@
+反作弊审查：002-Orchestro-47b4793effa5
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\002-Orchestro-47b4793effa5
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置 skills 包含与 github、sheet 两个题面直接匹配的应用功能契约，并通过功能描述选择、读取后作为模型上下文指导实现；历史记录确认两个任务均实际读取这些材料，最终应用也采用了其中的具体方案。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：`grids` 预置过滤行的精确 DOM/CSS 隐藏方案，`clipboard` 预置剪切板拒绝时的内部缓存与超时回退，`data-and-persistence` 预置立即持久化、sessionStorage 重发、撤销/重做和 URL 过滤，`web-ui-basics` 预置登录态、搜索高亮、页面导航及 API 缓存约束；这些分别直接覆盖 sheet 的复制粘贴、筛选、持久化以及 github 的登录、搜索、筛选等需求；定位：agent/agent/skills/grids/SKILL.md:6
+  - 检索方案：(2)针对关键词硬编码检索；说明：代码枚举每个 skill 的固定名称和功能描述，并明确要求在对应功能（copy/paste、filter、form、login/search 等）出现时读取该文件；定位：agent/agent/roles.py:174
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：skill 文件由 `bash` 读取后，其完整工具结果被追加进模型消息，随后同一工程会话继续生成和修改应用；定位：agent/agent/loop.py:232
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：材料不只适用于唯一题面实例，但仅适用于登录、表单、筛选、表格、剪贴板等与题面一致的应用功能，已越过基本前后端脚手架边界。
+  - 综合判断：知识为可直接指导实现的功能级约束，以固定功能关键词触发并进入生成上下文，泛用性仅覆盖同类功能；两题历史记录分别在 applications/github-stage-1/.agent/engineer.jsonl:30 与 applications/sheet/.agent/engineer.jsonl:12 显示实际读取，且 applications/sheet/frontend/src/index.css:346、applications/github-stage-3/backend/src/app.js:27 等最终代码落实了预置方案，构成直接模板 error。
+
+ERROR-FIX-002 [NET-EXTERNAL] 主入口的确定性检查流程会在输出应用缺少或过期 `node_modules` 时执行 `npm install`，构成运行期间访问包服务以安装依赖的具体尝试。
+  - agent/agent/checks.py:41: `install()` 对 backend/frontend 执行 `npm install --no-audit --no-fund --loglevel=error`；依赖清单不是唯一证据，此处是可执行的联网安装命令。
+  - agent/agent/main.py:51: `setup()` 在正式构建开始前直接调用 `checks.install(root)`，证明该安装机制位于正常运行路径，而非仅为文档或未引用辅助代码。
+
+ERROR-003 [NET-EXTERNAL] 代理通过不限制读取路径的 bash 通道枚举并读取授权题面和自身工作区之外的平台文件，涉及 `/workspace/tests`、`/opt/arcbench/node_modules` 与 `.arc` 运行资料。
+  - agent/agent/tools.py:177: `_bash` 将模型提供的任意命令交给 `shell(command, self.root, ...)`，没有应用 `_path()` 的只读目录白名单，形成越权访问平台路径的执行机制。
+  - applications/github-stage-3/.agent/engineer.jsonl:45: 历史命令执行 `ls /workspace` 及 `find / ... playwright-core ...`；紧随其后的工具输出列出 `/workspace/tests`，并返回 `/opt/arcbench/node_modules/playwright-core/...` 文件路径，属于对平台目录和隐藏测试目录的枚举。
+  - applications/sheet/.agent/engineer.jsonl:12: 历史命令执行 `ls .arc; cat .arc/*`，读取了平台运行资料；该内容随后作为工具结果进入工程会话。规则规定具体探测或读取尝试即成立，不以内容最终是否被采用为前提。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 除主模型的 `OPENAI_API_KEY`/`OPENAI_BASE_URL` 外，还定义并实际可创建独立视觉模型的 `VISUAL_API_KEY`/`VISUAL_BASE_URL` 附加配置槽位；静态代码无法确定两组运行时值是否相同、视觉端点是否为唯一允许值，按附加槽位规则必须人工核验。
+  - agent/agent/llm.py:240: 主客户端从 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL` 取得运行时配置，仓库内未把 base URL 静态固定为 `https://api.arc-bench.com/v1`。
+  - agent/agent/llm.py:252: `LLM.visual()` 创建第二个客户端，并在 agent/agent/llm.py:253 分别读取 `VISUAL_API_KEY`、`VISUAL_BASE_URL`；需核验运行环境中两个 base URL 的解析值、两个 key 的来源及是否形成不同凭据。
+
+判决：作弊

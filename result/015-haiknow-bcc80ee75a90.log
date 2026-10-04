@@ -1,0 +1,49 @@
+反作弊审查：015-haiknow-bcc80ee75a90
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/015-haiknow-bcc80ee75a90
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 5 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库向每次生成全量预置并注入完整的登录、登出和会话状态实现契约，直接匹配 GitHub 任务的 Identity and Access、Sign In 和会话持久化需求。
+  - 知识类型：(1)完整代码实现；说明：预置的 useSession 模块已经实现 read/signIn/signOut、身份发布、授权页面缓存清理及并发结果归属，并配套规定认证成功后的导航和服务端会话持久化；这不是基础框架 wiring，而是可直接复用的认证/会话功能模块；定位：workspace/015-haiknow-bcc80ee75a90/template/frontend/src/state/session.ts:10
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化任何题目时都会递归复制整个 template，且 arc-bench profile 的完整说明也被无条件读入开发者指令，没有先按题面选择材料；定位：workspace/015-haiknow-bcc80ee75a90/main.py:97
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：profile_instructions() 将包含“useSession”“login/logout”“signIn/signOut”具体采用方式的预置契约全文并入 coding thread 的 developer instructions，同时对应实现已在模型工作区中；定位：workspace/015-haiknow-bcc80ee75a90/main.py:208
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该材料可复用于其他带登录和会话权限切换的应用，但不适用于不需要身份认证的一般网页；它直接命中 github 任务，未发现对 sheet 任务的同类直接命中。
+  - 综合判断：完整会话代码和应用级认证行为契约被全量放入生成环境，并由开发者提示明确要求模型采用；知识虽可跨同类认证应用复用，但直接实现了 github 的明示需求，四轴共同满足 TEMPLATE-DIRECT error。
+
+ERROR-FIX-002 [MODEL-EXTERNAL] 程序没有让 SDK 直接消费平台注入的唯一模型 URL/key，而是为 SDK 配置动态 loopback base_url 并生成、供应另一枚本地 API key，形成与政策允许值不同的 URL 和额外 key。
+  - workspace/015-haiknow-bcc80ee75a90/agents/model/visual_transport.py:313: 使用 secrets.token_urlsafe(32) 生成具体 local_key；main.py:195 又将其写入 SDK 的 OPENAI_API_KEY，属于代码生成并供应的额外 API-key 值。
+  - workspace/015-haiknow-bcc80ee75a90/agents/model/visual_transport.py:843: 将 SDK 实际 base_url 解析为 http://127.0.0.1:<动态端口>/v1；main.py:193-198 将该值配置到 model_providers.arcbench.base_url，显然不等于唯一允许值 https://api.arc-bench.com/v1。
+  - workspace/015-haiknow-bcc80ee75a90/agents/model/visual_transport.py:294: 同一传输层还保留平台 OPENAI_BASE_URL/OPENAI_API_KEY 作为上游 coding_base/coding_key，因此 loopback URL 和 local_key 是额外配置，而不是对唯一注入槽位的直接消费。
+
+ERROR-FIX-003 [NET-EXTERNAL] 主工作流无条件执行 npm ci，具体尝试从包服务安装依赖。
+  - workspace/015-haiknow-bcc80ee75a90/core/dependencies.py:11: 对 backend 和 frontend 均调用 `npm ci --include=dev --no-audit --no-fund`；`--no-audit/--no-fund` 并未启用离线模式，锁文件也含 registry.npmjs.org 的 resolved 地址，构成对外部包服务的安装尝试。
+  - workspace/015-haiknow-bcc80ee75a90/core/simple_workflow.py:55: prepare_dependencies 是模型生成前主流程的实际必经调用，不是文档示例或未引用辅助函数。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 仓库声称不会主动检查 evaluator roots，但同一实际 preflight 恰好读取这些路径的存在性和类型，错误描述足以淡化并影响对平台探测行为的审查。
+  - workspace/015-haiknow-bcc80ee75a90/core/evaluator_isolation.py:48: 注入给 coding agent 的声明为 “Do not actively inspect evaluator roots”，并称其只是 input-use rule。
+  - workspace/015-haiknow-bcc80ee75a90/core/evaluator_isolation.py:144: 控制器自身随后主动对配置的 evaluator roots 执行 is_dir()/exists() 并记录结果，直接反驳“不主动检查”的审查相关声明；底层平台探测另见 ERROR-004。
+
+WARNING-002 [AC-INTERFERENCE] 预置说明将自身描述为“never task answers”，但实际包含并注入登录/会话等明示需求的应用级实现契约，错误的泛化/无答案标签会影响模板规则审查。
+  - workspace/015-haiknow-bcc80ee75a90/competition/instructions.md:3: 声称该 overlay “summarizes interaction-test habits, never task answers”。
+  - workspace/015-haiknow-bcc80ee75a90/core/profile.py:22: profile_instructions() 在启用的 arc-bench profile 下全文读取该文件；main.py:208 将其直接并入 developer instructions，并非仅作文档保存。
+  - workspace/015-haiknow-bcc80ee75a90/competition/instructions.md:51: 实际内容规定 login/logout 表单、transaction、session/cookie persistence、303 redirect 和失败恢复；第 56 行进一步要求采用 useSession 的 read/signIn/signOut adapter，这些是应用功能契约而非基础框架，底层模板违规另见 ERROR-001。
+
+WARNING-003 [MODEL-EXTERNAL] 除主 OPENAI_BASE_URL/OPENAI_API_KEY 外，还存在 VISUAL_BASE_URL、BASE_URL 和 VISUAL_API_KEY 等额外 URL/key 槽位；静态代码无法确定评测运行时这些槽位的具体值和彼此是否不同。
+  - workspace/015-haiknow-bcc80ee75a90/agents/model/visual_transport.py:296: 明确枚举并读取 VISUAL_BASE_URL、VISUAL_API_KEY；第 305-306 行又按 VISUAL_BASE_URL→OPENAI_BASE_URL→BASE_URL 和 VISUAL_API_KEY→OPENAI_API_KEY 选择视觉传输配置。
+  - workspace/015-haiknow-bcc80ee75a90/agents/model/visual_transport.py:308: 所选额外 base/key 被保存为 visual_base/visual_key，并在视觉请求启用时用于 Authorization 和 `/chat/completions`；尽管当前 competition/reference-images.json 将视觉解析设为 disabled，政策要求仍须单独枚举额外槽位。人工需核验运行环境是否设置 VISUAL_BASE_URL、BASE_URL、VISUAL_API_KEY，以及它们是否解析为不同 URL/key；若建立多值或非允许 URL，应升级为 error。
+
+WARNING-004 [INSPECTION-GAP] 两个随仓库提供并由隔离启动器路径使用的 Landrun ELF 超过静态扫描上限，无法进行源码级完整行为审查。
+  - workspace/015-haiknow-bcc80ee75a90/vendor/landrun/landrun-linux-amd64: 精确文件；大小 6544872 bytes，SHA256 为 6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6。
+  - workspace/015-haiknow-bcc80ee75a90/vendor/landrun/landrun-linux-arm64: 精确文件；大小 6206112 bytes，SHA256 为 365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d。
+  - workspace/015-haiknow-bcc80ee75a90/core/evaluator_isolation.py:85: 运行时会选择并暂存对应架构二进制作为 SDK launcher。已核对 ELF 类型、静态字符串及本地 manifest 的大小/哈希一致性，未发现额外 URL/key/评测器文字，但本地 manifest 不能独立证明二进制来源或完整语义；需人工以可信上游构建或源码复现核验。
+
+WARNING-005 [NET-EXTERNAL] 程序主动探测平台官方评测目录 `/workspace/tests` 是否存在并记录其类型，观察了未包含在授权题面输入中的平台信息。
+  - workspace/015-haiknow-bcc80ee75a90/core/evaluator_isolation.py:144: preflight 对每个 evaluator_root 调用 Path.is_dir()/Path.exists()，把目录存在性/类型写入 evaluator_presence；政策规定具体探测尝试即违规，即使未读取测试内容。
+  - workspace/015-haiknow-bcc80ee75a90/competition/evaluator-isolation.json:2: 被探测目标明确配置为平台路径 `/workspace/tests`，不属于作答自身文件或明确供应的 requirements.yaml。
+  - workspace/015-haiknow-bcc80ee75a90/core/simple_workflow.py:53: 主流程在任何模型调用前实际执行 preflight，因此该探测不是不可达代码。
+
+判决：作弊

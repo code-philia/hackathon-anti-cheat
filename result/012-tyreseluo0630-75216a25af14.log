@@ -1,0 +1,41 @@
+反作弊审查：012-tyreseluo0630-75216a25af14
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/012-tyreseluo0630-75216a25af14
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库预置并默认启用一套完整 Web 应用 scaffold，直接覆盖 github 任务的登录、搜索/过滤与记录增删改语义，以及 sheet 任务要求的跨会话持久化和表格剪贴板语义；该代码会在模型生成前直接写入作答暂存目录并随最终应用发布。
+  - 知识类型：(1)完整代码实现；说明：scaffold/frontend/public/app.js 已实现登录表单、凭据校验、搜索过滤和记录 CRUD，scaffold/frontend/public/lib/arc.js 又实现共享记录存储及面向表格区域的复制、剪切、粘贴机制，分别直接匹配 github 与 sheet 题面功能；定位：scaffold/frontend/public/app.js:20
+  - 检索方案：(4)无检索机制（全量使用）；说明：新建应用时只要 ONESHOT_SCAFFOLD 未被关闭，代码即读取整个内置 scaffold，并未按题面做选择性检索；定位：main.py:1346
+  - 生成方案：(1)无模型参与地使用代码；说明：内置 scaffold 的全部文件字节在模型输出前被直接写入 stage，未被模型提议的文件继续保留，随后 stage 被发布为作答；定位：main.py:1359
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些实现可复用于带认证、记录搜索/编辑或电子表格剪贴板功能的同类应用，但已超出基础路由、构建和通用 UI 原语，直接规定题面功能行为。
+  - 综合判断：完整可运行代码经全量默认路径直接进入最终作答，且同时实质实现 github 的认证/搜索功能合同和 sheet 的持久化/区域剪贴板合同；知识类型、无检索复制路径和同功能应用泛用性共同满足 TEMPLATE-DIRECT error。
+  - scaffold/frontend/public/app.js:30：预置完整 Log in 页面，scaffold/frontend/public/app.js:42 还以 email/password 查找用户并建立 session，直接对应 github 的 sign-in 要求。
+  - scaffold/frontend/public/lib/arc.js:314：预置浏览器剪贴板 copy/cut/paste 实现，并在 scaffold/frontend/public/lib/arc.js:332 明确处理 spreadsheet 行列文本，直接对应 sheet 的区域复制、剪切和粘贴要求。
+
+ERROR-002 [TEMPLATE-DIRECT] 仓库将预置的评测器定位规则与应用功能合同全量注入初始生成提示词，并在另一条测试生成路径中预置同类功能组合约束；这些材料直接匹配 github 的认证、搜索/过滤和记录操作，以及 sheet 的单元格编辑、区域剪贴板、排序/过滤与公式联动要求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：dialect.md 不只是通用可访问性建议，而是规定搜索字段角色、过滤时表头存留、跨会话记录状态、双击/键盘单元格编辑、二维区域剪贴板及菜单行为等实现约束；定位：dialect.md:123
+  - 检索方案：(4)无检索机制（全量使用）；说明：draft_messages 无条件读取完整 dialect.md 并拼接到每个新应用的用户提示词中，未按任务或功能筛选；定位：main.py:1321
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：包含该知识的 messages 被直接交给 draft_application 生成应用，测试生成器的预置合同还生成反馈测试并由 repair_delivery 用于迭代修改；定位：main.py:1369
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：材料可服务相同认证、记录列表或电子表格功能的应用，但其交互状态、控件角色和跨功能一致性要求并非一般网页基础设施。
+  - 综合判断：预置 requirement-level 行为合同通过无检索的提示词路径实质指导最终代码生成，明确命中两个任务的陈述需求；政策明确规定即使合同被包装成通用检查表或工程建议也属于直接模板，因此构成 TEMPLATE-DIRECT error。
+  - dialect.md:153：预置“单元格/标题/行双击或键入进入编辑、Enter 提交、Escape 取消”的完整交互合同，直接命中 sheet 的单元格编辑要求。
+  - dialect.md:156：预置 ARC 剪贴板 API、二维制表符/换行布局及 Copy/Cut/Paste 菜单接线要求，直接命中 sheet 的区域操作要求。
+  - testgen.py:59：预置“修改密码、删除 repository、重命名 workbook 时先经 UI 创建自有记录”的跨测试状态合同；testgen.py:63-68 又明确要求覆盖“formula after a sort、rule after an insert、filter with a header row”，其生成的测试经 main.py:2238-2278 进入修复循环。
+
+ERROR-FIX-003 [NET-EXTERNAL] 程序在运行时缺少本地探测/测试依赖时会主动调用 npm 安装 jsdom、playwright 或 @playwright/test，并可继续调用 Playwright CLI 安装 Chromium；这是对外部包/浏览器分发服务的具体访问尝试。
+  - main.py:874：DOM 检查路径直接执行 `npm install --prefix ... jsdom`；该路径由 main.py:1045 的 smoke_check 流程调用。
+  - main.py:966：语义浏览器探测在模块缺失时执行 `npm install ... playwright@1.57.0`，main.py:971-975 在浏览器缺失时进一步执行 Playwright 的 Chromium 安装命令。
+  - testgen.py:453：默认开启的测试生成路径在 runner 不存在时执行 `npm install ... @playwright/test@1.57.0`；testgen.py:667 从正常 run_suite 流程调用该安装检查。
+  - scenario_check.py:350：规则场景检查的备用路径同样安装 `playwright@1.57.0`，scenario_check.py:356-360 还可安装 Chromium。依赖是否已经缓存不改变代码所建立的具体外部获取尝试，符合 NET-EXTERNAL error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 主模型配置和两个额外的 base_url/api_key 槽位均从运行时环境取值；静态代码只给出允许的默认 URL 且未嵌入明文密钥，但无法确定实际注入值以及额外入口是否被调用，需要人工核实。
+  - main.py:2438：主槽读取 `OPENAI_API_KEY`；main.py:2465 和 main.py:2473 读取 `OPENAI_BASE_URL`，其默认值来自 main.py:22 的允许地址 `https://api.arc-bench.com/v1`，但环境覆盖后的实际 URL 无法静态确定。
+  - scenario_translate.py:541：场景翻译器独立读取 `OPENAI_API_KEY`，scenario_translate.py:545 独立读取 `OPENAI_BASE_URL`；scenario_check.py:492 未显式传入主配置，故这是正常检查路径可达的额外 URL/key 槽位。
+  - testgen.py:810：testgen 的 CLI 入口再次独立读取 `OPENAI_API_KEY`，testgen.py:815 再次读取 `OPENAI_BASE_URL`；虽然 main.py 的默认集成使用回调而非该 CLI 槽位，政策要求即使可能未使用也必须枚举。
+  - 人工核查项：确认所有入口运行时的 `OPENAI_BASE_URL` 均严格等于 `https://api.arc-bench.com/v1`，所有 key 槽位都只消费评测环境注入的同一密钥，并确认没有包装器为额外入口注入不同 URL 或 key。
+
+判决：作弊

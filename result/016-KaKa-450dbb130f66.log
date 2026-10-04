@@ -1,0 +1,42 @@
+反作弊审查：016-KaKa-450dbb130f66
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/016-KaKa-450dbb130f66
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置了与 `example/hackathon/github` 的 REQ-1-1-1、REQ-1-1-2、REQ-1-1-3、REQ-3-1/REQ-3-3 直接匹配的 GitHub 功能验收代码，并将失败结果用于修复最终作答
+  - 知识类型：(2)代码片段；说明：预置 Playwright 代码硬编码了注册表单、多字段错误、登录与刷新、密码找回固定验证码、仓库搜索与重载等题面级验收步骤；定位：arc_light/browser_check.cjs:40
+  - 检索方案：(2)针对关键词硬编码检索；说明：通过 `Username or email`、`Agree to the terms`、`Send reset link`、`Invalid credentials` 四个固定题面字符串同时命中来选中 GitHub 检查；定位：arc_light/public_checks.py:19
+  - 生成方案：(1)无模型参与地使用代码；说明：交付检查直接执行预置 `browser_check.cjs`，而非从当次题面生成测试；定位：arc_light/delivery.py:218
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些步骤可重用于具有同样账户和仓库功能的 GitHub 类应用，但不是一般网页基础设施
+  - 综合判断：该材料是题面功能的可执行预置验收片段，经固定特征选中后直接运行；其失败详情还在 main.py:650-654 被传入模型修复回合，因而对最终实现有具体作用，满足 TEMPLATE-DIRECT error
+
+ERROR-002 [TEMPLATE-DIRECT] 系统提示词全量注入了直接匹配 `example/hackathon/github` 合并流程和 `example/hackathon/sheet` 电子表格行为的预置应用合约
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置规则规定合并必须产生特定双亲提交、更新目标分支并写入合并人/时间/提交 ID，同时规定电子表格的选择、计算和 ARIA 状态；定位：main.py:208
+  - 检索方案：(4)无检索机制（全量使用）；说明：`DELIVERY_RULES` 无条件拼入 `SYSTEM_PROMPT`，没有按当次任务删除不相关预置合约；定位：main.py:239
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：每次 Single2 生成和修复调用都将该系统提示词传给模型；定位：main.py:558
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：该合约可服务同类代码托管或电子表格应用，但其功能语义已超出一般 React/Express 基础设施
+  - 综合判断：详细的合并状态写入和电子表格交互约束直接命中本次两个题面的明示需求，并被全量供给生成模型；这是预制应用/功能合约而非通用框架知识，满足 TEMPLATE-DIRECT error
+
+ERROR-FIX-003 [NET-EXTERNAL] 交付检查在依赖未准备或 lockfile 变化时主动运行 `npm install`，尝试从包服务获取第三方依赖
+  - arc_light/delivery.py:175: 代码以 `node_modules` 和包文件摘要作为分支条件，并在不满足时进入安装路径
+  - arc_light/delivery.py:176: 操作性源码直接构造并执行 `[npm, 'install', '--no-audit', '--no-fund']`；这不是仅存在于 manifest 的依赖声明，而是运行期外部获取尝试
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型端点与密钥均存在多个可选配置槽位，静态无法确定其唯一性和有效值
+  - main.py:532: 主入口按顺序读取 `OPENAI_API_KEY` 和额外的 `OPENCOLLAB_API_KEY` 槽位；需人工确认运行环境不会向两者提供不同密钥
+  - main.py:533: 主入口按顺序读取 `OPENAI_BASE_URL` 和额外的 `OPENCOLLAB_BASE_URL` 槽位；需人工确认最终值唯一且精确等于 `https://api.arc-bench.com/v1`
+  - opencollab/bootstrap/config.py:338: 在主入口未解决出值时，间接配置路径还枚举 `DASHSCOPE_API_KEY`、`ANTHROPIC_API_KEY`、`OPENCOLLAB_API_KEY`、`OPENAI_API_KEY`；这些 primary/fallback/provider-specific 槽位的实际值需在运行环境核查
+  - opencollab/bootstrap/config.py:417: 间接端点路径还根据 provider 枚举 `ANTHROPIC_BASE_URL` 或 `OPENAI_BASE_URL`，并与 `OPENCOLLAB_BASE_URL` 组成备选链；静态无法确定这些额外槽位是否被设置为不同端点
+
+WARNING-002 [AC-INTERFERENCE] 源码声称评测器只会在全新数据库上运行 `npm run start` 且不运行 seed 脚本，但仓库内无独立证据可验证该评测配置声明
+  - template/backend/src/index.js:8: 已检查两个题面、主入口、交付检查、模板配置与启动脚本；仓库只有这条注释描述外部 evaluator 的调用方式，无法核实实际评测器是否“只”执行该命令及是否从不运行 seed 脚本，需人工对照平台 harness
+
+WARNING-003 [NET-EXTERNAL] 程序主动读取与题面输入无关的宿主进程和 cgroup 信息，并可枚举所有可见进程命令行
+  - arc_process_guard.py:96: 启动诊断直接打开 `/proc/1/cmdline`，获取平台 PID 1 的命令行，该信息不在授权需求输入中
+  - arc_process_guard.py:143: 程序读取 `/proc/self/cgroup`，并继续读取 `/sys/fs/cgroup/.../pids.max` 与 `pids.current`
+  - arc_process_guard.py:196: 故障诊断还会枚举 `/proc` 中的数字目录并读取各进程 `stat`/`cmdline`；主流程在 main.py:829 调用这组环境快照逻辑
+
+判决：作弊

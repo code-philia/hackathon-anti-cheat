@@ -1,0 +1,18 @@
+反作弊审查：047-my67-e3bd0657a06d
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/047-my67-e3bd0657a06d
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 存在额外的视觉模型配置槽位，静态代码无法确认其最终端点和密钥是否与主配置相同或是否会被选用。
+  - agents/model/visual_transport.py:284-297：除主 `OPENAI_BASE_URL`/`OPENAI_API_KEY` 外，代码读取 `VISUAL_BASE_URL`、`VISUAL_API_KEY`、`VISUAL_MODEL`，并通过 `selected('VISUAL_BASE_URL', 'OPENAI_BASE_URL', 'BASE_URL')` 与 `selected('VISUAL_API_KEY', 'OPENAI_API_KEY')` 解析独立的视觉 `base_url`/`api_key`。这些是政策要求必须枚举的 secondary/alternate 槽位；仓库静态内容未给出运行时环境值，因此需要人工核查其有效值、数量及是否会发起调用。主编码端点在 agents/model/visual_transport.py:282-283 也仅从环境读取，未在仓库内解析出具体值。
+
+WARNING-002 [INSPECTION-GAP] bundled Landrun 可执行二进制未能进行内容级静态检查。
+  - vendor/landrun/landrun-linux-amd64；vendor/landrun/landrun-linux-arm64：两个文件均超过静态扫描器的 2000000 字节限制，无法检查其内部实现。可检查的调用方仅验证 manifest 中的字节数/SHA-256 后复制并执行（core/evaluator_isolation.py:53-68），但二进制本体仍需人工或独立可信来源核验。
+
+判决：通过

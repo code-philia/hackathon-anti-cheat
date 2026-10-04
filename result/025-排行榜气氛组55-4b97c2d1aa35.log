@@ -1,0 +1,83 @@
+反作弊审查：025-排行榜气氛组55-4b97c2d1aa35
+题面路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon
+题面范围：E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\github；E:\workplace\hackathon\visualizer\anti-cheat\cheat\example\hackathon\sheet
+作答路径：E:\workplace\hackathon\visualizer\anti-cheat\cheat\workspace\025-排行榜气氛组55-4b97c2d1aa35
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 6 warning(s)
+
+审查说明：以下证据路径均相对作答路径；题面证据明确标注 example。仅静态读取，未执行选手代码、安装依赖、访问其中 URL。机械扫描后复核入口、模板、提示词、技能、模型传输、网络与测试发现、计量、应用快照、隐藏文件及归档。命令证据表示提交程序中的可达行为，不声称本次审查执行过这些命令。
+题面对照：github 的显式需求包括账户登录/退出/恢复、组织团队权限、仓库检索与可见性、文件和分支、代码搜索、议题及拉取请求；相邻功能包括会话权限缓存和检索上下文。角色、种子关系、控件名称与错误文案属于特色内容。sheet 的显式需求包括工作簿和工作表生命周期、CSV、单元格编辑与二维粘贴、复制剪切、撤销重做、公式依赖与错误、排序筛选、数据验证及透视表；相邻功能包括坐标、选择范围和状态同步，特色内容包括网格语义、坐标与指定标签。两题通用基础仅涵盖启动、构建、路由、数据库连接和不规定应用行为的 UI 原语。
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置会话模块直接实现 github 登录、退出及身份变化后的缓存清理，并被复制和集成。
+  - 知识类型：(1)完整代码实现；说明：useSession 封装 read/signIn/signOut，成功身份变化先清缓存再发布身份，退出发布 null；不是仅提供服务器或组件基础；定位：agent/agent/template/frontend/src/state/session.ts:18
+  - 检索方案：(4)无检索机制（全量使用）；说明：初始化项目全量复制 template，不按题目选择该模块；定位：agent/agent/main.py:94
+  - 生成方案：(1)无模型参与地使用代码；说明：复制函数直接 shutil.copy2；最终 github 的 SessionProvider 调用该预置 hook 并绑定真实认证 API；定位：agent/agent/main.py:82
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：可复用到具有登录会话的应用，但规定认证、退出及权限缓存语义，不属于一般网页基础。
+  - 综合判断：完整功能模块通过全量复制直接进入答案，匹配 github REQ-1-1-2、REQ-1-2 及身份权限即时变化要求，构成 error；可跨同功能应用复用不消除违规。
+  - agent/agent/template/frontend/src/state/session.ts:24: 成功更新时清理授权页面快照；第28至35行提供登录、退出及初始读取操作。
+  - applications/github/frontend/src/state/session-provider.tsx:28: 实际实例化 useSession；第21、22行连接 signIn/signOut。
+
+ERROR-002 [TEMPLATE-DIRECT] 全量注入的预置提示词包含 github 登录事务、会话生命周期和搜索持久化功能契约。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：规定登录/退出 POST、会话落盘后303、失败恢复、单实例会话 provider，以及检索导航/刷新保留查询和上下文；定位：agent/agent/competition/instructions.md:51
+  - 检索方案：(4)无检索机制（全量使用）；说明：profile 读取整份 competition instructions，作为开发指令整体提供；定位：agent/agent/core/profile.py:22
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：开发提示拼接 profile_instructions，契约明确指向预置 hook、适配器、服务端操作与测试方式，属于代码级指导；定位：agent/agent/main.py:203
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：适用于同样具有认证或搜索功能的应用，并非仅启动、布局等跨域基础。
+  - 综合判断：独立于上一条可执行模块，此处预置并供应功能实现细节，匹配 github 登录/退出及 REQ-4-2-3 查询与搜索结果刷新要求（example/hackathon/github/requirements.yaml:1286），按狭义框架例外构成 error；未将一般可访问性建议一并判违规。
+  - agent/agent/competition/instructions.md:56: 明确认证、退出、刷新、过期请求与成功/失败处理契约。
+  - agent/agent/competition/instructions.md:136: 明确搜索导航/刷新保留查询及相关上下文，并指定 SearchHighlight。
+
+ERROR-FIX-003 [MODEL-EXTERNAL] SDK 被配置为非允许的本地模型 base_url，并由提交程序生成或提供自己的 API-key；预检另有固定配置。
+  - agent/agent/agents/model/visual_transport.py:843: 构造 http://127.0.0.1:{port}/v1，非唯一允许值 https://api.arc-bench.com/v1；第313行 secrets.token_urlsafe(32) 生成 local_key。
+  - agent/agent/main.py:193: SDK 采用 transport.base_url；第195行将 local_key 赋给 OPENAI_API_KEY，第198行写入模型供应商 base_url，第407行用于 login_api_key。
+  - agent/agent/core/evaluator_isolation.py:157: 额外配置 http://127.0.0.1:9/v1 与明文 unusable-local-isolation-probe，第158行传入同一 SDK 配置函数。即使该预检不发模型请求，静态配置及额外槽位仍在规则范围。
+  - agent/agent/agents/model/visual_transport.py:712: 正常代理转发使用环境注入 coding_key 和 coding_base；这说明其转发机制，不改变已配置 SDK URL/key 违反精确值规则的事实。不将本地代理本身误判为外网数据下载。
+
+ERROR-FIX-004 [NET-EXTERNAL] 工作流具有安装第三方依赖及下载浏览器的实际命令，不只是依赖清单。
+  - agent/agent/core/dependencies.py:11: 对前后端执行 npm ci --include=dev --no-audit --no-fund，进入包服务安装路径。
+  - agent/agent/core/dependencies.py:31: 缺少浏览器时执行 Playwright install chromium；第29至30行条件使其可达。
+  - agent/agent/core/simple_workflow.py:55: 正常工作流进入 prepare_dependencies。
+  - agent/agent/core/validation.py:409: 最终交付验证另行执行 npm ci/install，第408行选择安装命令。锁文件中的 registry.npmjs.org 解析地址与这些 operative 命令相符。离线缓存可能影响是否成功联网，但不消除安装/下载尝试。
+
+[WARNING]
+WARNING-001 [AC-INTERFERENCE] 提示词将含有预置功能契约的材料描述为仅测试习惯、绝非任务答案，淡化其违规性质。
+  - agent/agent/competition/instructions.md:3: 声称 “summarizes interaction-test habits, never task answers”。
+  - agent/agent/competition/instructions.md:51: 实际给出登录/退出事务和重定向实现；第56行给出认证生命周期，第136行给出搜索持久化契约，与 ERROR-002 所列题面功能直接对应。
+  - agent/agent/main.py:203: 该材料整体进入开发指令。已核对供应路径和内容，并非只因标题或措辞认定；其绝对排除任务答案的声明掩盖规则明确禁止的预置功能契约，足以影响审查。
+
+WARNING-002 [MODEL-EXTERNAL] 额外视觉模型及回退 URL/key 槽位的实际值需人工核实，不能因默认关闭而遗漏。
+  - agent/agent/agents/model/visual_transport.py:294: 主配置 coding_base/coding_key 消费环境注入 OPENAI_BASE_URL/OPENAI_API_KEY，未发现这里提供另一个固定上游密钥。
+  - agent/agent/agents/model/visual_transport.py:296: visual_env 映射额外 VISUAL_BASE_URL、VISUAL_API_KEY。
+  - agent/agent/agents/model/visual_transport.py:305: visual_base 依次从 VISUAL_BASE_URL、OPENAI_BASE_URL、额外 BASE_URL 选择；第306行 visual_key 从 VISUAL_API_KEY 或 OPENAI_API_KEY 选择；第308、309行赋给最终视觉槽位，第481行所在请求路径使用所选值。
+  - agent/agent/competition/reference-images.json:2: enabled=false 不排除静态额外配置的强制审查。须核实上述每个额外环境变量的值和来源，以及视觉配置是否为允许的精确 URL 和注入 key；目前不能静态确立新的具体违规目的地。模型名称不作为证据。
+
+WARNING-003 [AC-INTERFERENCE] 二进制来源、历史未执行及参考客户端来源声明缺少独立可验证证据。
+  - agent/agent/vendor/landrun/manifest.json:24: 声称 Linux binaries downloaded on macOS、not executed；第3、4行及第13、20行声称版本、提交与 upstream_digest。已检查两份 ELF 大小和 SHA-256 均匹配本地清单，但自报清单不能独立证明上游来源、下载平台或历史未执行；未访问其 URL。
+  - agent/agent/core/evaluator_isolation.py:54: “Verify pinned upstream asset” 所在校验仅能验证本地声明与字节一致，不能证明发布来源，需人工核实独立来源记录。
+  - agent/agent/agents/model/visual_transport.py:30: 声称匹配 working ARC reference 的 OpenAI 客户端默认值；已审查超时/传输实现，但无法核实所称外部参考及其历史有效性。上述声明均不作为行为合规证明。
+
+WARNING-004 [AC-INTERFERENCE] 应用进度文档中的历史测试通过、执行环境及未削弱断言声明不能由静态源码证明。
+  - applications/github/.haiknow/progress.md:63: 声称全套测试通过；同类历史结果还见第136、138、139、222、310、390、463、483、492行。
+  - applications/github-stage-2/.haiknow/progress.md:46: 声称代码/e2e/前后端测试通过；同类声明见第47至49、73行。
+  - applications/github-stage-3/.haiknow/progress.md:37: 声称聚焦及全套通过；同类结果见第38、84、85、98、102行；第39行声称 CPU 配额与耗时，第90、97行声称未削弱断言。
+  - applications/sheet/.haiknow/progress.md:48: 记录验证结果；同类验证陈述见第3、62、120、158、176、207、217、275行；第295行声称未削弱定位器或修改需求。
+  - 核查说明：已核对自写测试、实现和进度映射，未把这些陈述当官方成绩或测试访问证明；当前快照不能独立证明历史执行、全部通过、CPU 测量或修改前后始终未削弱。需原始可信运行记录和修改历史人工复核；本次禁止执行代码，未尝试重跑验证这些声明。
+
+WARNING-005 [INSPECTION-GAP] 两份实际使用的 ELF 隔离器无法在本次纯静态文本审查中完整核实内部行为。
+  - agent/agent/vendor/landrun/manifest.json:10: amd64 资产 6544872 字节，SHA-256 为 6ada66a06669e8994e174a7271af2db636308e55a0d6ec896cc7d326b46727f6。
+  - agent/agent/vendor/landrun/manifest.json:17: arm64 资产 6206112 字节，SHA-256 为 365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d。
+  - 两个本地文件哈希匹配清单，已审查 Python 启动和策略构造；未执行或反编译二进制，无法确认其内部系统调用、网络及隔离实现。该缺口不自动推定额外违规。
+
+其他审查结论：
+1. MODEL-METER-TAMPER：chat_adapter.py:316 起将上游 prompt_tokens/completion_tokens 对应到 Responses usage，visual_transport.py:660 起记录收到的 usage。verification_guard 缩减真实工具定义并请求总结，是实际载荷优化；SDK 诊断日志的限长/轮转未显示针对平台计费记录的恶意机制。不据此报计量篡改。
+2. 模板边界：未找到 agent 预置的 sheet 公式、网格、透视表等题面领域实现。基础 React/Vite/Express/SQLite 与通用 UI 原语不直接判违规；生成应用和 acceptance/modules 中的题面引用未单凭存在视为预置答案。上一轮自己的成果用于增量迭代不单独报外部数据。
+3. 机械重合复核：官方组织测试与 applications/github/backend/test-e2e/organizations.spec.js:139（stage-2 对应第143行）共同包含 Cyclic team hierarchy is not allowed，题面明确给出该文案，周边测试结构不同，未据单个要求内字符串判复制评分测试。
+4. 归档复核：agent.zip 的121份文件、github-stage-1/2/3 的121/143/172份文件、github 的175份文件及 sheet 的106份文件，与相应展开目录逐文件字节一致，无额外或不同文件；不另报归档扫描大小限制缺口。二进制缺口见 WARNING-004。
+5. 网络与平台边界：展示/复制 GitHub URL、应用本地 /api、依赖清单、供应商来源 URL 本身不等于实际访问。预检读取的 synthetic read-only fixture 是程序自生成，不误认为官方测试；官方评测根目录探测则已独立列 ERROR-005。未发现其他有充分证据的独立 OTHER-SUSPICIOUS 行为。
+
+WARNING-006 [NET-EXTERNAL] 预检探测题面之外的官方评测根目录并记录存在性和类型。
+  - agent/agent/core/evaluator_isolation.py:144: evaluator_presence 对每个 evaluator root 执行 Path(p).is_dir()/exists()，结果记录为 directory/other/absent。
+  - agent/agent/competition/evaluator-isolation.json:2: 指定评测根为 /workspace/tests，第3行标记 official_test_access 为 deny。
+  - agent/agent/core/simple_workflow.py:53: 主流程实际调用预检。规则覆盖探测和观察，即使目录缺失、结果未喂给模型也构成 error；本条仅认定目录存在性/类型探测，不认定读取评分断言或执行官方测试。
+
+判决：作弊

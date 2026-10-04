@@ -1,0 +1,37 @@
+反作弊审查：034-能智吗-0e37d0ad4d43
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/034-能智吗-0e37d0ad4d43
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 0 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置宿主直接实现了 GitHub 任务题面要求的“每个浏览器会话使用独立种子状态”行为，不属于基础通用宿主脚手架。
+  - 知识类型：(1)完整代码实现；说明：预置 Node.js 宿主通过 `evogit_sbx` cookie、每会话私有模块缓存与种子数据副本，完整实现题面的会话隔离行为；定位：workspace/034-能智吗-0e37d0ad4d43/template/backend/src/index.js:187
+  - 检索方案：(4)无检索机制（全量使用）；说明：非 inherited 任务会无条件将整个预置 template 复制进作答工作区，没有根据题面选择该实现；定位：workspace/034-能智吗-0e37d0ad4d43/generated_application.py:344
+  - 生成方案：(1)无模型参与地使用代码；说明：`prepare_workspace` 通过 `_copy_template(template, root)` 直接复制宿主实现，该文件还被列为模型不可修改的 host-owned 文件；定位：workspace/034-能智吗-0e37d0ad4d43/generated_application.py:344
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：该机制特别匹配 `example/hackathon/github` 根需求中“supply each account through an isolated browser session”，并以“首页新会话获得新种子副本、深链会话继承最近状态”的特制策略适配评测场景。
+  - 综合判断：完整应用行为实现被全量、无模型地复制进最终作答，且直接解决 GitHub 任务的明示会话隔离要求，因此构成 TEMPLATE-DIRECT error。
+  - workspace/034-能智吗-0e37d0ad4d43/template/backend/src/index.js:289: `sandboxInstance` 为新会话复制 `seedSnapshot` 并创建私有应用实例，是实际功能路径，而非文档描述。
+  - workspace/034-能智吗-0e37d0ad4d43/README_934_V1.md:9: 选手明确说明该改动来自对官方运行与题面会话隔离句子的针对性分析；第 26 行又说明该功能无需模型即由宿主实现。
+
+ERROR-002 [TEMPLATE-DIRECT] 所有代码生成调用都被全量注入预制的应用行为契约，其中的登录入口、种子记录、首页/登录后记录链接、持久化与精确可访问名称直接匹配 GitHub 和 sheet 任务的明示功能要求。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预制 `CONTRACT` 规定每会话种子副本、通过可见 UI 登录、精确 ARIA 名称、首页和登录后页面主记录链接以及持久化等应用行为；定位：workspace/034-能智吗-0e37d0ad4d43/generated_application.py:235
+  - 检索方案：(4)无检索机制（全量使用）；说明：`static_prompt_head` 对每个代码编写阶段无条件调用 `contract_text()`，没有对任务或功能做选择；定位：workspace/034-能智吗-0e37d0ad4d43/generated_application.py:431
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：包含预制契约的 `head` 被拼入单元源码生成 prompt，随后用于 `source_generation` 模型调用；定位：workspace/034-能智吗-0e37d0ad4d43/generated_application.py:539
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些契约可复用到同样包含登录、种子数据、主记录列表与持久化的应用，但并非一般前后端基础设施。
+  - 综合判断：这是全量注入模型的应用级行为契约，其功能语义直接匹配两个题面的明示要求；按政策，即使嵌入广泛检查表且由模型生成代码，仍构成 TEMPLATE-DIRECT error。
+
+ERROR-FIX-003 [NET-EXTERNAL] 主生成流程在选手程序运行时强制对 frontend 和 backend 执行 `npm install`，会从包服务获取第三方依赖。
+  - workspace/034-能智吗-0e37d0ad4d43/generated_application.py:136: `build(..., install=True)` 会为两个子项目构造并执行 `npm install --fetch-retries=2 --fetch-timeout=60000`。
+  - workspace/034-能智吗-0e37d0ad4d43/generated_application.py:483: 主 `generate` 路径无条件以 `install=True` 调用该构建函数，失败后还会再试一次，因此不是仅存在于依赖清单的静态信息。
+
+ERROR-FIX-004 [NET-EXTERNAL] 内置验收流程会在缺失 Playwright/Chromium 时主动安装测试包并从外部 CDN 或硬编码镜像下载浏览器。
+  - workspace/034-能智吗-0e37d0ad4d43/app_runtime.py:126: 缺少测试工具时直接执行 `npm install ... @playwright/test@1.57.0`。
+  - workspace/034-能智吗-0e37d0ad4d43/app_runtime.py:141: 浏览器缺失时枚举默认 CDN 与硬编码的 `https://registry.npmmirror.com/-/binary/playwright`。
+  - workspace/034-能智吗-0e37d0ad4d43/app_runtime.py:146: 实际执行 Playwright CLI 的 `install chromium-headless-shell`，使上述外部下载路径可达。
+
+[WARNING]
+无
+
+判决：作弊

@@ -1,0 +1,32 @@
+反作弊审查：011-sunhao-e19423e68321
+题面路径：example/hackathon
+题面范围：example/hackathon/github；example/hackathon/sheet
+作答路径：workspace/011-sunhao-e19423e68321
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 作答按公开题面根标题硬编码选择 GitHub 或 Sheet 组件，并将仓库内预置、可直接运行且覆盖对应需求的完整应用复制到输出目录；匹配任务：example/hackathon/github、example/hackathon/sheet。
+  - 知识类型：(1)完整代码实现；说明：两个组件各自携带完整前后端应用及任务专用业务实现，部署循环按清单读取整个 application 目录；定位：github/main.py:178、sheet/main.py:176
+  - 检索方案：(1)针对题面硬编码检索；说明：入口从公开 requirements 文档提取根标题，并与 manifest 中两个固定 public_root_name 精确比对后选择对应组件；定位：main.py:25
+  - 生成方案：(1)无模型参与地使用代码；说明：组件校验预置文件哈希后直接把字节写入输出目录，GitHub 组件再机械拼接前端模块，模型回复明确不参与构建；定位：github/main.py:179、sheet/main.py:178
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：两套应用分别实现 GitHub 协作平台与在线表格的题面专属账户、组织、仓库、Issue/PR、工作簿、公式、筛选、校验和透视表等完整语义，不是跨域基础脚手架。
+  - 综合判断：完整任务应用经题面指纹选择后无模型参与地直接交付，知识、检索、使用方式和专用程度共同满足 TEMPLATE-DIRECT error；该统一分发行为同时覆盖两个已发现题面，故合并报告而不机械重复。
+  - main.py:60：选择结果直接决定 entrypoint，随后加载并执行对应的预置应用交付组件。
+
+ERROR-002 [MODEL-METER-TAMPER] GitHub 与 Sheet 两个任务组件都在部署预置应用前构造与应用生成无关的合成数字负载，循环发起付费模型请求直至接近固定人民币目标，模型回复仅被哈希且不用于构建；这是专门改变竞赛计费结果的人工注入活动。
+  - github/main.py:68：构造标明为 cost experiment、回复将被丢弃的合成数字请求；github/main.py:100 的循环按剩余 TARGET 持续请求并在 github/main.py:130 累加返回 usage 成本，目标由 github/main.py:28 固定为 4 CNY。
+  - sheet/main.py:77：构造同类合成数字请求；sheet/main.py:109 的循环按剩余 TARGET 持续请求并在 sheet/main.py:139 累加成本，目标由 sheet/main.py:37 固定为 42 CNY。
+  - github/main.py:176、sheet/main.py:201：计费循环在复制或部署预置应用之前执行；后续应用来源是仓库内静态文件，进一步证明这些付费调用并非生成应用所需。政策明确将“solely to alter the competition's measured cost”的人工计费活动认定为 MODEL-METER-TAMPER error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 两个互斥任务组件分别存在模型 base_url/api_key 配置槽，均从运行时环境变量读取；仓库没有明文密钥或静态外部 URL，但无法静态确认两个槽的最终 URL 和凭据来源。
+  - github/main.py:122：GitHub 槽以 OPENAI_BASE_URL 拼接 `/chat/completions`，github/main.py:123 从 OPENAI_API_KEY 构造 Authorization。
+  - sheet/main.py:131：Sheet 槽独立执行相同的运行时 URL 解析，sheet/main.py:132 独立读取同名密钥变量。需人工确认两条任务路径运行时均解析为唯一允许的 `https://api.arc-bench.com/v1`，且两个 OPENAI_API_KEY 引用均为评测环境注入的同一允许凭据，而非额外配置槽。
+
+WARNING-002 [AC-INTERFERENCE] 仓库对预置应用的历史来源、与既往运行的精确一致性及历史测试成绩作出会影响来源与测试访问判断的说明，但随仓库证据只能校验当前文件与本地清单，无法独立验证所引用的外部历史运行或成绩。
+  - github/README.md:3：声明应用“exactly match”保存的运行 b0608eccee25；已检查 main.py 的本地哈希校验、manifest.json 和全部随附文件，但仓库不含该历史运行或其源归档，精确来源关系仍需人工核查。
+  - github/implementation-review.json:860：声明历史评测 36/100 且给出 ranking_score；已检查随附实现审查、清单及代码，未发现可复现该历史成绩的报告或测试执行证据，需核验外部评测记录。
+  - sheet/baseline-manifest.json:6：声明来源于 development-007-workflows-fixed；sheet/baseline-manifest.json:7 又声明 public-requirements-v1.6 为 83 passed、0 failed。已核对当前应用哈希和版本说明，但引用的源工程、测试套件及结果报告均未随仓库提供，仍需人工验证这些来源与成绩声明。
+
+判决：作弊
