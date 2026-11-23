@@ -1,0 +1,29 @@
+反作弊审查：leaderboard_刘今组_track-arc-bench-lite_score-18.500439497156115_pass_rate-17.032967032967033
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_刘今组_track-arc-bench-lite_score-18.500439497156115_pass_rate-17.032967032967033\agent
+题面范围：material/arc-bench-web/keep；material/arc-bench-web/prestashop；material/arc-bench-web/12306；material/arc-bench-web/stackoverflow；material/arc-bench-web/bookstack；material/arc-bench-web/ctrip
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 选手仓库将非公开评测测试及其固定账号/场景写入提交内容，属于获取、保存并可供实现复用的测试信息。
+  - input/tests/REQ-2.spec.ts:1: 文件明确写有“requirement: REQ-2”，并包含 SCN-REQ-2-01/02 的注册成功、重复用户名拒绝和会话断言；这些是题面之外的评测测试场景。
+  - input/tests/REQ-3.spec.ts:1: 文件明确写有“requirement: REQ-3”，并固定 correct-password/incorrect-password 流程及刷新后会话断言。
+  - input/tests/helpers.ts:14: 定义 EXISTING_ACCOUNT 测试账号，向实现提供评测所需的种子凭据。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在多个非标准或无法静态确认唯一性的 base_url/api_key 槽位。
+  - infrastructure/shared/models/text.py:57-74: 文本模型读取 OPENAI_API_KEY，并将 OPENAI_BASE_URL 缺省为 https://api.openai.com/v1。
+  - infrastructure/shared/models/vision.py:56-57: 视觉模型另读 VISUAL_API_KEY/VISUAL_BASE_URL，并有同样的 https://api.openai.com/v1 缺省；.env.example:3-4 还声明独立 OPENAI_API_KEY 与 https://api.arc-bench.com/v1。无法静态证明实际运行时只有一个 api_key 槽位且有效 base_url 恰为指定端点，需人工核查。
+
+WARNING-002 [TEMPLATE-DIRECT] 提交内置了与本题 REQ-2、REQ-3、REQ-4 直接对应的测试派生实现约束，并将其作为可复用输入材料保存。
+  - input/tests/REQ-2.spec.ts:6: 直接编码“注册后刷新仍登录”和“已有用户名拒绝且不创建会话”等实现级验收步骤。
+  - input/tests/REQ-3.spec.ts:5: 直接编码正确密码登录、刷新保持会话及错误密码拒绝行为。
+  - input/tests/REQ-4.spec.ts:5: 直接编码注销后刷新仍登出及再次登录流程。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：保存了具体场景、断言、选择器调用和会话持久化约束，而非通用框架知识；定位：input/tests/REQ-2.spec.ts:6
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试文件随提交整体放入 input/tests，未见运行时选择机制；定位：input/tests/REQ-2.spec.ts:3
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：该材料位于编译器输入树并与 requirements/reference 一起作为编译输入可被后续流水线读取；定位：main.py:29-31
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：REQ 编号、SCN 编号、固定账号和 WrongSmoke!2026 等内容只对应本题认证页面与验收流程。
+  - 综合判断：测试内容与本题需求逐项对应，且与 ERROR-001 的非公开测试获取行为相互印证；四维度共同满足 TEMPLATE-DIRECT error。
+
+判决：作弊

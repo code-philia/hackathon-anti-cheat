@@ -1,0 +1,29 @@
+﻿反作弊审查：leaderboard_好面面决定_track-arc-bench-lite_score-27.304976481249998_pass_rate-25.824175824175825
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_好面面决定_track-arc-bench-lite_score-27.304976481249998_pass_rate-25.824175824175825\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 选手仓库预置并读取了非授权评测测试及其夹具，且按题面需求树选择测试套件。
+  - infrastructure/compact_acceptance.py:20: `SUITES = Path(__file__).with_name('acceptance_cases')` 将仓库内的验收套件目录作为运行时数据源；该目录包含 337 个 `.spec.ts` 测试文件和 fixtures。
+  - infrastructure/compact_acceptance.py:66: `bundled_suite(source)` 以需求 YAML 的结构哈希匹配套件目录，随后在 77-81 行读取 `index.json` 并选择对应哈希目录，构成针对题面指纹的测试获取路径。
+  - infrastructure/compact_acceptance.py:234: `prepare_workspace(suite, workspace)` 复制所选套件，237-255 行把失败场景和页面快照继续送入修复模型上下文；这不是仅存档，而是用于生成和修复作答。
+  - infrastructure/acceptance_cases/1cd020c5debbe77d017af7fbd8509b0036d5c079f6ad396c7805d2a84455a487/REQ-1.1.spec.ts:7: 预置测试直接断言 `Logo`、`CLOTHES`、`Sign in`、`Cart`、`Popular Products` 等任务界面和状态，属于非授权测试证据。
+
+ERROR-002 [TEMPLATE-DIRECT] 预置验收测试把多个题面任务的界面、选择器、断言、场景数据和期望结果作为可复用实现合同，并通过需求结构哈希提供给模型；匹配任务包括 stackoverflow、12306、bookstack、keep、ctrip、prestashop。
+  - infrastructure/compact_acceptance.py:66: 代码按需求树结构计算套件键并选择对应测试目录，直接把题面任务指纹映射到专用知识。
+  - 知识类型：(2)代码片段；说明：`REQ-*.spec.ts`、helpers 和 fixtures 是可直接复用的测试/实现约束，包含具体路由、可访问名称、业务断言和数据；定位：infrastructure/acceptance_cases/1cd020c5debbe77d017af7fbd8509b0036d5c079f6ad396c7805d2a84455a487/REQ-1.1.spec.ts:7
+  - 检索方案：(1)针对题面硬编码检索；说明：`suite_structure_key` 以需求名称、需求 ID、场景和子树计算哈希，再由 `index.json` 映射到套件；定位：infrastructure/compact_acceptance.py:55
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：运行套件后收集失败、页面快照并在 246-255 行连同需求和文件状态传给模型修复；定位：infrastructure/compact_acceptance.py:246
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：测试中的实体名、选择器、REQ 编号、断言文本和夹具数据绑定到六个具体任务及其版本。
+  - 综合判断：四个维度均指向题面专用、基于非公开测试的实现知识；该材料直接覆盖题面功能合同并参与生成，构成 error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置的 `base_url` 和 `api_key` 槽位不满足唯一合法基线，需人工核查实际运行配置。
+  - infrastructure/shared/models/text.py:67: 文本模型读取 `OPENAI_API_KEY`，84 行在缺省时使用 `https://api.openai.com/v1`，不是唯一的 `https://api.arc-bench.com/v1` 槽位。
+  - infrastructure/shared/models/vision.py:56: 视觉模型另读 `VISUAL_API_KEY` 或回退到 `OPENAI_API_KEY`，57 行另有 `VISUAL_BASE_URL`/`OPENAI_BASE_URL` 回退链，64 行将其传入 OpenAI 客户端；存在多个 key/base_url 槽位。
+  - .env.example:3: `OPENAI_API_KEY` 与 .env.example:4 的 `OPENAI_BASE_URL=https://api.arc-bench.com/v1` 只是示例声明，不能静态证明运行时唯一有效值。
+
+判决：作弊

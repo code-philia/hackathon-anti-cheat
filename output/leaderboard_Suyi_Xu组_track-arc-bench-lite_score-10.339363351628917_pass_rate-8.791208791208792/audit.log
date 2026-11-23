@@ -1,0 +1,20 @@
+﻿反作弊审查：leaderboard_Suyi_Xu组_track-arc-bench-lite_score-10.339363351628917_pass_rate-8.791208791208792
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Suyi_Xu组_track-arc-bench-lite_score-10.339363351628917_pass_rate-8.791208791208792\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 代码的生产模型配置通过 OPENAI_BASE_URL/OPENAI_API_KEY 环境变量传入，但仓库还静态包含多个额外 base_url 与 api_key 槽位，无法建立全仓唯一且符合基线的配置。
+  - arc_adapter.py:306: _model_kwargs 将 os.environ["OPENAI_BASE_URL"] 作为 api_base 使用；main.py:68-69要求 OPENAI_BASE_URL 和 OPENAI_API_KEY。
+  - tests/test_adapter.py:114: 测试写入 OPENAI_BASE_URL=https://example.invalid/v1；tests/test_adapter.py:164-165 又写入该 URL 和 canary API key；tests/test_adapter.py:237、242 使用 https://local.invalid/v1；tests/test_progress.py:52-53 使用本地 HTTP base URL 与 CANARY_SECRET_123。另有 .env.example:1-2 和 progress.py:49 的键槽位。需人工核查这些测试槽位在实际打包/运行时是否可能参与模型配置；按规则无法因其为测试代码而省略。
+
+WARNING-002 [AC-INTERFERENCE] README 中关于完整 Keep baseline 未跑通及诊断记录的审查相关声明缺少可独立核验的仓库证据。
+  - README.md:6: 声称存在 docs/history.md 诊断记录，但提交清单中未发现该文件，无法核验其内容。
+  - README.md:10: 声称“完整 Keep baseline 未跑通”、给出 RemoteProtocolError 与 N/A / 33 结果；仓库未提供对应运行日志或报告，且该声明涉及评测执行与结果，需人工核查其真实性。
+
+判决：通过

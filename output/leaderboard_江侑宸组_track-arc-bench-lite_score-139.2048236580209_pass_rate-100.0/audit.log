@@ -1,0 +1,36 @@
+反作弊审查：leaderboard_江侑宸组_track-arc-bench-lite_score-139.2048236580209_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_江侑宸组_track-arc-bench-lite_score-139.2048236580209_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 提交物预置并使用测试辅助代码及密码 fixture，属于获取/复用非公开 evaluator material 的证据。
+  - templates/backend/tests/support/context.ts:1: 提交物包含 backend/tests/support 测试上下文，直接导入测试运行时、数据库初始化和测试环境变量。
+  - templates/backend/tests/support/context.ts:30: fixturePasswordHash 固定盐值并生成 credential API fixture hash；该测试专用 fixture 位于提交模板中。
+  - 知识类型：(2)代码片段；说明：包含测试上下文、数据库清理和固定密码哈希 fixture，可直接复用；定位：templates/backend/tests/support/context.ts:30
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试辅助目录随模板整体复制并可被测试脚本发现；定位：templates/backend/tests/support/context.ts:1
+  - 生成方案：(1)无模型参与地使用代码；说明：fixture 和测试 helper 作为预置文件直接保留在输出模板中；定位：templates/backend/tests/support/context.ts:30
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：固定 credential fixture 与 evaluator API 测试上下文针对特定测试协议。
+  - 综合判断：该测试目录和 fixture 是非公开测试资产的静态副本/复用路径，违反 tests 不得获取、复制或使用的 NET-EXTERNAL 规则，并构成与认证要求相匹配的 TEMPLATE-DIRECT 准备材料。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 无法从静态代码确认 OPENAI_BASE_URL 的唯一有效值为 https://api.arc-bench.com/v1。
+  - main.py:1021: base_url 从 OPENAI_BASE_URL 环境变量读取，未设置默认值或白名单校验；main.py:1054 将其传入 OpenAI。api_key 仅见 OPENAI_API_KEY（main.py:1022），未发现明文 key，但 endpoint 唯一性需人工核查。
+
+WARNING-002 [AC-INTERFERENCE] 测试 fixture 的解释性注释可能淡化其审计属性，部分用途无法仅凭注释独立验证。
+  - templates/backend/tests/support/context.ts:29: 注释声称“Fixture setup is not API behavior”并声称“ No test relies on an exact random hash ...”；已检查同文件代码，确认其确实构造固定 scrypt fixture，但是否与外部 evaluator 测试逐项对应仍需人工核查。
+
+判决：作弊
+
+WARNING-003 [TEMPLATE-DIRECT] 预置生成提示直接包含多个题面功能契约，并在生成阶段供模型复用，覆盖六个任务中出现的认证、持久化、搜索/预置数据和可访问性语义。
+  - main.py:76: 提示固定要求注册 API、SQLite 表和 seeds，并要求为场景预置可浏览/搜索/预订的数据；这属于应用行为契约而非基础框架。
+  - main.py:88: 提示要求严格复现 requirements/scenario 的 labels、roles、states、persistence 和 workflow semantics，并要求精确可访问名称。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了应用级数据种子、状态持久化、搜索/预订数据和可访问性验收约束；定位：main.py:88
+  - 检索方案：(4)无检索机制（全量使用）；说明：SYSTEM 字符串在每次生成请求中整体作为 system prompt 注入，没有按任务选择；定位：main.py:66
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：该 SYSTEM 与 data/UI generation instructions 一起传给 OpenAI 生成最终文件；定位：main.py:1054
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：契约可跨多个网页题面复用，但明确规定了认证、持久化、搜索/预置数据等功能语义。
+  - 综合判断：这些是直接匹配题面功能的准备性应用契约，进入模型上下文并指导实现，满足 TEMPLATE-DIRECT error。
+
+判决：作弊

@@ -1,0 +1,32 @@
+﻿反作弊审查：leaderboard_朱明睿组_track-arc-bench-lite_score-15.673689251901378_pass_rate-12.637362637362637
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\weibo
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_朱明睿组_track-arc-bench-lite_score-15.673689251901378_pass_rate-12.637362637362637\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 3 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型客户端支持多个可配置 URL 和密钥槽位，无法静态证明符合唯一官方端点基线。
+  - infrastructure/shared/models/vision.py:74: 视觉客户端从 `VISUAL_API_KEY` 回退到 `OPENAI_API_KEY`，形成额外 api_key 槽位。
+  - infrastructure/shared/models/vision.py:77: 视觉客户端从 `VISUAL_BASE_URL` 回退到 `OPENAI_BASE_URL`，形成额外 base_url 槽位。
+  - infrastructure/shared/models/configuration.py:60: `first_credential(*names)` 按多个环境变量选择首个凭据。
+  - infrastructure/shared/models/configuration.py:68: `base_url(*names)` 按多个环境变量选择首个 URL。
+
+WARNING-002 [AC-INTERFERENCE] 文档声称实验可使用 DeepSeek 外部端点，与仓库可核验的官方端点约束不一致且其运行时是否使用无法由代码独立确认。
+  - REACT_HANDOFF.md:125: 文档要求设置 `OPENAI_BASE_URL=https://api.deepseek.com` 并将 `DEEPSEEK_API_KEY` 作为 `OPENAI_API_KEY`。
+  - infrastructure/shared/models/text.py:100: 实际文本客户端读取 `OPENAI_API_KEY` 并将 `base_url("OPENAI_BASE_URL")` 传入 SDK；未发现该文档配置在仓库内被强制或验证，需人工核查运行时是否采用了额外端点。
+
+WARNING-003 [TEMPLATE-DIRECT] 预置的 Playwright 生成指令包含应用行为契约（重复创建防护、负面结果、重载持久化、记录身份与持久性），并作为固定提示供模型生成测试，适用于题面中的多个任务（12306、bookstack、ctrip、keep、prestashop、stackoverflow、weibo）的直接功能场景。
+  - infrastructure/react_agent/acceptance.py:15: `TEST_INSTRUCTIONS` 被定义为固定的测试生成提示并要求模型编译 supplied website requirement contracts。
+  - infrastructure/react_agent/acceptance.py:34: 固定要求使用真实 UI 操作和断言。
+  - infrastructure/react_agent/acceptance.py:37: 固定要求测试 distinct identities、duplicate prevention、negative outcomes 和 reload persistence。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了记录身份、重复防护、负面结果和持久化等应用行为约束，而非基础框架；定位：infrastructure/react_agent/acceptance.py:37
+  - 检索方案：(4)无检索机制（全量使用）；说明：提示常量在生成测试时整体传入模型，没有按题面任务选择；定位：infrastructure/react_agent/acceptance.py:72
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：固定提示被拼接进模型请求并用于生成测试文件；定位：infrastructure/react_agent/acceptance.py:68
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些约束可跨网页应用复用，但仍规定具体功能语义；定位：infrastructure/react_agent/acceptance.py:37`
+  - 综合判断：该固定提示把应用行为契约注入测试生成流程，满足 TEMPLATE-DIRECT。
+
+判决：通过

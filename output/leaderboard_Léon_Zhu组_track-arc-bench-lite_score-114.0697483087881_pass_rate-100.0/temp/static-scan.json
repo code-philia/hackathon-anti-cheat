@@ -1,0 +1,2017 @@
+﻿{
+  "example_root": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web",
+  "example_tasks": [
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\keep",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\prestashop",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\12306",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\stackoverflow",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\ctrip"
+  ],
+  "submission_root": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\input\\leaderboard_L��on_Zhu��_track-arc-bench-lite_score-114.0697483087881_pass_rate-100.0\\agent",
+  "submission_inventory": [
+    {
+      "path": ".env",
+      "bytes": 265,
+      "sha256": "d80d4209f0a15d6a0aba95477859a01ce7de9f8a758ea869988b84aeafa21c05"
+    },
+    {
+      "path": ".env.example",
+      "bytes": 523,
+      "sha256": "a727ec97110b042b27e1d2bc2cd7149021dea621a778e9d4fcdf19d1ebd99b0e"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 93,
+      "sha256": "8579b65b1243e3cf5b629ab5583191c299bb54e2171ec182e3c98ee4c71fff61"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 160,
+      "sha256": "466485ed98563046241fbcc97a00a6c7af9cbeb686a82cff3bb73ca91a5c8074"
+    },
+    {
+      "path": "assets/code-map.svg",
+      "bytes": 4524,
+      "sha256": "003c2615b5da5dba3a0bb8da2a302fe4af20e68c70fe7141faa3fcbbf453b5ff"
+    },
+    {
+      "path": "infrastructure/__init__.py",
+      "bytes": 85,
+      "sha256": "9c9aa4c6f4c1be1386ad16bd4afdf3ebdf38d9ae053005d174bfc4ba4ea976c5"
+    },
+    {
+      "path": "infrastructure/application_agent.py",
+      "bytes": 23592,
+      "sha256": "56b500d8c86cc9d71840a51d9bff88ef4d05468360e139dfc31555bac110ba22"
+    },
+    {
+      "path": "infrastructure/requirements/__init__.py",
+      "bytes": 74,
+      "sha256": "c1990adac5f733c79695f9bf9fd37d7b48a78ee5549d2487b6c8906136073754"
+    },
+    {
+      "path": "infrastructure/requirements/contract.py",
+      "bytes": 7821,
+      "sha256": "cd207a39ac453d7b61a285f691c6c26a72b506bc38688dccb139e090937bbbcf"
+    },
+    {
+      "path": "infrastructure/requirements/normalize.py",
+      "bytes": 2757,
+      "sha256": "cee90687f36d8c1f1fdbb57a7b708bb94934ee9367f7ccbc91aa9227c0edcaaa"
+    },
+    {
+      "path": "infrastructure/runtime/__init__.py",
+      "bytes": 88,
+      "sha256": "db26ed722d00cb363e5c80f079e4cb3a26eca5859bbb77cf843ae0311bafc3e2"
+    },
+    {
+      "path": "infrastructure/runtime/artifacts.py",
+      "bytes": 1775,
+      "sha256": "b9a02bbbe72cfc4697ae19b8f250fbd8b6850b6dffef6759f94dde714c409412"
+    },
+    {
+      "path": "infrastructure/runtime/browser.py",
+      "bytes": 11281,
+      "sha256": "b65bd704daf7c872345e6d1c6e2b0a7e8deeb543857b8f777aea312fbcc0e7d4"
+    },
+    {
+      "path": "infrastructure/runtime/budget.py",
+      "bytes": 10281,
+      "sha256": "5b601e7519c38f48c62892fbffa826f94e9322122fcdc9e7490eea6c81b5ec88"
+    },
+    {
+      "path": "infrastructure/runtime/composer.py",
+      "bytes": 2577,
+      "sha256": "1a1e43051981c3a6bbca396cab8e20123e8308625adb86a0a5c367fa6dfb5bd8"
+    },
+    {
+      "path": "infrastructure/runtime/config.py",
+      "bytes": 14346,
+      "sha256": "022f27c0d421f6cf216b69f44a68a546751b44206bfb017202209bad8e748abd"
+    },
+    {
+      "path": "infrastructure/runtime/context.py",
+      "bytes": 20667,
+      "sha256": "cfef9bab8d8aa8c8aa9431edfc2d58c40df7ae00d547ec2af47e216dce5e7720"
+    },
+    {
+      "path": "infrastructure/runtime/delegation.py",
+      "bytes": 8765,
+      "sha256": "e0c7730993366a3f7f612c70c1262ebf023f2e3c977073702cd6a1da79a7026d"
+    },
+    {
+      "path": "infrastructure/runtime/dependencies.py",
+      "bytes": 6819,
+      "sha256": "1b8c61f9ba20d8d598b18d0cfcd086ad36e3918b8fc3e5ee46c408d13e0e76c2"
+    },
+    {
+      "path": "infrastructure/runtime/events.py",
+      "bytes": 256,
+      "sha256": "bb767c2ae1ae10ee0636e11195168f4b5cb943c77730dfab2eadb02f6b1f2ca3"
+    },
+    {
+      "path": "infrastructure/runtime/execution.py",
+      "bytes": 24609,
+      "sha256": "86714caa77f83c87b7449ef8a0e8a096132ac7550ef565e681e4a3723debb0d9"
+    },
+    {
+      "path": "infrastructure/runtime/files.py",
+      "bytes": 9599,
+      "sha256": "d37612e6cbbef0068d23e21beff2b7b9136f225aa0274de9112184f40a7e838f"
+    },
+    {
+      "path": "infrastructure/runtime/images.py",
+      "bytes": 3246,
+      "sha256": "d8a8153eb8c1f8e53d42f2dd4be296c2e5808a115ffaaadae328341245902b83"
+    },
+    {
+      "path": "infrastructure/runtime/loop.py",
+      "bytes": 14600,
+      "sha256": "f1e49160ef534bc72bf0df76f7d7f91474a8ab660efd753b5f415f184a4cc816"
+    },
+    {
+      "path": "infrastructure/runtime/messages.py",
+      "bytes": 4218,
+      "sha256": "19d2db59fe839cfd8bd5c3ace1001653cffece1860ba710c8e1be83fc4809436"
+    },
+    {
+      "path": "infrastructure/runtime/model.py",
+      "bytes": 4318,
+      "sha256": "7e108e7e72aa98b3de1e0b5e0d1ade54e9aaea194f3ba55c7f9212d4cbebd33e"
+    },
+    {
+      "path": "infrastructure/runtime/persistence.py",
+      "bytes": 9492,
+      "sha256": "4af8bcdf55580d9fad5bc70f83f7c909a556b58193a39b119e8dfd1bcf99ace0"
+    },
+    {
+      "path": "infrastructure/runtime/probe.py",
+      "bytes": 1830,
+      "sha256": "b1e123e85b0ce153daddf20feb77b89c7786174d38664300382956d74000412c"
+    },
+    {
+      "path": "infrastructure/runtime/requirements.py",
+      "bytes": 20119,
+      "sha256": "9edb25336e8f82daa34635e6806a5780f6c962f9cdd13e93f7bb81ec04a56b74"
+    },
+    {
+      "path": "infrastructure/runtime/state.py",
+      "bytes": 1319,
+      "sha256": "25e3fc45fcf2592efb3328cff58df5842552b26cd81b969cbc0f4c5a3c8aae2e"
+    },
+    {
+      "path": "infrastructure/runtime/tool_schemas.py",
+      "bytes": 10813,
+      "sha256": "7da2c6ee6cc3361b7c20cd8db29481b67f137072198887485afde769e92679a7"
+    },
+    {
+      "path": "infrastructure/runtime/tools.py",
+      "bytes": 18964,
+      "sha256": "7c83af6c6f7d836258f85cf200a03beee03aa5e75a024324f9b504e690d33d6a"
+    },
+    {
+      "path": "infrastructure/shared/__init__.py",
+      "bytes": 84,
+      "sha256": "bda764f9595993ce513e103dca4d38de316cb4a3c1e8569c13ae2a090e27217b"
+    },
+    {
+      "path": "infrastructure/shared/project/__init__.py",
+      "bytes": 82,
+      "sha256": "d8dc630fc155b997c4a8117d1c2101592e93353f25ba8dcdc037c305ba02ad16"
+    },
+    {
+      "path": "infrastructure/shared/project/initialize.py",
+      "bytes": 3433,
+      "sha256": "90af62d481c6301c76083c09188a7092a0b9fa103382dbf8c6a389a87819e2e1"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/.gitignore",
+      "bytes": 62,
+      "sha256": "52e2c97c75a69ed4ee47fef1f58ee7a908f487f1ea84c21ead0b7e8d64865e9d"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/package.json",
+      "bytes": 560,
+      "sha256": "b378d3ac3b75eceb2bdbb7839f4dfea96940c0550bfdeee1247aab7c80890e3b"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/scripts/copy-db.mjs",
+      "bytes": 450,
+      "sha256": "72630f18d0d931a9fc3d52f05f0ff9c77a0459c202bcfc0587149f9e69dc5b46"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs",
+      "bytes": 4882,
+      "sha256": "761db1193f0b507ae6fddcdd666e7f7ef730421d1469f246f97b32d599be8f81"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/api/register.ts",
+      "bytes": 251,
+      "sha256": "c24ac53065ed4a2d282d4b3637162b730a74e7b3c870ed3199e1e57c505cc017"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/api/types.ts",
+      "bytes": 445,
+      "sha256": "0de12536f726f9d44d615e6148bf59377dc2071ba02381b2b75301df004b0803"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/app.ts",
+      "bytes": 1305,
+      "sha256": "89c993c4240141f2978b8561898ad8a60bf50293bc77a6fb99a4cd2dcb09c9ac"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/client.ts",
+      "bytes": 642,
+      "sha256": "c7b6286121ee157b6b320e7a7c7c7eb652dbc93e1b0d341133b06266b074cb56"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/initialize.ts",
+      "bytes": 973,
+      "sha256": "17e15d17ec255cb1a04ef89037dacc3814a82ae6e00bc4e06f4fab5e52de3fce"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/seed.ts",
+      "bytes": 1151,
+      "sha256": "b88e1ee2ad35615d3d2b0a52f4fcebaccdf1de24057c14225e52c3e5b392803d"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/setup.ts",
+      "bytes": 299,
+      "sha256": "d9770500ff74fa930ffbc7b160a945f3c85689dafacfadd22164a0f738ab5358"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/tables/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/lib/http.ts",
+      "bytes": 3036,
+      "sha256": "880f5479c9b0eddc8fccc782dc0c63ee6b9730512897c98eab8dd1738c6e4f9d"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/lib/password.ts",
+      "bytes": 909,
+      "sha256": "7c53f2635f43fbf70e24c30f731c510ea9e45b1e9099b5aacd715fe8917efab0"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/lib/session.ts",
+      "bytes": 3217,
+      "sha256": "cd613feba6a9844312e5bad160d6c0ee7dc3a32e31a15512fc2864fe3e4b9e51"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/server.ts",
+      "bytes": 854,
+      "sha256": "ed448b130bff3af9fb0176131e4ab9c615d3b98b60e3ab04cad014c0bfba7d45"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tests/support/context.ts",
+      "bytes": 1795,
+      "sha256": "eee2b3523ae9aeeef8c2959a8acea3ed1650333b8cd09d6f8845751ec4b745e5"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tsconfig.json",
+      "bytes": 354,
+      "sha256": "e04ece187fe8a1f89e70427ac8e1ac6e1e1a24cef6a34e23eedd22b6ae4ba7fe"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tsconfig.test.json",
+      "bytes": 157,
+      "sha256": "064a752c7cd4d57ad3efaa892bc9b948f89e4d583a077aef269f09e1cf094a8a"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/BUILDING_BLOCKS.md",
+      "bytes": 4115,
+      "sha256": "f954b23b9306ce4902371170171a7b4c59337a33f956f05f1353871468ef499a"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/deploy.sh",
+      "bytes": 417,
+      "sha256": "f4c9e4058f84f139493fc99b76dd66cdf7adcf3d2e61a5d2f5e838ff33a00cd2"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/index.html",
+      "bytes": 298,
+      "sha256": "73d14f89fe95d6af9e24f40add59420b296ffa6528cf8ff63ea5e705bf806d6b"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/package.json",
+      "bytes": 482,
+      "sha256": "375a3640034726dc91b8b6ea71d0bd065c2b526420222099e068ee2fefa09adf"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/App.tsx",
+      "bytes": 129,
+      "sha256": "56b9c86c5808b740fa74e847e2bc358cf800a2865b578f986e4056559873b6cb"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/lib/api.ts",
+      "bytes": 3138,
+      "sha256": "736a767cfd7edef2028e21d512abede2a0bace3f5994316dd762cd71db5c953b"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/lib/form.tsx",
+      "bytes": 4892,
+      "sha256": "f982fc9c628205873a4fcb9ef4ccc54b510344bcd9dad771b83a54787691c243"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/lib/layout.tsx",
+      "bytes": 536,
+      "sha256": "74f97e3cd653eea9aa596d327746fff29e581ae0390a9d334bea1bc68b20b9a4"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/lib/router.tsx",
+      "bytes": 2843,
+      "sha256": "eb3ed7708d942dc9c095922e05554e0b73873874b7fcca3fbd6b281589871540"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/main.tsx",
+      "bytes": 225,
+      "sha256": "657d0e7d288bfe800cc070a139175b1e8854cf1090cfafa2811716853cf3fca5"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/style.css",
+      "bytes": 98,
+      "sha256": "365454f8b546fe0e4069af3284f2b676c349262df9aea00c15c3d32615cfd182"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/tsconfig.json",
+      "bytes": 358,
+      "sha256": "c70720d5546cbde48028c59b172d7a14ecf13f613c689fcc698b5294fea9ee3c"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/vite.config.ts",
+      "bytes": 254,
+      "sha256": "63b3c19691a9f2cbe04d88c6714930626c6c69e695ebf80024774236704af7b0"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/package-lock.json",
+      "bytes": 135913,
+      "sha256": "93577f09fda600d5b0ce023c469b02835b456fb922c3d486f269c64e0089e8d8"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/package.json",
+      "bytes": 598,
+      "sha256": "c6a83ad6ccf43bfa4a6f1bdd0d056a6571aa2f0a71efccfec99e64cee3863351"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/README.md",
+      "bytes": 2419,
+      "sha256": "f1c8c59f22266df6c5365d56d60161befa74c7be6ecd5b73f44327218c23c13d"
+    },
+    {
+      "path": "infrastructure/utils/__init__.py",
+      "bytes": 83,
+      "sha256": "c4d1ba687cb4e193b41036d4cd8f9f06c5cce64cdadb329f86e5183078ae05e5"
+    },
+    {
+      "path": "infrastructure/utils/files.py",
+      "bytes": 1864,
+      "sha256": "fe2c16624dc43f2440d25593fef9b6be6b0a3133767a45f857f7f6eb694a0570"
+    },
+    {
+      "path": "infrastructure/utils/paths.py",
+      "bytes": 1734,
+      "sha256": "e22907a0007e945e861a6111f13cee4e069a118e27c0e52e4b6ec9839d9de32b"
+    },
+    {
+      "path": "infrastructure/utils/processes.py",
+      "bytes": 3826,
+      "sha256": "b8eeeb4dc43e69b9057c29dff27fc465f92ac6c40f2e8b3bbf891a55c319723e"
+    },
+    {
+      "path": "infrastructure/verification/__init__.py",
+      "bytes": 83,
+      "sha256": "22b454b063c990b4e9bfade967856286d43bfa058a49c9a7f262eeb634886bb8"
+    },
+    {
+      "path": "infrastructure/verification/acceptance.py",
+      "bytes": 35812,
+      "sha256": "2550618a5a17a285a9d0b586f7e3b92536766ca54e36548b7ace311abcd2f939"
+    },
+    {
+      "path": "infrastructure/verification/checks.py",
+      "bytes": 7787,
+      "sha256": "0d59b142274f7a2f942bd218620e345158e8c0122a9741955d6a7ee20a8854a2"
+    },
+    {
+      "path": "infrastructure/verification/coverage.py",
+      "bytes": 8245,
+      "sha256": "24d8c5cc4f6f7fa8bf5de0f5a081f6d59cf596a86717c99063b0bcda48292104"
+    },
+    {
+      "path": "infrastructure/verification/driver.py",
+      "bytes": 17043,
+      "sha256": "264eef1acdb922b6ea273224d79d38ba40cbf831fe6bd1b43f06acf1315adebc"
+    },
+    {
+      "path": "infrastructure/verification/results.py",
+      "bytes": 6903,
+      "sha256": "858b1909ec6757d6078edaf712e7c880b6bb928b2f294d799a84362f8cce6efd"
+    },
+    {
+      "path": "infrastructure/verification/verifier.py",
+      "bytes": 31115,
+      "sha256": "317135b929afa2269b4e2deade99edda0d4ca2906d481e3095501c2358d354f3"
+    },
+    {
+      "path": "infrastructure/verification/visual.py",
+      "bytes": 3869,
+      "sha256": "f2c9e9abb6504ba75d1243fde7503fa40311c52ea7bbebe5897aff191a4d605c"
+    },
+    {
+      "path": "input/reference/homepage.png",
+      "bytes": 2618414,
+      "sha256": "a993a429965857982022eb457b1859ec42ae1935382f321111ce3515e6bca79c"
+    },
+    {
+      "path": "input/reference/login.png",
+      "bytes": 1026902,
+      "sha256": "5792c1edb96395b5e8554d87840ac7cfb0f9dc37b66dac9816290b8996f9c371"
+    },
+    {
+      "path": "input/reference/register.png",
+      "bytes": 365835,
+      "sha256": "12e14f2c678e3b07e572ecf3da65f86874f5b9bf9e83eba1352045194fe93352"
+    },
+    {
+      "path": "input/requirements.yaml",
+      "bytes": 10520,
+      "sha256": "6a0308b233a6cdc540998974acd13dbc5c8f7f1436b67ab7b5580190db8e456e"
+    },
+    {
+      "path": "input/tests/helpers.ts",
+      "bytes": 4295,
+      "sha256": "c2fe746aeedc7dd9b7ee577fead698e540d89d3015aa4a771da4da80370ef0e9"
+    },
+    {
+      "path": "input/tests/REQ-2.spec.ts",
+      "bytes": 992,
+      "sha256": "a235839b3d48af679f4db1321e2b1a646fc566d815d5dc3a6119769c54080cc3"
+    },
+    {
+      "path": "input/tests/REQ-3.spec.ts",
+      "bytes": 864,
+      "sha256": "cbd4264db15bbeb740a58ea0d82f7c79088928411cf651fa075f647fc4b25048"
+    },
+    {
+      "path": "input/tests/REQ-4.spec.ts",
+      "bytes": 910,
+      "sha256": "7d18bcc315753237e127f60296b4fb22f98efb2df3b61bad104f40bdc019e99f"
+    },
+    {
+      "path": "main.py",
+      "bytes": 13071,
+      "sha256": "b0b05f8c7c9f7b7adfe6ffc15401d4dfba62046ec2ad2bf2f8c0668240483db8"
+    },
+    {
+      "path": "principle.md",
+      "bytes": 38572,
+      "sha256": "d37f5d1d27c349cf006e89dcb90e23be7638b9a7c30d4f634f4f2995cdbaa65b"
+    },
+    {
+      "path": "profiles/arcbench-app/config.yaml",
+      "bytes": 3835,
+      "sha256": "ea71dc26f51ebcda317b8d22012a7b3f7b0a88bbcddcd479ae87291a855e173b"
+    },
+    {
+      "path": "profiles/arcbench-app/linux.yaml",
+      "bytes": 148,
+      "sha256": "e018661785d8eb6286f5fa906e322ac61e229df09132abcda4c366932699caad"
+    },
+    {
+      "path": "profiles/arcbench-app/role.md",
+      "bytes": 434,
+      "sha256": "4084c29db663f80c8f2b2dc8adbacce43e3144e8efde9d6bea3bf93e065ea19b"
+    },
+    {
+      "path": "profiles/arcbench-app/skills/http.md",
+      "bytes": 1023,
+      "sha256": "485591b652aaa9aed81f918c5c97d68f27f41d7ea4b1864a2d6047078a6df964"
+    },
+    {
+      "path": "profiles/arcbench-app/skills/playwright.md",
+      "bytes": 978,
+      "sha256": "15f4276775f32e4542a5e290269a090a8794be28bff3d8308aee7f0ede6bb3cf"
+    },
+    {
+      "path": "profiles/arcbench-app/skills/react.md",
+      "bytes": 1159,
+      "sha256": "7cf359ed91a376d57015b2a46bd4ed801cbb91bf198a01f991d82fb4165082fd"
+    },
+    {
+      "path": "profiles/arcbench-app/skills/sql.md",
+      "bytes": 1095,
+      "sha256": "b5022ead9aadb20fb37494d6966bae56c29cfbba97d236b5427791bea32b2e24"
+    },
+    {
+      "path": "profiles/arcbench-app/variant-skills.yaml",
+      "bytes": 199,
+      "sha256": "e6bc288cea2cdc820760ca1554514558d7c021e348f4b2ab20bcc8d43770889b"
+    },
+    {
+      "path": "profiles/arcbench-app/variant-symbols.yaml",
+      "bytes": 165,
+      "sha256": "3d9071323360f10b16cbd571e9dfc85ceb3df65521a840f7a6f771673cfbb295"
+    },
+    {
+      "path": "profiles/arcbench-app/windows.yaml",
+      "bytes": 175,
+      "sha256": "5a682c5253abece108f38724297ba179334fd2467f882eb938db77e345d11615"
+    },
+    {
+      "path": "profiles/arcbench-app/workflow.md",
+      "bytes": 6447,
+      "sha256": "1332b240ec9c029e5cdbcbf865c3cfe4d5a71251e31fac9f6a6a33141726169e"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 376,
+      "sha256": "0b8c4c1b5d0f6e939c0944567f7a0d36db779e4bbd9a569ac18132ad1c8405be"
+    },
+    {
+      "path": "README.md",
+      "bytes": 14783,
+      "sha256": "b5ebf6f7b4c265669c77eebb78086ee14196b52c7a42c4b8b6a9615fd2da5618"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 68,
+      "sha256": "86ccd03643376c920d467ccabff0b46dbd393f4bd7b6fba81c249047e3b0f5e8"
+    },
+    {
+      "path": "scripts/analyze_run.py",
+      "bytes": 10175,
+      "sha256": "3e7920e92d585860b05ae58e116b06aa3c75a80fe060115fed10bc481faa3da9"
+    },
+    {
+      "path": "scripts/package.py",
+      "bytes": 9308,
+      "sha256": "06d1fb923ef3fcc143e0aac19f38cfb28a8d39eb4fd6a25b260e2d01a7d6ea48"
+    },
+    {
+      "path": "tests/test_agent_acceptance_integration.py",
+      "bytes": 6800,
+      "sha256": "716ed4c4ee481ebb89e9d8337fbd473d0be76b311fc022a61649fe4f32afbf31"
+    },
+    {
+      "path": "tests/test_agent_batching.py",
+      "bytes": 7961,
+      "sha256": "1ee338297624287c2a02196b2211755e7be7aced9ce4dcb9bc1f0032db43c3ae"
+    },
+    {
+      "path": "tests/test_agent_browser.py",
+      "bytes": 5837,
+      "sha256": "f5928c177403045cfd384b4f070b6af8b7fd5a6727871216227e01a4d0fb98b4"
+    },
+    {
+      "path": "tests/test_agent_context_pruning.py",
+      "bytes": 11914,
+      "sha256": "d7eef93c3ad5669a180300715832a1f4fc0912e7429bad3797aba62b3344424e"
+    },
+    {
+      "path": "tests/test_agent_delegation.py",
+      "bytes": 8388,
+      "sha256": "2751b70e1a24245f9d8ec7257d086815133340b816c567921653f49be3b58d37"
+    },
+    {
+      "path": "tests/test_agent_execution.py",
+      "bytes": 9528,
+      "sha256": "c8a879332e923901cd7be096ffff5abe6befd653e869ed5823f0e4b4a32bf22f"
+    },
+    {
+      "path": "tests/test_agent_feedback_loop.py",
+      "bytes": 8185,
+      "sha256": "c1ca391a343bc309294687b921a5c156fb91d68225ba724b743fb9b4236e1123"
+    },
+    {
+      "path": "tests/test_agent_finalization.py",
+      "bytes": 15453,
+      "sha256": "907d7fa4ae8b521ade399a79edc04ed648dab1a4adb9beec2e68c2559a0f7f91"
+    },
+    {
+      "path": "tests/test_agent_part_b_fixes.py",
+      "bytes": 7268,
+      "sha256": "c86e84790df9f206ad72f332fe825291f14fd3b89ed53ce586fa0c6d47654e7a"
+    },
+    {
+      "path": "tests/test_agent_persistence.py",
+      "bytes": 11958,
+      "sha256": "03741155ec8d39f1f2c04e85458baa504d215c8cbb708353f3a563ad7d1002a1"
+    },
+    {
+      "path": "tests/test_agent_requirements.py",
+      "bytes": 8917,
+      "sha256": "0d159a4f2dfd99dfdfd68911e1d64d7d06caa83371e4cfc2f4e88cc862b40fa6"
+    },
+    {
+      "path": "tests/test_agent_sandbox_integration.py",
+      "bytes": 2712,
+      "sha256": "96de9afc08604c687a7f789bec42abacd2950f5dc387b92989afb5c3cc65d6e4"
+    },
+    {
+      "path": "tests/test_agent_speed.py",
+      "bytes": 12023,
+      "sha256": "8ce2efdbd15e3b46c30e4fc2eac34f47b43bd63871a97c4b87939c1c31a08d91"
+    },
+    {
+      "path": "tests/test_agent_tools_context.py",
+      "bytes": 6642,
+      "sha256": "6e4e482df3b95b2123bdd597aaacd063a19672388e93e1806aadbdae23fe2c15"
+    },
+    {
+      "path": "tests/test_agent_verification.py",
+      "bytes": 25393,
+      "sha256": "9970c2f6af67015ae298c1d92e8ec0bb7c4769147ec1601b38550370c7093f3d"
+    },
+    {
+      "path": "tests/test_application_agent.py",
+      "bytes": 9153,
+      "sha256": "5b42e4f4f190daad7e3af5503324cb80ce17ecb9cf1f5d32369f4f8da388d5cd"
+    },
+    {
+      "path": "tests/test_benchmark_baseline.py",
+      "bytes": 2573,
+      "sha256": "eaa522982734fb0a589cef30c14459a938f0941acfb06837ed719239474dd238"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "bytes": 10077,
+      "sha256": "286ea29fb3fcadeab81983c7a002bc49e8eff9dd37b577678604b00d47394e8c"
+    },
+    {
+      "path": "tests/test_evaluation.py",
+      "bytes": 14541,
+      "sha256": "66c158df9307b8fe5ab855c9d5b5ba6f2360ff76837fc8f0f9c23641a1b03a64"
+    },
+    {
+      "path": "tests/test_generated_test_checks.py",
+      "bytes": 1549,
+      "sha256": "691e72a5c7352e0bac0a8083c6a43563019b2df5b1bdcaef803b7569250f834d"
+    },
+    {
+      "path": "tests/test_interface_contract.py",
+      "bytes": 5429,
+      "sha256": "04ed0db0458c2722d03afaa77b03199ba1067e1fba2a11d6b7eca6fd44a2826d"
+    },
+    {
+      "path": "tests/test_large_requirements.py",
+      "bytes": 13094,
+      "sha256": "47316cfa8b8b4d45dfce185ade2db20c72bd25e5a4dea1992c977cc92b815e18"
+    },
+    {
+      "path": "tests/test_oracle_and_progress.py",
+      "bytes": 20546,
+      "sha256": "18600cfdcab4e03a8828651985641973d61ac316eac8ba8d5d3f2ced34df1a2b"
+    },
+    {
+      "path": "tests/test_reference_images.py",
+      "bytes": 7150,
+      "sha256": "93aaf748c0f830de4b2ac3dd49f8073bb5f7159a36a9bb82e2e1f2a2e8e8487b"
+    },
+    {
+      "path": "tests/test_run_measurement.py",
+      "bytes": 9069,
+      "sha256": "8edc4c38f453a2f9ff32b1944a8563914f3a753fcf014dedb0b516848c339918"
+    },
+    {
+      "path": "tests/test_runtime_model.py",
+      "bytes": 3908,
+      "sha256": "1aaa13c74a79d3cfa35ca8e83fc43905299254c80411b85106e2ab3933aefb8c"
+    },
+    {
+      "path": "tests/test_runtime_profile.py",
+      "bytes": 3398,
+      "sha256": "8787531bf81a0f0d70a44e51fe9d233c704a91ebff8b952ddaa55826a812a8fb"
+    },
+    {
+      "path": "tests/test_submission_package.py",
+      "bytes": 6495,
+      "sha256": "c492f6cf91e62d892e8d8c896ee36c30359213f288676d559ba8992673fea49b"
+    },
+    {
+      "path": "tests/test_template_blocks.py",
+      "bytes": 6789,
+      "sha256": "7f13dfc896e407d74290369845fbff1a8af352c332253b27a10ae275ee105f22"
+    },
+    {
+      "path": "tests/verification_support.py",
+      "bytes": 7781,
+      "sha256": "c0387abd0ca4541cdca42d4b66c16b958c7c96e92b8c8e9bc64935202c30a6ef"
+    },
+    {
+      "path": "uv.lock",
+      "bytes": 156562,
+      "sha256": "5ff813871d1889588800e341b05902f1019458116348abdabfbb663e67b5180c"
+    }
+  ],
+  "mechanical_leads": {
+    "TEST-DERIVED": [
+      {
+        "location": "infrastructure/runtime/config.py:33",
+        "text": "external_tests: bool = True     # Use input/tests/*.spec.ts when the task provides them."
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/lib/password.ts:4",
+        "text": "// fixturePasswordHash() in tests/support/context.ts: seeded accounts verify here."
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:30",
+        "text": "// Fixture encoding policy for credential APIs. Fixture setup is not API behavior."
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:33",
+        "text": "export function fixturePasswordHash(password: string): string {"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:285",
+        "text": "self.cli = self.root / 'node_modules/@playwright/test/cli.js'"
+      },
+      {
+        "location": "tests/test_agent_acceptance_integration.py:76",
+        "text": "\"\"\"Test-only: run the fixture server as a host process with its configured variables.\"\"\""
+      },
+      {
+        "location": "tests/test_agent_acceptance_integration.py:77",
+        "text": "backend = 'test-fixture'"
+      },
+      {
+        "location": "tests/test_agent_acceptance_integration.py:107",
+        "text": "(root / 'input/tests/REQ-A.spec.ts').write_text(SPEC, encoding='utf-8')"
+      },
+      {
+        "location": "tests/test_agent_execution.py:87",
+        "text": "class TrustedFixtureSandbox:"
+      },
+      {
+        "location": "tests/test_agent_execution.py:88",
+        "text": "\"\"\"Test-only injection for known Python fixtures; never selectable by a profile.\"\"\""
+      },
+      {
+        "location": "tests/test_agent_execution.py:89",
+        "text": "backend = 'test-fixture'"
+      },
+      {
+        "location": "tests/test_agent_execution.py:106",
+        "text": "self.manager.sandbox = TrustedFixtureSandbox()"
+      },
+      {
+        "location": "tests/test_agent_execution.py:155",
+        "text": "(app / 'package.json').write_text('{\"name\":\"fixture\"}')"
+      },
+      {
+        "location": "tests/test_agent_execution.py:158",
+        "text": "manager.sandbox = TrustedFixtureSandbox()"
+      },
+      {
+        "location": "tests/test_agent_execution.py:163",
+        "text": "return {'status': 'completed', 'returncode': 0, 'content': 'fixture-version'}"
+      },
+      {
+        "location": "tests/test_agent_finalization.py:156",
+        "text": "(agent.state.workspace / 'backend/tests/support/context.ts').write_text('// weakened')"
+      },
+      {
+        "location": "tests/test_agent_part_b_fixes.py:67",
+        "text": "from tests.test_agent_execution import TrustedFixtureSandbox"
+      },
+      {
+        "location": "tests/test_agent_part_b_fixes.py:77",
+        "text": "manager.sandbox = TrustedFixtureSandbox()"
+      },
+      {
+        "location": "tests/test_agent_verification.py:191",
+        "text": "(root / 'input/tests/home.spec.ts').write_text(\"test('SCN-H-1: shows login', async () => {});\")"
+      },
+      {
+        "location": "tests/test_application_agent.py:75",
+        "text": "'../escape.ts', 'requirements.yaml', 'frontend/tests/acceptance.spec.ts', '.env']))),"
+      },
+      {
+        "location": "tests/test_submission_package.py:15",
+        "text": "def fixture(self, root):"
+      },
+      {
+        "location": "tests/test_submission_package.py:26",
+        "text": "path.write_text('' if path.suffix == '.py' else 'fixture')"
+      },
+      {
+        "location": "tests/test_submission_package.py:42",
+        "text": "self.fixture(root)"
+      },
+      {
+        "location": "tests/test_submission_package.py:64",
+        "text": "self.fixture(root)"
+      },
+      {
+        "location": "tests/test_submission_package.py:74",
+        "text": "self.fixture(root)"
+      },
+      {
+        "location": "tests/test_submission_package.py:79",
+        "text": "(profile / 'workflow.md').write_text('profile fixture')"
+      },
+      {
+        "location": "tests/verification_support.py:1",
+        "text": "\"\"\"Offline fixtures for host verification: a simulated application and test runner."
+      }
+    ],
+    "EXPLANATORY-CLAIM": [
+      {
+        "location": "infrastructure/application_agent.py:278",
+        "text": "\"\"\"The workspace's own guide to its generic code, given once in the first message so"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:119",
+        "text": "data = yaml.safe_load(path.read_text(encoding='utf-8-sig'))"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:20",
+        "text": "from .files import PROTECTED, atomic_write, protected, safe_path, source_files, visible"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:98",
+        "text": "target = safe_path(self.root, relative)"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:100",
+        "text": "atomic_write(target, safe_path(self.workspace, relative).read_bytes())"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:102",
+        "text": "target = safe_path(self.root, relative)"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:122",
+        "text": "safe_path(self.root, relative).unlink(missing_ok=True)"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:126",
+        "text": "target = safe_path(self.workspace, relative)"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:128",
+        "text": "atomic_write(target, safe_path(self.root, relative).read_bytes())"
+      },
+      {
+        "location": "infrastructure/runtime/files.py:28",
+        "text": "def safe_path(root, relative, *, directory=False):"
+      },
+      {
+        "location": "infrastructure/runtime/files.py:54",
+        "text": "yield relative, safe_path(root, relative)"
+      },
+      {
+        "location": "infrastructure/runtime/files.py:76",
+        "text": "target = safe_path(self.root, relative)"
+      },
+      {
+        "location": "infrastructure/runtime/persistence.py:29",
+        "text": "\"\"\"The saved state cannot be continued safely.\"\"\""
+      },
+      {
+        "location": "infrastructure/runtime/requirements.py:16",
+        "text": "class UniqueLoader(yaml.SafeLoader):"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/lib/password.ts:1",
+        "text": "import { randomBytes, scryptSync, timingSafeEqual } from \"node:crypto\";"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/lib/password.ts:17",
+        "text": "return actual.length === expected.length && timingSafeEqual(actual, expected);"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/BUILDING_BLOCKS.md:3",
+        "text": "Tested generic code. Use it instead of rewriting it; replace a block only when a"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:2538",
+        "text": "\"safer-buffer\": \">= 2.1.2 < 3.0.0\""
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3449",
+        "text": "\"node_modules/safe-buffer\": {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3451",
+        "text": "\"resolved\": \"https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3469",
+        "text": "\"node_modules/safer-buffer\": {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3471",
+        "text": "\"resolved\": \"https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3687",
+        "text": "\"safe-buffer\": \"~5.2.0\""
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:3800",
+        "text": "\"safe-buffer\": \"^5.0.1\""
+      },
+      {
+        "location": "infrastructure/shared/project/templates/README.md:22",
+        "text": "BUILDING_BLOCKS.md        How to use the generic code in backend/src/lib and frontend/src/lib"
+      },
+      {
+        "location": "input/requirements.yaml:71",
+        "text": "Submitting complete details, matching passwords, and agreement consent saves the account and signs the user in automatically if the username is unused. If the username already exists, display an error with role=alert and create neither an account nor a session. Compare usernames by exact value. Store passwords as hashes; do not store Confirm Password."
+      },
+      {
+        "location": "input/requirements.yaml:81",
+        "text": "Given: The visitor is signed out and has complete traveler details, an unused username and email address, and matching passwords."
+      },
+      {
+        "location": "input/requirements.yaml:90",
+        "text": "Given: The database already contains the username taken_traveler. The visitor is signed out and has that username, an unused email address, complete traveler details, and matching passwords."
+      },
+      {
+        "location": "profiles/arcbench-app/workflow.md:2",
+        "text": "The workspace already contains tested generic code described under \"Workspace building blocks\" (errors, validation, passwords, sessions, API client, router, form controls). Use it instead of writing your own; replace a block only when a requirement needs behavior it cannot provide."
+      },
+      {
+        "location": "tests/test_agent_execution.py:76",
+        "text": "argv = sandbox.argv(['node', '--version'], 'unused')"
+      },
+      {
+        "location": "tests/test_agent_requirements.py:36",
+        "text": "text = yaml.safe_dump(self.spec if spec is None else spec, allow_unicode=True, sort_keys=False)"
+      },
+      {
+        "location": "tests/test_interface_contract.py:43",
+        "text": "(root / 'requirements.yaml').write_text(yaml.safe_dump(SPEC, sort_keys=False), encoding='utf-8')"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:37",
+        "text": "data = yaml.safe_load(DEFAULT_PROFILE.read_text())"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:39",
+        "text": "p.write_text(yaml.safe_dump(data))"
+      },
+      {
+        "location": "tests/verification_support.py:58",
+        "text": "(source / 'requirements.yaml').write_text(yaml.safe_dump(requirements or REQUIREMENTS, sort_keys=False), encoding='utf-8')"
+      }
+    ],
+    "MODEL-EXTERNAL": [
+      {
+        "location": ".env:2",
+        "text": "OPENAI_API_KEY="
+      },
+      {
+        "location": ".env:6",
+        "text": "OPENAI_BASE_URL=\"https://api.arc-bench.com/v1\""
+      },
+      {
+        "location": ".env.example:3",
+        "text": "OPENAI_API_KEY="
+      },
+      {
+        "location": ".env.example:4",
+        "text": "OPENAI_BASE_URL=https://api.arc-bench.com/v1"
+      },
+      {
+        "location": ".env.example:9",
+        "text": "# VISUAL_BASE_URL="
+      },
+      {
+        "location": ".env.example:10",
+        "text": "# VISUAL_API_KEY="
+      },
+      {
+        "location": "infrastructure/application_agent.py:74",
+        "text": "self.store = RunStore(self.state.state_directory, (self.profile.llm.api_key, self.profile.vision.api_key))"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:22",
+        "text": "base_url: str = 'https://api.arc-bench.com/v1'"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:23",
+        "text": "api_key: str = field(default='', repr=False)"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:95",
+        "text": "for key in ('model', 'base_url', 'reasoning', 'api_key', 'prompt_cache_key'):"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:96",
+        "text": "if not isinstance(cfg[key], str) or (key not in {'api_key', 'prompt_cache_key'} and not cfg[key].strip()):"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:100",
+        "text": "if not cfg['base_url'].startswith(('http://', 'https://')):"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:101",
+        "text": "raise ValueError('base_url must be an HTTP(S) endpoint')"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:147",
+        "text": "_keys(data.get('llm', {}), {f.name for f in fields(ModelSettings)} - {'api_key'}, 'llm')"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:174",
+        "text": "mapping = {'MODEL': 'model', 'OPENAI_BASE_URL': 'base_url', 'OPENAI_API_KEY': 'api_key',"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:186",
+        "text": "'VISUAL_BASE_URL': 'base_url', 'VISUAL_API_KEY': 'api_key', 'VISUAL_REASONING': 'reasoning'}.items()"
+      },
+      {
+        "location": "infrastructure/runtime/model.py:44",
+        "text": "if client is None and not settings.api_key:"
+      },
+      {
+        "location": "infrastructure/runtime/model.py:45",
+        "text": "raise ValueError('OPENAI_API_KEY is required to contact the provider')"
+      },
+      {
+        "location": "infrastructure/runtime/model.py:46",
+        "text": "self.client = client or AsyncOpenAI(api_key=settings.api_key, base_url=settings.base_url,"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:60",
+        "text": "const baseURL = `http://127.0.0.1:${port}`;"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:63",
+        "text": "ARC_API_BASE_URL: baseURL, ARC_API_DB_FILE: database };"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:79",
+        "text": "const response = await fetch(`${baseURL}/api/health`, {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:10",
+        "text": "const baseURL = process.env.ARC_API_BASE_URL;"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:11",
+        "text": "if (!path || !baseURL || basename(path) !== \"app.db\" || !basename(dirname(path)).startsWith(\"arc-api-\"))"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:23",
+        "text": "return { database, baseURL };"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:37",
+        "text": "if (!process.env.ACCEPTANCE_BASE_URL) throw new Error(\"The host acceptance runner sets ACCEPTANCE_BASE_URL\");"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:45",
+        "text": "use: { baseURL: process.env.ACCEPTANCE_BASE_URL, browserName: \"chromium\", headless: true,"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:152",
+        "text": "(a baseURL is configured), without mocks, injected state or database access. Data that the"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:312",
+        "text": "async def run(self, suite, files, base_url, timeout, test_timeout=30, list_only=False, workers=1):"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:319",
+        "text": "env = host_environment({'ACCEPTANCE_BASE_URL': base_url, 'PLAYWRIGHT_JSON_OUTPUT_NAME': str(report),"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:62",
+        "text": "def base_url(self):"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:210",
+        "text": "result = await self.tooling.run(self.suite.directory, [relative], self.base_url, 120, list_only=True)"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:380",
+        "text": "return await self.tooling.run(self.suite.directory, files, self.base_url, timeout, self.settings.test_timeout_seconds,"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:392",
+        "text": "snapshots[path] = (await browser.action('open', url=self.base_url + path))['dom'][:3000]"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:453",
+        "text": "await browser.action('open', url=self.base_url + source)"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:459",
+        "text": "if target.startswith(self.base_url):"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:460",
+        "text": "target = target[len(self.base_url):]"
+      },
+      {
+        "location": "infrastructure/verification/verifier.py:473",
+        "text": "await browser.action('open', url=self.base_url + path)"
+      },
+      {
+        "location": "main.py:149",
+        "text": "'api_key': 'set' if profile.llm.api_key else 'missing', 'images': profile.image_mode,"
+      },
+      {
+        "location": "main.py:194",
+        "text": "RunStore(args.output_dir / '.arc', (profile.llm.api_key, profile.vision.api_key)).write_json('run.json', report)"
+      },
+      {
+        "location": "main.py:209",
+        "text": "if not profile.llm.api_key:"
+      },
+      {
+        "location": "main.py:210",
+        "text": "raise ValueError('OPENAI_API_KEY is not set (process environment or the settings file)')"
+      },
+      {
+        "location": "profiles/arcbench-app/config.yaml:4",
+        "text": "base_url: https://api.arc-bench.com/v1"
+      },
+      {
+        "location": "README.md:28",
+        "text": "Copy `.env.example` to `.env` and set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `MODEL`."
+      },
+      {
+        "location": "README.md:200",
+        "text": "`.env` beside `main.py`), then the profile. `MODEL`, `OPENAI_BASE_URL`, `OPENAI_API_KEY`,"
+      },
+      {
+        "location": "README.md:249",
+        "text": "runner must supply through `OPENAI_API_KEY`."
+      },
+      {
+        "location": "scripts/package.py:114",
+        "text": "allowed = ('MODEL', 'OPENAI_BASE_URL', 'MODEL_REASONING', 'VISUAL_MODEL', 'VISUAL_BASE_URL',"
+      },
+      {
+        "location": "scripts/package.py:118",
+        "text": "environment = ['# Credentials must be supplied through the benchmark environment.', 'OPENAI_API_KEY=',"
+      },
+      {
+        "location": "scripts/package.py:134",
+        "text": "if name.endswith('API_KEY') and value and len(value) >= 8]"
+      },
+      {
+        "location": "tests/test_agent_execution.py:25",
+        "text": "(app / '.env').write_text('OPENAI_API_KEY=private')"
+      },
+      {
+        "location": "tests/test_agent_execution.py:37",
+        "text": "self.assertEqual((app / '.env').read_text(), 'OPENAI_API_KEY=private')"
+      },
+      {
+        "location": "tests/test_agent_execution.py:71",
+        "text": "self.assertFalse(any('OPENAI_API_KEY' in a for a in argv))"
+      },
+      {
+        "location": "tests/test_agent_execution.py:81",
+        "text": "with patch.dict(os.environ, {'OPENAI_API_KEY': 'secret', 'NODE_OPTIONS': '--require secret.js'}):"
+      },
+      {
+        "location": "tests/test_agent_execution.py:83",
+        "text": "self.assertNotIn('OPENAI_API_KEY', env)"
+      },
+      {
+        "location": "tests/test_agent_execution.py:131",
+        "text": "result = await self.manager.run([sys.executable, '-c', \"import os; print(os.getenv('OPENAI_API_KEY','missing'))\"], timeout=5)"
+      },
+      {
+        "location": "tests/test_agent_persistence.py:103",
+        "text": "secret = replace(base, llm=replace(base.llm, api_key='sk-live-PRIVATE-KEY-123456'))"
+      },
+      {
+        "location": "tests/test_agent_persistence.py:175",
+        "text": "with TemporaryDirectory() as tmp, patch.dict(os.environ, {'OPENAI_API_KEY': 'private-key'}):"
+      },
+      {
+        "location": "tests/test_agent_persistence.py:182",
+        "text": "code = (\"import os, pathlib; print(os.getenv('OPENAI_API_KEY', 'no-key'), os.getenv('DATABASE_URL'), \""
+      },
+      {
+        "location": "tests/test_agent_sandbox_integration.py:33",
+        "text": "if(denied.length!==2 || fs.existsSync('.env') || process.env.OPENAI_API_KEY) process.exit(9);"
+      },
+      {
+        "location": "tests/test_cli.py:29",
+        "text": "variables = {'OPENAI_API_KEY': KEY, 'MODEL': 'scripted-model', **(environment or {})}"
+      },
+      {
+        "location": "tests/test_cli.py:53",
+        "text": "code, _, err = run([str(self.input), '-o', str(self.output)], {'OPENAI_API_KEY': ''})"
+      },
+      {
+        "location": "tests/test_cli.py:55",
+        "text": "self.assertIn('OPENAI_API_KEY is not set', err)"
+      },
+      {
+        "location": "tests/test_cli.py:67",
+        "text": "self.assertEqual((code, report['max_requests'], report['execution_backend'], report['api_key']), (0, 7, 'host', 'set'))"
+      },
+      {
+        "location": "tests/test_cli.py:76",
+        "text": "requests=agent.profile.max_requests, key=agent.profile.llm.api_key)"
+      },
+      {
+        "location": "tests/test_reference_images.py:121",
+        "text": "self.page.current = url[len(verifier.base_url):]"
+      },
+      {
+        "location": "tests/test_runtime_model.py:25",
+        "text": "sdk = AsyncOpenAI(api_key='test-only', base_url='https://mock.invalid/v1', max_retries=0,"
+      },
+      {
+        "location": "tests/test_runtime_model.py:43",
+        "text": "sdk = AsyncOpenAI(api_key='secret-key', base_url='https://mock.invalid/v1', max_retries=0,"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:16",
+        "text": "env.write_text('MODEL=file-model\\nOPENAI_API_KEY=file-secret\\nVISUAL_MODEL=vision\\n')"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:17",
+        "text": "profile = load_profile(env_file=env, environment={'MODEL': 'env-model', 'OPENAI_API_KEY': 'env-secret'},"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:20",
+        "text": "self.assertEqual(profile.llm.api_key, 'env-secret')"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:23",
+        "text": "self.assertEqual(load_profile(env_file=env, environment={'OPENAI_API_KEY': ''}).llm.api_key, '')"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:60",
+        "text": "'OPENAI_API_KEY': 'main-key', 'MAX_OUTPUT_TOKENS': '1234', 'VISUAL_MODEL': 'vision',"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:61",
+        "text": "'VISUAL_API_KEY': 'vision-key', 'VISUAL_REASONING': 'low', 'VISUAL_BASE_URL': 'https://vision.invalid/v1'})"
+      },
+      {
+        "location": "tests/test_runtime_profile.py:65",
+        "text": "self.assertEqual(profile.vision.api_key, 'vision-key')"
+      },
+      {
+        "location": "tests/test_submission_package.py:27",
+        "text": "root.joinpath('.env.example').write_text('MODEL=example\\nOPENAI_API_KEY=\\n')"
+      },
+      {
+        "location": "tests/test_submission_package.py:29",
+        "text": "'OPENAI_API_KEY=private-main-key\\nVISUAL_API_KEY=private-visual-key\\n')"
+      },
+      {
+        "location": "tests/test_submission_package.py:56",
+        "text": "self.assertEqual(settings['OPENAI_API_KEY'], '')"
+      },
+      {
+        "location": "tests/test_submission_package.py:80",
+        "text": "(profile / '.env').write_text('OPENAI_API_KEY=secret-profile-key')"
+      },
+      {
+        "location": "tests/verification_support.py:85",
+        "text": "async def run(self, suite, files, base_url, timeout, test_timeout=30, list_only=False, workers=1):"
+      }
+    ],
+    "HARDCODED-API-KEY": [
+      {
+        "location": "tests/test_agent_persistence.py:103",
+        "text": "secret = replace(base, llm=replace(base.llm, api_key='sk-live-PRIVATE-KEY-123456'))"
+      },
+      {
+        "location": "tests/test_agent_persistence.py:107",
+        "text": "established_causes=['key sk-live-PRIVATE-KEY-123456 leaked in a log'], next_checks=[])),"
+      },
+      {
+        "location": "tests/test_agent_persistence.py:127",
+        "text": "self.assertEqual(mask('token: \"abcdefgh12345678\" and sk-abcdefghijklmnop'), 'token: \"***\" and ***')"
+      },
+      {
+        "location": "tests/test_cli.py:24",
+        "text": "KEY = 'sk-test-PRIVATE-cli-key-0001'"
+      },
+      {
+        "location": "tests/test_runtime_model.py:25",
+        "text": "sdk = AsyncOpenAI(api_key='test-only', base_url='https://mock.invalid/v1', max_retries=0,"
+      },
+      {
+        "location": "tests/test_runtime_model.py:43",
+        "text": "sdk = AsyncOpenAI(api_key='secret-key', base_url='https://mock.invalid/v1', max_retries=0,"
+      }
+    ],
+    "NET-EXTERNAL": [
+      {
+        "location": "assets/code-map.svg:1",
+        "text": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 920 470\" font-family=\"Segoe UI, Arial, sans-serif\" font-size=\"13\">"
+      },
+      {
+        "location": "infrastructure/runtime/config.py:100",
+        "text": "if not cfg['base_url'].startswith(('http://', 'https://')):"
+      },
+      {
+        "location": "infrastructure/runtime/delegation.py:149",
+        "text": "lead.budget.requests['subagent'] = lead.budget.requests.get('subagent', 0) + sub_state.requests"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:79",
+        "text": "const response = await fetch(`${baseURL}/api/health`, {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/frontend/src/lib/api.ts:16",
+        "text": "const response = await fetch(path, {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:56",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:71",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:81",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/core/-/core-7.29.13.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:107",
+        "text": "\"url\": \"https://opencollective.com/babel\""
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:112",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/generator/-/generator-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:129",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.29.13.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:146",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-globals/-/helper-globals-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:156",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:170",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:188",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-plugin-utils/-/helper-plugin-utils-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:198",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:208",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:218",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:228",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:242",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/parser/-/parser-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:258",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/plugin-transform-react-jsx-self/-/plugin-transform-react-jsx-self-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:274",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/plugin-transform-react-jsx-source/-/plugin-transform-react-jsx-source-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:290",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/template/-/template-7.29.7.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:305",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/traverse/-/traverse-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:324",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@babel/types/-/types-7.29.14.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:338",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:355",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:372",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:389",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:406",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:423",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:440",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:457",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:474",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:491",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:508",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:525",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:542",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:559",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:576",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:593",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:610",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:627",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:644",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:661",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:678",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:695",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:712",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:729",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:746",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:763",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:780",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:791",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:802",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.3.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:812",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:819",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:830",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-beta.34.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:837",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:851",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:865",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-android-x64/-/rollup-android-x64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:879",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:893",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:907",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:921",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:935",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:949",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:963",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:977",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:991",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1005",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1019",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1033",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1047",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1061",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1075",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1089",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1103",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1117",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1131",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1145",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1159",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1173",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1187",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.68.4.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1201",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/node/-/node-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1217",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide/-/oxide-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1241",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-android-arm64/-/oxide-android-arm64-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1258",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1275",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-darwin-x64/-/oxide-darwin-x64-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1292",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-freebsd-x64/-/oxide-freebsd-x64-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1309",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-linux-arm-gnueabihf/-/oxide-linux-arm-gnueabihf-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1326",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-linux-arm64-gnu/-/oxide-linux-arm64-gnu-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1343",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-linux-arm64-musl/-/oxide-linux-arm64-musl-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1360",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-linux-x64-gnu/-/oxide-linux-x64-gnu-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1377",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-linux-x64-musl/-/oxide-linux-x64-musl-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1394",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-wasm32-wasi/-/oxide-wasm32-wasi-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1464",
+        "text": "\"url\": \"https://github.com/sponsors/Brooooooklyn\""
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1490",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-win32-arm64-msvc/-/oxide-win32-arm64-msvc-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1507",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/oxide-win32-x64-msvc/-/oxide-win32-x64-msvc-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1524",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@tailwindcss/vite/-/vite-4.3.5.tgz\","
+      },
+      {
+        "location": "infrastructure/shared/project/templates/package-lock.json:1539",
+        "text": "\"resolved\": \"https://registry.npmjs.org/@types/babel__core/-/babel__core-7.20.5.tgz\","
+      }
+    ],
+    "ENCODING-OR-EXEC": [
+      {
+        "location": "infrastructure/runtime/execution.py:284",
+        "text": "process = subprocess.Popen(argv, env=env,"
+      },
+      {
+        "location": "infrastructure/runtime/execution.py:406",
+        "text": "process = subprocess.Popen(argv, cwd=self.mirror.root, env=host_env,"
+      },
+      {
+        "location": "infrastructure/runtime/persistence.py:165",
+        "text": "return subprocess.run([self.git, '-C', str(self.workspace), '-c', 'core.hooksPath=' + os.devnull,"
+      },
+      {
+        "location": "infrastructure/runtime/tools.py:320",
+        "text": "result = await asyncio.to_thread(subprocess.run,"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:7",
+        "text": "import { spawn } from \"node:child_process\";"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/db/initialize.ts:13",
+        "text": "connection.exec(readFileSync(new URL(`./tables/${filename}`, import.meta.url), \"utf8\"));"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/db/seed.ts:20",
+        "text": "connection.exec(readFileSync(new URL(`./seeds/${filename}`, import.meta.url), \"utf8\"));"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/lib/session.ts:31",
+        "text": "connection.exec(sessionTableSql(table));"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:18",
+        "text": "for (const table of tables) database.exec(`DELETE FROM \"${table.name.replaceAll('\"', '\"\"')}\"`);"
+      },
+      {
+        "location": "infrastructure/utils/processes.py:27",
+        "text": "return subprocess.Popen([str(part) for part in command], cwd=cwd,"
+      },
+      {
+        "location": "infrastructure/utils/processes.py:35",
+        "text": "subprocess.run([shutil.which(\"taskkill\") or \"taskkill\", \"/PID\", str(process.pid), \"/T\", \"/F\"],"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:32",
+        "text": "FORBIDDEN = re.compile(r'\\.(skip|only|fixme)\\s*\\(|process\\.env|child_process|\\brequire\\s*\\(')"
+      },
+      {
+        "location": "infrastructure/verification/acceptance.py:258",
+        "text": "process = holder['process'] = subprocess.Popen([str(part) for part in argv], cwd=cwd, env=env,"
+      },
+      {
+        "location": "scripts/package.py:29",
+        "text": "result = subprocess.run([\"git\", \"check-ignore\", \"--no-index\", \"--stdin\", \"-z\"],"
+      },
+      {
+        "location": "tests/test_agent_acceptance_integration.py:72",
+        "text": "'sys.exit(subprocess.call(sys.argv[2:]))\\n')"
+      },
+      {
+        "location": "tests/test_agent_part_b_fixes.py:53",
+        "text": "result = subprocess.run(['node', str(script)], capture_output=True, text=True, timeout=60)"
+      }
+    ]
+  },
+  "test_artifact_leads": [
+    {
+      "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/helpers.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-2.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-3.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-4.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_acceptance_integration.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_batching.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_browser.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_context_pruning.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_delegation.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_execution.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_feedback_loop.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_finalization.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_part_b_fixes.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_persistence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_requirements.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_sandbox_integration.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_speed.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_tools_context.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_verification.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_application_agent.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_benchmark_baseline.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_cli.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_evaluation.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_generated_test_checks.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_interface_contract.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_large_requirements.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_oracle_and_progress.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_reference_images.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_run_measurement.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_runtime_model.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_runtime_profile.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_submission_package.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_template_blocks.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/verification_support.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    }
+  ],
+  "long_line_overlaps": [],
+  "test_case_overlaps": [],
+  "model_config": {
+    "status": "warning",
+    "reasons": [
+      "base_url ����Ψһ�Ҿ�ȷΪ https://api.arc-bench.com/v1",
+      "api_key ���ò�λ����Ψһ"
+    ],
+    "base_url_slots": [
+      {
+        "name": "OPENAI_BASE_URL",
+        "value": "https://api.arc-bench.com/v1",
+        "location": ".env:6"
+      },
+      {
+        "name": "base_url",
+        "value": "https://api.arc-bench.com/v1",
+        "location": "infrastructure/runtime/config.py:22"
+      },
+      {
+        "name": "base_url",
+        "value": "https://mock.invalid/v1",
+        "location": "tests/test_runtime_model.py:25"
+      },
+      {
+        "name": "base_url",
+        "value": "https://mock.invalid/v1",
+        "location": "tests/test_runtime_model.py:43"
+      },
+      {
+        "name": "VISUAL_BASE_URL",
+        "value": "https://vision.invalid/v1",
+        "location": "tests/test_runtime_profile.py:61"
+      }
+    ],
+    "api_key_slots": [
+      {
+        "name": "OPENAI_API_KEY",
+        "location": ".env:2"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": ".env.example:3"
+      },
+      {
+        "name": "VISUAL_API_KEY",
+        "location": ".env.example:10"
+      },
+      {
+        "name": "api_key",
+        "location": "infrastructure/runtime/model.py:46"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "scripts/package.py:118"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "tests/test_agent_execution.py:25"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "tests/test_agent_execution.py:37"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_agent_persistence.py:103"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_runtime_model.py:25"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_runtime_model.py:43"
+      },
+      {
+        "name": "nOPENAI_API_KEY",
+        "location": "tests/test_runtime_profile.py:16"
+      },
+      {
+        "name": "nOPENAI_API_KEY",
+        "location": "tests/test_submission_package.py:27"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "tests/test_submission_package.py:29"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "tests/test_submission_package.py:80"
+      }
+    ]
+  },
+  "inspection_gaps": [],
+  "limits": {
+    "max_file_bytes": 2000000,
+    "max_total_bytes": 50000000
+  },
+  "notice": "Leads are not verdicts. Inspect original context before adjudicating."
+}

@@ -1,0 +1,26 @@
+反作弊审查：leaderboard_Benchmaxxed_track-arc-bench-lite_score-67.6582913219203_pass_rate-62.08791208791209
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Benchmaxxed_track-arc-bench-lite_score-67.6582913219203_pass_rate-62.08791208791209\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型端点配置的唯一性无法完全建立，且文档公开了额外的 OpenCode Go base_url 选项。
+  - budget.py:484: `base = os.environ['OPENAI_BASE_URL'].rstrip('/')` 读取运行时端点；代码未静态限定其值为唯一的 `https://api.arc-bench.com/v1`。
+  - README.md:106: 文档列出 `https://opencode.ai/inference/go/openai/v1` 作为另一 `OPENAI_BASE_URL`，形成额外/不同 base_url 槽位；需人工核实实际注入值及是否确为指定代理端点。api_key 同样仅由环境变量读取，静态无法证明唯一。
+
+判决：作弊
+
+WARNING-002 [TEMPLATE-DIRECT] 预置的模型提示词包含应用功能级的认证、表单、路由、账户、fixture、状态持久化和可访问性验收合同，并在生成阶段整体注入；这些知识与六个题面任务中出现的相应功能直接匹配。
+  - prompts.py:2: `PLAN` 提示词固定要求 login、fixture、原始 Given/When/Then、控件角色和断言规则，并在每次规划请求中作为系统提示使用。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了登录/账户、表单控件、路由、fixture、状态和验收选择器等可直接约束实现的应用合同；定位：prompts.py:2
+  - 检索方案：(4)无检索机制（全量使用）；说明：该合同作为固定 PLAN/IMPLEMENT/DOMAIN 提示词整体加载，没有按具体题面特征选择；定位：prompts.py:2
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：规划、领域设计和实现请求把这些合同置于模型上下文，要求模型据此生成应用；定位：prompts.py:9
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：合同可跨网页任务复用，但直接规定了应用功能语义而非基础框架。
+  - 综合判断：四个维度共同表明该应用级合同被固定注入模型并可直接复用到匹配题面功能，因此构成 TEMPLATE-DIRECT。
+
+判决：通过

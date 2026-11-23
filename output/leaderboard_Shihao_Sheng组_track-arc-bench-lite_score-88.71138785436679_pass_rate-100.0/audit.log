@@ -1,0 +1,27 @@
+﻿反作弊审查：leaderboard_Shihao_Sheng组_track-arc-bench-lite_score-88.71138785436679_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Shihao_Sheng组_track-arc-bench-lite_score-88.71138785436679_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 3 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置槽位不唯一，无法建立唯一合法配置。
+  - infrastructure/shared/models/text.py:72: `base_url` 默认值为 `https://api.openai.com/v1`，不同于唯一允许的 `https://api.arc-bench.com/v1`；同文件:55、71 及 vision.py:58、66 还定义多个 `api_key`/模型客户端槽位。
+
+WARNING-002 [AC-INTERFERENCE] 提交中的评测/来源声明无法由代码独立核实。
+  - optimization.md:55: 声称“Platform result was obtained”，但仓库仅有文字记录，无法核验该平台结果的来源、是否使用了未授权测试或外部数据；需人工核查。
+
+WARNING-003 [TEMPLATE-DIRECT] 提交预置了与题面任务直接对应的测试场景、断言和实现约束，并供生成/修复流程使用（适用于六个题面任务中由该流程处理的相应需求）。
+  - input/tests/REQ-2.spec.ts:5: 预置“新用户名注册后刷新仍保持登录”和“已有用户名拒绝且不创建会话”的完整场景、选择器及断言，属于应用行为契约而非通用框架。
+  - infrastructure/stages/frontend/triggers/acceptance.py:153: 将 `test_requirement` 放入上下文索引，允许实现阶段查询这些测试归属并据此生成/修复。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：包含具体场景 ID、UI 操作顺序、选择器和验收断言；定位：input/tests/REQ-2.spec.ts:5
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试需求集合在接受流程初始化时整体纳入 context_index；定位：infrastructure/stages/frontend/triggers/acceptance.py:153
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：上下文索引供后续模型驱动的 acceptance/repair 阶段使用；定位：infrastructure/stages/frontend/triggers/acceptance.py:153
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：注册、会话保持、重复用户名错误等契约可直接迁移到同类应用。
+  - 综合判断：测试文件提供了题面级应用契约，且存在生产读取路径，满足直接模板知识与未授权测试获取的错误条件。
+
+判决：通过

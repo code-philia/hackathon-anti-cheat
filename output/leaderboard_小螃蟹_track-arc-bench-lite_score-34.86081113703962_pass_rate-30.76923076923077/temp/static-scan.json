@@ -1,0 +1,4080 @@
+﻿{
+  "example_root": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web",
+  "example_tasks": [
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\stackoverflow",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\ctrip",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\keep",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\prestashop",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\12306",
+    "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack"
+  ],
+  "submission_root": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\input\\leaderboard_С�з_track-arc-bench-lite_score-34.86081113703962_pass_rate-30.76923076923077\\agent",
+  "submission_inventory": [
+    {
+      "path": ".env.example",
+      "bytes": 165,
+      "sha256": "3ee384ed6847698bce24258d3d65d7bdcee47ff62de028e57eaa2ca4a49c40b2"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 93,
+      "sha256": "8579b65b1243e3cf5b629ab5583191c299bb54e2171ec182e3c98ee4c71fff61"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 99,
+      "sha256": "dbaf5158fbe671ea6269dfe72dc9ea62cbde0fd520ae0e14001b5b745f65fdcf"
+    },
+    {
+      "path": "assets/compiler-code-map.svg",
+      "bytes": 6809,
+      "sha256": "0def3d6caf25e11a2feaae10005a53abc176acc3f07df3fcca4d6b99747a0e45"
+    },
+    {
+      "path": "infrastructure/__init__.py",
+      "bytes": 85,
+      "sha256": "9c9aa4c6f4c1be1386ad16bd4afdf3ebdf38d9ae053005d174bfc4ba4ea976c5"
+    },
+    {
+      "path": "infrastructure/compiler.py",
+      "bytes": 12389,
+      "sha256": "954dd3f66040a366cf31daa7862fde67f0f098501e5caa98203d6f613a7ece9d"
+    },
+    {
+      "path": "infrastructure/pipeline/__init__.py",
+      "bytes": 59,
+      "sha256": "fe312707c9915c91a63c1137ee9edf5b8f22471af07ad6fc8cf7005417b736df"
+    },
+    {
+      "path": "infrastructure/pipeline/backend_apis.py",
+      "bytes": 11533,
+      "sha256": "270c47a7d41288fa72e6a8ec6f920cd3a03fb70eecc9bfbe0b27ae4c7d610b81"
+    },
+    {
+      "path": "infrastructure/pipeline/backend_implementation.py",
+      "bytes": 24596,
+      "sha256": "a34a511130b1bf0d3282f83bb3f20643d9c30473b0d926677d081edf784d83c9"
+    },
+    {
+      "path": "infrastructure/pipeline/database.py",
+      "bytes": 9635,
+      "sha256": "9e32739c8d28b3b2257bf8baf88088f818adf13109b861a847e0a13081dff6ac"
+    },
+    {
+      "path": "infrastructure/pipeline/db_obligations.py",
+      "bytes": 7785,
+      "sha256": "545828536e3c98d4d050b528739cc9e80ed47cf722e0ac8b7188a0bd9f625a30"
+    },
+    {
+      "path": "infrastructure/pipeline/db_schema.py",
+      "bytes": 9218,
+      "sha256": "b9749cb3f0d7ba01d49592933403f2a07c273e79759b489d8dbedad1ad72b7dd"
+    },
+    {
+      "path": "infrastructure/pipeline/frontend_implementation.py",
+      "bytes": 3495,
+      "sha256": "167c3cf759a3dbd4c854037c61a47d7467c546dd973fab594dbfa08fe39ab1ac"
+    },
+    {
+      "path": "infrastructure/pipeline/frontend_triggers.py",
+      "bytes": 1502,
+      "sha256": "22685400129d7d6f5dc1573d76b7659fbbdbcec7474a3c26bcc93ae41440ad60"
+    },
+    {
+      "path": "infrastructure/pipeline/global_agent.py",
+      "bytes": 74817,
+      "sha256": "80b132cc4b0fba2b0a8bd7f281bdcc2d879ad167a19bc942a53bf7e994859ef0"
+    },
+    {
+      "path": "infrastructure/pipeline/project_initialization.py",
+      "bytes": 1802,
+      "sha256": "e42f7aad0f8ebe1baa27153186203a0b777e9363239670d0e8843b07cfe43242"
+    },
+    {
+      "path": "infrastructure/pipeline/requirements.py",
+      "bytes": 13965,
+      "sha256": "b93f32631cb7955f4d13c598d4d6edeb55985ab3f99afaabb104eb67bd4662af"
+    },
+    {
+      "path": "infrastructure/pipeline/ui_design.py",
+      "bytes": 983,
+      "sha256": "8c66b28374aea6e85314ac35a01da3c3d2a3d54091536aba87a53ca7755e8cda"
+    },
+    {
+      "path": "infrastructure/pipeline/ui_implementation.py",
+      "bytes": 2506,
+      "sha256": "ce69f898c20bf89cf2476a76e64f7bd5a354c7084b33e4cf75a1cec21d027ffc"
+    },
+    {
+      "path": "infrastructure/shared/__init__.py",
+      "bytes": 84,
+      "sha256": "bda764f9595993ce513e103dca4d38de316cb4a3c1e8569c13ae2a090e27217b"
+    },
+    {
+      "path": "infrastructure/shared/agent/__init__.py",
+      "bytes": 77,
+      "sha256": "6e29d4a065649b2baa3093cc94ef9c5c49476b33deea63d8aa7f23b14f7e48c9"
+    },
+    {
+      "path": "infrastructure/shared/agent/call_budget.py",
+      "bytes": 2675,
+      "sha256": "68459dec6a48ae43a463eb36639deb28999de451bbcbf49af4747cd2d37f20a5"
+    },
+    {
+      "path": "infrastructure/shared/agent/context.py",
+      "bytes": 14005,
+      "sha256": "ad38bbedada71448c3327cbcb8ca8451ef156653534433e6e2871db60a34a64b"
+    },
+    {
+      "path": "infrastructure/shared/agent/conventions.py",
+      "bytes": 3461,
+      "sha256": "2ff286e21bb12dc0057fd6372cc7e7cef65fbd555b156c5ef042a0982907efb3"
+    },
+    {
+      "path": "infrastructure/shared/agent/discovery.py",
+      "bytes": 13099,
+      "sha256": "7997ea6bbe70b626cf0a70119b8badeffc8a2e62798c514b3776b63491d86e72"
+    },
+    {
+      "path": "infrastructure/shared/agent/feedback.py",
+      "bytes": 4718,
+      "sha256": "4ab635cc8934977abcb7ae758317bcfc39d9f41cb5c1296027985c7961181a3a"
+    },
+    {
+      "path": "infrastructure/shared/agent/files.py",
+      "bytes": 1890,
+      "sha256": "aaf35e68981c46f025ddcdfd150b0053743c245af922b8e5b471ebbc2676e75c"
+    },
+    {
+      "path": "infrastructure/shared/agent/loop.py",
+      "bytes": 26634,
+      "sha256": "3a455997cdb699203cac415fbc4d00ced90dc88d09ceb666d643aa91ee1c13ac"
+    },
+    {
+      "path": "infrastructure/shared/agent/proposals.py",
+      "bytes": 12884,
+      "sha256": "1d20a034432004468367be275298770874804f976ac3203aef9e5e387467a439"
+    },
+    {
+      "path": "infrastructure/shared/agent/recovery.py",
+      "bytes": 4655,
+      "sha256": "3fd0e00a8f04b859a71f850a88ffc9ce671fa27b2263baa7a8e0b1fbed32294e"
+    },
+    {
+      "path": "infrastructure/shared/agent/targets.py",
+      "bytes": 2337,
+      "sha256": "2776d70f5e19f07b1c36c697dcd286e727c3e7f524ff2b5049bffb5b586ad6e3"
+    },
+    {
+      "path": "infrastructure/shared/agent/tasks.py",
+      "bytes": 1462,
+      "sha256": "2e92dd910b1fd6605cf99057d29fac3373fd6abbb021327be506aac33407ef56"
+    },
+    {
+      "path": "infrastructure/shared/agent/tool_failures.py",
+      "bytes": 964,
+      "sha256": "11585a223bb39128cad085df96e8c31aace2ecd3a9b98995a1dbb1731f230800"
+    },
+    {
+      "path": "infrastructure/shared/agent/tools/__init__.py",
+      "bytes": 12434,
+      "sha256": "70090057710e8477984198ccfcc8be4297c164de06035dc0e9b0bea38733c584"
+    },
+    {
+      "path": "infrastructure/shared/agent/tools/files.py",
+      "bytes": 8208,
+      "sha256": "69ef48446ce391a740274a7b738b42b7600dec8f35cd384a2203dd29bcaed10d"
+    },
+    {
+      "path": "infrastructure/shared/agent/tools/protocol.py",
+      "bytes": 10241,
+      "sha256": "db5f6a26483f6c0778e6cf5acfada4f05ba5f2d7e1e2545334aa3e1968ccc766"
+    },
+    {
+      "path": "infrastructure/shared/agent/tools/schemas.py",
+      "bytes": 1934,
+      "sha256": "a62a1d60e1c58eeda25b40072aa881d47f969a2c6759b5bc75b8cb005eb82915"
+    },
+    {
+      "path": "infrastructure/shared/control.py",
+      "bytes": 4297,
+      "sha256": "5a8e875a3f9f38e5ed3aadac1f30708bb4d16943584fa92a0849a41500741966"
+    },
+    {
+      "path": "infrastructure/shared/models/__init__.py",
+      "bytes": 88,
+      "sha256": "23ec1393ae58c3d50f176dd8b703288e15ca836a3146a4fd4eee7321edde575a"
+    },
+    {
+      "path": "infrastructure/shared/models/call_boundary.py",
+      "bytes": 7211,
+      "sha256": "47fcb9c2ffea92aec0afbb20632b3c1cddacbe9d20a230eeb90515a978d04d25"
+    },
+    {
+      "path": "infrastructure/shared/models/protocol.py",
+      "bytes": 3904,
+      "sha256": "e7d85c6aecffbc80111c7127ff45bdc07505dd6461b0389cd684462fe629401c"
+    },
+    {
+      "path": "infrastructure/shared/models/reasoning.py",
+      "bytes": 749,
+      "sha256": "cc52fac998bc19bffdb6ffb7925c9ee0e555a39f1d7f3b1ea2df955507a74856"
+    },
+    {
+      "path": "infrastructure/shared/models/text.py",
+      "bytes": 13598,
+      "sha256": "2f55b392517e32be45b4d1ecf88b8e23e5dffbe8fbaff31c36d80721078da28f"
+    },
+    {
+      "path": "infrastructure/shared/models/vision.py",
+      "bytes": 8687,
+      "sha256": "3bb373832ae760b2b5e5328851fdb156b32f7e727810d0b7da031b0a10a0bf59"
+    },
+    {
+      "path": "infrastructure/shared/project/__init__.py",
+      "bytes": 82,
+      "sha256": "d8dc630fc155b997c4a8117d1c2101592e93353f25ba8dcdc037c305ba02ad16"
+    },
+    {
+      "path": "infrastructure/shared/project/dependencies.py",
+      "bytes": 10618,
+      "sha256": "3dac3a613f8909993bb77d395cb31454c48d15c367b6851345b701e9f9d8efb1"
+    },
+    {
+      "path": "infrastructure/shared/project/entrypoints.py",
+      "bytes": 2148,
+      "sha256": "f14cae6f5c0148bde6738333a3b848841e5a5645eb6552b365d8a9f84c161625"
+    },
+    {
+      "path": "infrastructure/shared/project/git.py",
+      "bytes": 7150,
+      "sha256": "4e94dd36a718ce7f967ea03064698a9a4a751c32145506ea17ff103ec024d866"
+    },
+    {
+      "path": "infrastructure/shared/project/initialize.py",
+      "bytes": 3433,
+      "sha256": "b579872b4649a37c9aa5ab46666319642d8773e8c13bad48c25a1893591d9812"
+    },
+    {
+      "path": "infrastructure/shared/project/readiness.py",
+      "bytes": 10915,
+      "sha256": "2d95fb173bbb6c45127485d887d55cadda72ddaa3f32185d1c8e4028541fdae6"
+    },
+    {
+      "path": "infrastructure/shared/project/readiness_child.mjs",
+      "bytes": 643,
+      "sha256": "9e38fc2f8fc5490a0a48baa8070ff42212336b930edf362ee1a5d27f5fb3747c"
+    },
+    {
+      "path": "infrastructure/shared/project/readiness_probe.mjs",
+      "bytes": 6037,
+      "sha256": "8ec0adbe8de5bb2905264e12ebc6ad47e848a17b28795653fd825c299b4650c9"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/package.json",
+      "bytes": 560,
+      "sha256": "b378d3ac3b75eceb2bdbb7839f4dfea96940c0550bfdeee1247aab7c80890e3b"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/scripts/copy-db.mjs",
+      "bytes": 299,
+      "sha256": "1b3361ae85368779dcb15cfd9203f3acd3f38c0163f6038fe3076feef48f1e71"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs",
+      "bytes": 9197,
+      "sha256": "43452426cdc0c41e45097803c14568f0177d3f4e0b0a19ae0abce0640841eb1f"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/scripts/test-evidence-reporter.mjs",
+      "bytes": 3002,
+      "sha256": "b022b2c7471c67307d0f0f644445b1d45a2677e696c88be1eb4f791e885dc808"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/api/register.ts",
+      "bytes": 251,
+      "sha256": "c24ac53065ed4a2d282d4b3637162b730a74e7b3c870ed3199e1e57c505cc017"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/api/types.ts",
+      "bytes": 445,
+      "sha256": "0de12536f726f9d44d615e6148bf59377dc2071ba02381b2b75301df004b0803"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/app.ts",
+      "bytes": 891,
+      "sha256": "5d2f16324b5e6a17d614b864d64b762ad256de9e1c84992b52a1bbb48e94a655"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/client.ts",
+      "bytes": 642,
+      "sha256": "c7b6286121ee157b6b320e7a7c7c7eb652dbc93e1b0d341133b06266b074cb56"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/initialize.ts",
+      "bytes": 966,
+      "sha256": "16611e2fbdd15c086577136dd47c0134c1028ac2ba14b09abe057d01cf7702fd"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/seed.ts",
+      "bytes": 1143,
+      "sha256": "869cd6e78a26b787d9ed9056b717ac4f85167c97a2dd0a6b5e7c2682b5f2ef81"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/db/setup.ts",
+      "bytes": 299,
+      "sha256": "d9770500ff74fa930ffbc7b160a945f3c85689dafacfadd22164a0f738ab5358"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/src/server.ts",
+      "bytes": 854,
+      "sha256": "ed448b130bff3af9fb0176131e4ab9c615d3b98b60e3ab04cad014c0bfba7d45"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tests/support/context.ts",
+      "bytes": 1780,
+      "sha256": "471bfb0516bbb01839fbc43762078840415dfd631e42385f57057ac93ee4b08c"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tsconfig.json",
+      "bytes": 354,
+      "sha256": "e04ece187fe8a1f89e70427ac8e1ac6e1e1a24cef6a34e23eedd22b6ae4ba7fe"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/backend/tsconfig.test.json",
+      "bytes": 139,
+      "sha256": "594d1ec32aa62768eb2660d5f1ade4d8a64a25f6802d876fde8f0faf91576541"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/deploy.sh",
+      "bytes": 417,
+      "sha256": "f4c9e4058f84f139493fc99b76dd66cdf7adcf3d2e61a5d2f5e838ff33a00cd2"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/index.html",
+      "bytes": 298,
+      "sha256": "73d14f89fe95d6af9e24f40add59420b296ffa6528cf8ff63ea5e705bf806d6b"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/package.json",
+      "bytes": 482,
+      "sha256": "375a3640034726dc91b8b6ea71d0bd065c2b526420222099e068ee2fefa09adf"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/App.tsx",
+      "bytes": 129,
+      "sha256": "56b9c86c5808b740fa74e847e2bc358cf800a2865b578f986e4056559873b6cb"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/draft-runtime.ts",
+      "bytes": 6436,
+      "sha256": "e858754b8d9cc6dbf3d4a4bd669f387702b89bd08753ea2f5e6ff2e2792cee72"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/main.tsx",
+      "bytes": 225,
+      "sha256": "657d0e7d288bfe800cc070a139175b1e8854cf1090cfafa2811716853cf3fca5"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/src/style.css",
+      "bytes": 98,
+      "sha256": "365454f8b546fe0e4069af3284f2b676c349262df9aea00c15c3d32615cfd182"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/tsconfig.json",
+      "bytes": 358,
+      "sha256": "c70720d5546cbde48028c59b172d7a14ecf13f613c689fcc698b5294fea9ee3c"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/frontend/vite.config.ts",
+      "bytes": 254,
+      "sha256": "63b3c19691a9f2cbe04d88c6714930626c6c69e695ebf80024774236704af7b0"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/package.json",
+      "bytes": 562,
+      "sha256": "5b408ff222a3934e1970d5691f2b50fd9a3c1d482ebfc570a064fe1efd744971"
+    },
+    {
+      "path": "infrastructure/shared/project/templates/README.md",
+      "bytes": 2097,
+      "sha256": "aff523707abc5b09f2bf5cccf2eb70476547701d285b70e1a57bf94ccd7276a6"
+    },
+    {
+      "path": "infrastructure/shared/rag/__init__.py",
+      "bytes": 82,
+      "sha256": "15321a14a5154e1f8b0a90efeb36b8ce6a78f875fb3ab2b214bf60c3a2e8d438"
+    },
+    {
+      "path": "infrastructure/shared/rag/apis.py",
+      "bytes": 1011,
+      "sha256": "eb43d260811401576ff3d40708c5627f864fbe531a0d9560f6fd777fdd5004ba"
+    },
+    {
+      "path": "infrastructure/shared/rag/bm25.py",
+      "bytes": 1766,
+      "sha256": "60d8d4f1852a055817e7ea7d0dd1b0703a6445e663a5eee7b6526594f002e9a1"
+    },
+    {
+      "path": "infrastructure/shared/rag/pages.py",
+      "bytes": 1411,
+      "sha256": "44fa0bd9b77e50ae1f40b5b29baccefad6d76b0d64df91029dccefc51f6cb9ce"
+    },
+    {
+      "path": "infrastructure/shared/rag/schema.py",
+      "bytes": 2012,
+      "sha256": "ac7ef1d491ec3b930d3dbf8c514338fa98c08b4e59d1286021563fa8d42cbf47"
+    },
+    {
+      "path": "infrastructure/stages/__init__.py",
+      "bytes": 81,
+      "sha256": "4223dacfbc273935610fcbf56a06584288b41ed0bc222280ea7daf8dd1d36a48"
+    },
+    {
+      "path": "infrastructure/stages/backend/__init__.py",
+      "bytes": 88,
+      "sha256": "708366ae455065a326af4ce312c6ddc2ada8f1fff9c3b879018a2a4b1302baa3"
+    },
+    {
+      "path": "infrastructure/stages/backend/context.py",
+      "bytes": 2697,
+      "sha256": "a9b1b94f673831749c9027c156b25fe594226e71d48a8988766bf4fd64c4a1c6"
+    },
+    {
+      "path": "infrastructure/stages/backend/evidence.py",
+      "bytes": 7314,
+      "sha256": "c9ae1021215de17b27d0833d63ff6149ac6bca5d0c0fee578d809652bdd45b81"
+    },
+    {
+      "path": "infrastructure/stages/backend/primitives.py",
+      "bytes": 2646,
+      "sha256": "eed3bbeb167765987d9b96bac292a7d9ddb0a83deb7186c2aba0194ab898f7b8"
+    },
+    {
+      "path": "infrastructure/stages/backend/runtime.py",
+      "bytes": 1980,
+      "sha256": "c19b872e437f9b9abebbae8e17f848fba4b434e1407f02de5bba3ada4238e9fb"
+    },
+    {
+      "path": "infrastructure/stages/backend/testing.py",
+      "bytes": 10611,
+      "sha256": "1b596e1069008af54a485b0f7608d0ae749e8c74e375dac0c89c629ccf5cc9a6"
+    },
+    {
+      "path": "infrastructure/stages/database/__init__.py",
+      "bytes": 86,
+      "sha256": "ebb861bfc077130de61e4037796bf970e21e05d59ea65e862a17f022bdf27374"
+    },
+    {
+      "path": "infrastructure/stages/database/implementation.py",
+      "bytes": 14711,
+      "sha256": "83a137ef38dbbe336c842975186d72c76b12f81457e725f5ecaf23f3b3ad4973"
+    },
+    {
+      "path": "infrastructure/stages/database/obligations/__init__.py",
+      "bytes": 101,
+      "sha256": "3bde71649e86a45b276d754496f925f4792fb331863b8a61d5863bd2f9599a38"
+    },
+    {
+      "path": "infrastructure/stages/database/obligations/records.py",
+      "bytes": 1843,
+      "sha256": "2de0fa00a33c1f00bc232e5306428d63abec17c374b6b5fd3c294881b50b1865"
+    },
+    {
+      "path": "infrastructure/stages/database/obligations/rules.py",
+      "bytes": 603,
+      "sha256": "0c59848aeb0c8e3dee84ed8109b4874a02194d6f967175b0bb5d51fd40a781eb"
+    },
+    {
+      "path": "infrastructure/stages/database/order.py",
+      "bytes": 1949,
+      "sha256": "fe797db09720b4f6b23b856c40390ebedf7adc31da2f0c4660dad09acba2e1ae"
+    },
+    {
+      "path": "infrastructure/stages/database/runtime.py",
+      "bytes": 1334,
+      "sha256": "7d5b851988d2207838671c0e6a02d277315ea4acde1392f8838761348a0f9631"
+    },
+    {
+      "path": "infrastructure/stages/database/schema.py",
+      "bytes": 1430,
+      "sha256": "b92476b549267572abf5beb70d3b98afd3d4ac78543fa29edd4723a1210a5717"
+    },
+    {
+      "path": "infrastructure/stages/database/testing.py",
+      "bytes": 7538,
+      "sha256": "9201dbd10987f350ef07317c7796d165b2ff22331be216d5ba543c09e7041a02"
+    },
+    {
+      "path": "infrastructure/stages/frontend/__init__.py",
+      "bytes": 71,
+      "sha256": "a5b4cd95e0a50d3f6c846c1bae18b642bfcecca747e53487a80a8e7a681bb008"
+    },
+    {
+      "path": "infrastructure/stages/frontend/context.py",
+      "bytes": 2943,
+      "sha256": "b0e6687e3c08253a47a3116b97242851906353ea033e74a2cf22d6d132ca61b3"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/__init__.py",
+      "bytes": 61,
+      "sha256": "1b68aea4ffd77ab0f42bcdc954914bd6c2a430f669065cb11914894fb48bd641"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/acceptance.py",
+      "bytes": 27370,
+      "sha256": "2076b57592927be89e461c0feee3fb8a31c8db0fb16dfdf44a8fbda551cc2386"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs",
+      "bytes": 15066,
+      "sha256": "c2f680825449ab0070565f6e40dcad8aeef0a98b7fa5c7d885386af52347dcd5"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/acceptance_contract.py",
+      "bytes": 2665,
+      "sha256": "d8762b4da4fa3e8000f5d276a45ee6183491b6cfd5c601dd94f45429e90697d8"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/context.py",
+      "bytes": 549,
+      "sha256": "a08e0e4a89a41026ce6562d6ddd7544514c179c61988bfa29cfffa94164684d1"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/design.py",
+      "bytes": 3310,
+      "sha256": "3d5de97ae232d56f06f93872a32a4922c0bc993135b4cef827d0bdc111fbf12e"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/e2e_runtime.py",
+      "bytes": 13482,
+      "sha256": "bef6a60afd6ac3d39703b4ba3cf0d3f2d784a2f4ecd946a0a5a6533768a8a3e8"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/implementation.py",
+      "bytes": 36017,
+      "sha256": "7357b33d3eb929b23c3dee147d5e5e3ebbf36a578523e439fd3a6f652b8a70ef"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/prompts.py",
+      "bytes": 5234,
+      "sha256": "5fa7580800bb0b180b453fafe144fdfba2e603b8de34ff11ac8ab132cc29dc74"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/read_context.py",
+      "bytes": 4295,
+      "sha256": "24003a02e8fe68e4fbd860e86235eb219082a5891b2fb27014e86de33371cd24"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/scope.py",
+      "bytes": 1679,
+      "sha256": "9d4743286f1e63180a9253bbd280d3ea6ca4c0f3109b2f8dd0fce204a2d3ab45"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/synthesis.py",
+      "bytes": 4888,
+      "sha256": "197a228f6ae08d60a951bc5209af48cb392336936070840bd92fe090f8884684"
+    },
+    {
+      "path": "infrastructure/stages/frontend/triggers/testing.py",
+      "bytes": 5043,
+      "sha256": "d79f532d045de7aedf20c0aae2ab0403a4369be2aacd8316a9c878708edd5237"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/__init__.py",
+      "bytes": 71,
+      "sha256": "d0bab1aea22f11d13c4a718d080d253294ff3788656044986846cdad1556ee4d"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/design.py",
+      "bytes": 8257,
+      "sha256": "cbc7f171303f5a28e28e28dc75f18302a51a64f394d19835ddcbd7d29c678305"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/evidence.py",
+      "bytes": 4741,
+      "sha256": "48a8d03dff4857e39ddf27df69940bf445404b0442a272213519eee6f247225b"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/implementation.py",
+      "bytes": 14346,
+      "sha256": "498adc1c433a3c94fa170cf8cf112c5cee464d0f61e6d6cac616ce0308c4bb6c"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/proposals.py",
+      "bytes": 1307,
+      "sha256": "e00ddc6859fb7fcba5657c8e09184f7e07d22dd0439f426bf84e71c51d666321"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/runtime.py",
+      "bytes": 5495,
+      "sha256": "1205f450157dd73c103ceab1b612db362ab0360e93224d8939c05451ca198f1b"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/synthesis.py",
+      "bytes": 5502,
+      "sha256": "df6d77427f3e1b6e1f7490ee04e769c243355d0e78cddddd69d9015296305038"
+    },
+    {
+      "path": "infrastructure/stages/frontend/ui/testing.py",
+      "bytes": 15647,
+      "sha256": "f1fca541691e32043c31e0ff6cc5a1497a5194e902c322af15ce4e7fc78836a4"
+    },
+    {
+      "path": "infrastructure/stages/requirements/__init__.py",
+      "bytes": 86,
+      "sha256": "4b44099efefb826c891dc37451b9b77407e964a9270f770bbe3da9f41955651e"
+    },
+    {
+      "path": "infrastructure/stages/requirements/source_context.py",
+      "bytes": 4333,
+      "sha256": "b34e5f51926bd707ae5189e19d2a0320ce6add2f8b510cb26eca943c259320eb"
+    },
+    {
+      "path": "infrastructure/stages/requirements/tree.py",
+      "bytes": 4142,
+      "sha256": "d185411546a68a12eaf2fbd0dc9626e848814c754e36d9023b00402bee4abfce"
+    },
+    {
+      "path": "infrastructure/utils/__init__.py",
+      "bytes": 83,
+      "sha256": "c4d1ba687cb4e193b41036d4cd8f9f06c5cce64cdadb329f86e5183078ae05e5"
+    },
+    {
+      "path": "infrastructure/utils/cli.py",
+      "bytes": 581,
+      "sha256": "b01f1a7e9cf92f2737bec1c2fa7a1ed99841a90b5bc1da4d0b905d4387638b46"
+    },
+    {
+      "path": "infrastructure/utils/files.py",
+      "bytes": 1864,
+      "sha256": "fe2c16624dc43f2440d25593fef9b6be6b0a3133767a45f857f7f6eb694a0570"
+    },
+    {
+      "path": "infrastructure/utils/paths.py",
+      "bytes": 1734,
+      "sha256": "e22907a0007e945e861a6111f13cee4e069a118e27c0e52e4b6ec9839d9de32b"
+    },
+    {
+      "path": "infrastructure/utils/presentation/__init__.py",
+      "bytes": 76,
+      "sha256": "254eabef788d8d9f2197a1344cae31c24ecd7d7e3342bb4650941f71450c4bb6"
+    },
+    {
+      "path": "infrastructure/utils/presentation/artifacts.py",
+      "bytes": 10513,
+      "sha256": "1a7efafa0b4c2766fc40ab1220222596c764ebbb501a418a69aac3c442055ead"
+    },
+    {
+      "path": "infrastructure/utils/presentation/console.py",
+      "bytes": 8282,
+      "sha256": "c3326c85ac09142eb7cdab19d12165b565a57e14a3f14189367e2e17ccc063bf"
+    },
+    {
+      "path": "infrastructure/utils/presentation/formatting.py",
+      "bytes": 4206,
+      "sha256": "a6b85c9c46237db97e4917fea25f19f6d1b05829f0bf8fc5630e29d63ecd467b"
+    },
+    {
+      "path": "infrastructure/utils/presentation/logging.py",
+      "bytes": 5927,
+      "sha256": "5870d341aa0b88860c477c0d6b8fe5ed8a2a23d8e07dfb66765c20f1529c4f24"
+    },
+    {
+      "path": "infrastructure/utils/presentation/model_io.py",
+      "bytes": 17927,
+      "sha256": "8cf31d19cad9db819618f258c758a653f0e75b0c068b8c3653c2ad465285216d"
+    },
+    {
+      "path": "infrastructure/utils/presentation/stages.py",
+      "bytes": 1108,
+      "sha256": "6fd53ef099880bcf45c3d8118cb31f821613756aa5f06a2b638afe56d7d7b377"
+    },
+    {
+      "path": "infrastructure/utils/processes.py",
+      "bytes": 5915,
+      "sha256": "f6215796ab8ecc8f0d39e90efef032f01bb18bc4819a29d70c89f3ca890670fc"
+    },
+    {
+      "path": "input/reference/homepage.png",
+      "bytes": 2618414,
+      "sha256": "a993a429965857982022eb457b1859ec42ae1935382f321111ce3515e6bca79c"
+    },
+    {
+      "path": "input/reference/login.png",
+      "bytes": 1026902,
+      "sha256": "5792c1edb96395b5e8554d87840ac7cfb0f9dc37b66dac9816290b8996f9c371"
+    },
+    {
+      "path": "input/reference/register.png",
+      "bytes": 365835,
+      "sha256": "12e14f2c678e3b07e572ecf3da65f86874f5b9bf9e83eba1352045194fe93352"
+    },
+    {
+      "path": "input/requirements.yaml",
+      "bytes": 10520,
+      "sha256": "6a0308b233a6cdc540998974acd13dbc5c8f7f1436b67ab7b5580190db8e456e"
+    },
+    {
+      "path": "input/tests/helpers.ts",
+      "bytes": 4295,
+      "sha256": "c2fe746aeedc7dd9b7ee577fead698e540d89d3015aa4a771da4da80370ef0e9"
+    },
+    {
+      "path": "input/tests/REQ-2.spec.ts",
+      "bytes": 992,
+      "sha256": "a235839b3d48af679f4db1321e2b1a646fc566d815d5dc3a6119769c54080cc3"
+    },
+    {
+      "path": "input/tests/REQ-3.spec.ts",
+      "bytes": 864,
+      "sha256": "cbd4264db15bbeb740a58ea0d82f7c79088928411cf651fa075f647fc4b25048"
+    },
+    {
+      "path": "input/tests/REQ-4.spec.ts",
+      "bytes": 910,
+      "sha256": "7d18bcc315753237e127f60296b4fb22f98efb2df3b61bad104f40bdc019e99f"
+    },
+    {
+      "path": "main.py",
+      "bytes": 4989,
+      "sha256": "c4281f1a4d284b127320265754a6532b89e39b595829b9c797e74c4a35530d6f"
+    },
+    {
+      "path": "principle.md",
+      "bytes": 37986,
+      "sha256": "429e8af74cc0601c60810168abf767a733944cedf91aa7522f1e6448b4e3e646"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 397,
+      "sha256": "b4c898d07e8bd76fe354e4230bcacabda7d96f8ea9565d9cfddb128b3de1de5d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7527,
+      "sha256": "eb6955d035e8c40d35c01a1cb05c70e7c9c92a51273907335f970d25134021be"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 62,
+      "sha256": "789a1bec50359ba504acf7d5ab1a01fcb2d282f1b888b03a9dd0f792c41eda9d"
+    },
+    {
+      "path": "scripts/package.py",
+      "bytes": 5715,
+      "sha256": "39f70e603492176c47c300e2b2705e692a6208069ee9629e8a58433412c6abb3"
+    },
+    {
+      "path": "scripts/stress_test.py",
+      "bytes": 6050,
+      "sha256": "1c27564b25b942226369afd79db868dd817925d484681c93e5847aa0bf0921f8"
+    },
+    {
+      "path": "SOURCE_MANIFEST.json",
+      "bytes": 27384,
+      "sha256": "c79ee6f076321966bc2f4c631f0203c7ab51a848acd866186e87b3a55b7cc95c"
+    },
+    {
+      "path": "SUBMISSION.md",
+      "bytes": 2032,
+      "sha256": "23379454df77f5b558e90cbf636777114b7015a98564388fea3c99d2215ef32c"
+    },
+    {
+      "path": "tests/fixtures/deployment_asset_replay.mjs",
+      "bytes": 3381,
+      "sha256": "e7c1e35c735ca648709007920fb0a6a1f62f03de529e2868a360194d714b6f7a"
+    },
+    {
+      "path": "tests/fixtures/draft_runtime/Contact.sql",
+      "bytes": 110,
+      "sha256": "0a60fb78f61cc996105a1caa2676bdf082d6fe2652dac696e199b2f673cfae35"
+    },
+    {
+      "path": "tests/fixtures/draft_runtime/ContactEditor.tsx",
+      "bytes": 3186,
+      "sha256": "d79f96a0a11a07bd786bf22934e646efe47057972953379e73682bb44893efc8"
+    },
+    {
+      "path": "tests/fixtures/draft_runtime/contacts.ts",
+      "bytes": 1654,
+      "sha256": "abf9bf362b3d230b4c08511dc9a480bf264544b65ef27e858bf291795875b20f"
+    },
+    {
+      "path": "tests/fixtures/draft_runtime/editor.spec.ts",
+      "bytes": 9834,
+      "sha256": "e23a819105418ae55978fb8762eb116dd1b94b033761577a79210a26bf1dfcea"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/Editor.tsx",
+      "bytes": 897,
+      "sha256": "637dae1f27e0d985ff321c4d0f4da9b7b3636371ca16ebe66c2a3eed9877020a"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/load-summary.ts",
+      "bytes": 260,
+      "sha256": "25766312c373c1a6cce32a8d620d127ec2ee5cc0e346f188896132a91a802f4f"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/navigation.spec.ts",
+      "bytes": 2404,
+      "sha256": "38a969b37679a32ef3b18022362da975608a1ae0dd0f9ac8032958095f740369"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/Note.sql",
+      "bytes": 84,
+      "sha256": "f8a950d20aa42d0410dccdaa50f7772750cce61d2e9fc55f5298c94b4c22b2f0"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/notes.ts",
+      "bytes": 905,
+      "sha256": "38c5b485b56e9f1e0197fc090c6a10db343044b370560311ffb2125c6870571f"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/NotesApp.tsx",
+      "bytes": 595,
+      "sha256": "793eee7adb061dead897258ae4a8d9c3cebd2210b64af2ff5c0e61cc7821b7ac"
+    },
+    {
+      "path": "tests/fixtures/navigation_runtime/Summary.tsx",
+      "bytes": 674,
+      "sha256": "821a7f909ede5248aa21cff648813563f26fa0a08841a086d995465dc15642e5"
+    },
+    {
+      "path": "tests/fixtures/requirement_handoff/README.md",
+      "bytes": 406,
+      "sha256": "561b065c17ed969fd2d9166a4509e4dc74b37ca508704b3789df232b423a3378"
+    },
+    {
+      "path": "tests/fixtures/requirement_handoff/requirements.yaml",
+      "bytes": 51599,
+      "sha256": "8189d63bbffef9e873d3c27589dbe26532f44afa2d485d3e9d1d8c593f7e7274"
+    },
+    {
+      "path": "tests/frontend_flow_fixtures.py",
+      "bytes": 11211,
+      "sha256": "5a83d1a82c837f13b84f07f4d0e6b65985e1cddcd53d0aa234476cb8c780e229"
+    },
+    {
+      "path": "tests/pipeline_fixtures.py",
+      "bytes": 2422,
+      "sha256": "bb364aed54f330ab57d15d13dea7cc395958257b1a3eaae745c5439c96ff2575"
+    },
+    {
+      "path": "tests/suite_fixtures.py",
+      "bytes": 1409,
+      "sha256": "75e6414c3181d405188f3cea35ff9cb70b123a3a71faa05d29b0eaa66129399e"
+    },
+    {
+      "path": "tests/test_acceptance_missing_design.py",
+      "bytes": 9394,
+      "sha256": "f0193ada83b699aef7a46e3887959343a9edd6aad122a437fbfa5ea73cbdf2ab"
+    },
+    {
+      "path": "tests/test_agent_no_progress.py",
+      "bytes": 3465,
+      "sha256": "8399921e5b3527ac6e66d36c802c50b522c8ef57b7e3d1fbeb68e8b3de9461f9"
+    },
+    {
+      "path": "tests/test_api_wiring.py",
+      "bytes": 6691,
+      "sha256": "bd90c7a569b0cae91e0ba80bf5d1772f22c1082d1b2cced11c6667e512b54ab9"
+    },
+    {
+      "path": "tests/test_authored_source_handoff.py",
+      "bytes": 4806,
+      "sha256": "bd29f57fd331d28f41479022a26e336ef934cb5ab8edbd3f91b949d43ed04524"
+    },
+    {
+      "path": "tests/test_backend_contracts.py",
+      "bytes": 9557,
+      "sha256": "a151fccdbedc18365d2db56ef9f3642729f574da051449f0066fc0f1de791f90"
+    },
+    {
+      "path": "tests/test_bounded_context.py",
+      "bytes": 2469,
+      "sha256": "8346a015b5bdc1c5fc31d093e40d8a040dc600184e9f50bd23bb592672889994"
+    },
+    {
+      "path": "tests/test_browser_execution_evidence.py",
+      "bytes": 4839,
+      "sha256": "df1bec9e2a7b0192cb18eb2711b5b36bd74f621c464a9929e944e3247fef1dd2"
+    },
+    {
+      "path": "tests/test_cleanup_race.py",
+      "bytes": 1360,
+      "sha256": "3d5e5588d0f78a64baca634da228bd74c494d3a8168889f5011f6dd972709bb3"
+    },
+    {
+      "path": "tests/test_compiler.py",
+      "bytes": 12959,
+      "sha256": "e0558e519251439d70221cdb2451dca6242f7463d8b1b74beb7cb43374640f44"
+    },
+    {
+      "path": "tests/test_console_logging.py",
+      "bytes": 23948,
+      "sha256": "e8e10e1f45b41a02a87dee92ff1bdd059c5b86a2f72f7fd28e756733d9f3420f"
+    },
+    {
+      "path": "tests/test_context_discovery.py",
+      "bytes": 9299,
+      "sha256": "3a1113cc5baa01b093bfc507fc92bac47e572105b621c3836667f1fd070dc109"
+    },
+    {
+      "path": "tests/test_control_exit.py",
+      "bytes": 6911,
+      "sha256": "f7ec2a4b9dec3652580fc7915844f59e5540c53095d8eab1f9aaa7621c70f533"
+    },
+    {
+      "path": "tests/test_database_runtime.py",
+      "bytes": 14541,
+      "sha256": "df728f23d9cb2956fe6f3acb24f1d83ec27b7385e32b690194bab58dd2af61f5"
+    },
+    {
+      "path": "tests/test_dependency_session.py",
+      "bytes": 10304,
+      "sha256": "21c7dcd069713aed19608fe03f3ecef0718575eb6df907af6131ebbc7fee05b0"
+    },
+    {
+      "path": "tests/test_deployment_asset_protocol.py",
+      "bytes": 3273,
+      "sha256": "58060614069547ea990b0d7bf89a9277ed1cbd933ba42fb86b1ae75548457d23"
+    },
+    {
+      "path": "tests/test_deployment_readiness.py",
+      "bytes": 20300,
+      "sha256": "08a9fa524581d64ed7f967b679e2bb25230bb534465b760c13b2fbba9338d30e"
+    },
+    {
+      "path": "tests/test_design_continuation.py",
+      "bytes": 8062,
+      "sha256": "ea788824a0578fe811b6da5b271f5c00204be8dffdbf83ecdbda66de6a380339"
+    },
+    {
+      "path": "tests/test_draft_runtime.py",
+      "bytes": 5401,
+      "sha256": "f6222636b600b648ad7437c639f9d00985e0493d386b3555d4e34a251eb9d7b5"
+    },
+    {
+      "path": "tests/test_failure_feedback_once.py",
+      "bytes": 1713,
+      "sha256": "4bfeb3bf408fe9cd3ca856229292c46884278afed6a1692e1920050382db16c8"
+    },
+    {
+      "path": "tests/test_file_agent.py",
+      "bytes": 19278,
+      "sha256": "0d43e4cd1d4f590ced4553c85415ff4d8971dd4dbf57b2163c7615bdcc556466"
+    },
+    {
+      "path": "tests/test_file_context_windows.py",
+      "bytes": 10609,
+      "sha256": "5c3bc581e843ac2ebac2f51fb690afad816054cf3721439f00bfd574a91b05fb"
+    },
+    {
+      "path": "tests/test_file_tools.py",
+      "bytes": 9091,
+      "sha256": "7ef1d9fd0dd3f9a2b2ac0575869c49f387bb70a5f1563c81976850a659bb56bf"
+    },
+    {
+      "path": "tests/test_frontend_flow.py",
+      "bytes": 25315,
+      "sha256": "e7ccf4a9e266f249405da01531da1bce80aaecbb39f85aa32960b70310ec1cab"
+    },
+    {
+      "path": "tests/test_git_checkpoints.py",
+      "bytes": 12136,
+      "sha256": "007caf20209a8b38ce1fcf246fd4be0eb8c62d00294515e0c37d78b7f2498a82"
+    },
+    {
+      "path": "tests/test_global_agent.py",
+      "bytes": 18661,
+      "sha256": "adc4e0ed52a0eed048f15e45e7ffaaa97cb1af6cb4feda4be67ebf2c9520392a"
+    },
+    {
+      "path": "tests/test_image_compression.py",
+      "bytes": 3834,
+      "sha256": "a86a3580a027bb7c3c9b70bf2c202a9c123fd6e9e9c9411b122d71a2b44625eb"
+    },
+    {
+      "path": "tests/test_implementation_recovery.py",
+      "bytes": 14404,
+      "sha256": "589227c02430c3a264063ccc7da1fe520bf518759155213d66977c8524be2f9b"
+    },
+    {
+      "path": "tests/test_independent_acceptance.py",
+      "bytes": 5819,
+      "sha256": "e0100b999c60123128b2a396302def7b46282c980f09a9206a521fc48b6fcca2"
+    },
+    {
+      "path": "tests/test_independent_audit_counterexamples.py",
+      "bytes": 8953,
+      "sha256": "53662f9ea40d50364a7a0f26f3df3712e3edb5f89f20394cbd7e34d1bc8cc132"
+    },
+    {
+      "path": "tests/test_minimal_source_ports.py",
+      "bytes": 22069,
+      "sha256": "be6a57bec9c8253c121495b658d009f10c481e092d9cbbdc3e8d3f8624ca525d"
+    },
+    {
+      "path": "tests/test_model_boundary.py",
+      "bytes": 11986,
+      "sha256": "aa654d69634b6aeb4add371a5374b6fa12f0466a00890937d9e4f88bb6014e61"
+    },
+    {
+      "path": "tests/test_model_resilience.py",
+      "bytes": 10464,
+      "sha256": "0b9294f1e0ac2448ba7f9a14c753eb3664b52783c88bb33e38d3983708b96873"
+    },
+    {
+      "path": "tests/test_navigation_dependencies.py",
+      "bytes": 3250,
+      "sha256": "182a017ac88c287b6b16254551480dcd81c0776afc20ae689d152751d3abe367"
+    },
+    {
+      "path": "tests/test_navigation_runtime.py",
+      "bytes": 9518,
+      "sha256": "d273a745a80168a9d42696f038e242a9c1d8088ece522c545c46eeeec316886a"
+    },
+    {
+      "path": "tests/test_obligation_integrity.py",
+      "bytes": 2309,
+      "sha256": "3a01c2d04d7c6e560541d794bbccea440e0f9bbb1ee67838fdd289e7f56630df"
+    },
+    {
+      "path": "tests/test_owned_runtime_sources.py",
+      "bytes": 3756,
+      "sha256": "3897dd64d81e67635ba99e570f39a71cc8b396fe46cc60d10e3a06eee98262cf"
+    },
+    {
+      "path": "tests/test_pipeline_continuation.py",
+      "bytes": 3350,
+      "sha256": "f034eccc92e09af30945470e2aa37867f0dc14ac1daeb51b87d4fa6c8096c78b"
+    },
+    {
+      "path": "tests/test_portability.py",
+      "bytes": 10047,
+      "sha256": "3c56198897978fd264399d25089460112e19e8aa8d1f5a703fe7f8a2c333b3a9"
+    },
+    {
+      "path": "tests/test_process_cleanup_signal.py",
+      "bytes": 5460,
+      "sha256": "9b22e5ae224d124f660ed41ed163ec4ddfe449231ad471c4dd2c383f1fe3910b"
+    },
+    {
+      "path": "tests/test_proposal_recovery.py",
+      "bytes": 3385,
+      "sha256": "44eb9d6994cd42551afeee2e0b153d2c4c302231a7b1c79609c84ac5db7ded0a"
+    },
+    {
+      "path": "tests/test_public_acceptance_contract.py",
+      "bytes": 7834,
+      "sha256": "3cee79f61f2e1feb7ab34efc460097a4a8eadf4b48290ba40dc0600a9aa85a10"
+    },
+    {
+      "path": "tests/test_public_control_runtime.py",
+      "bytes": 9964,
+      "sha256": "7afa8b16bf143b873effdeb87d68ad47cec526e55ea5e0e4048c91a423ede60e"
+    },
+    {
+      "path": "tests/test_public_setup_runtime.py",
+      "bytes": 11481,
+      "sha256": "52ba632e5eb06a9703abb3fe166346a88bbaec2bd3731415c751f38a7a0f1c06"
+    },
+    {
+      "path": "tests/test_rebased_backend_evidence.py",
+      "bytes": 24708,
+      "sha256": "9325a0340df9d8bd968672d096cb057550f649619cfafdd9cecb222c8f63261c"
+    },
+    {
+      "path": "tests/test_rebased_generation_replay.py",
+      "bytes": 28102,
+      "sha256": "7ffe7c94befd86ccbe32ea23288cdb13e9951f9ac8048e5603423ff04815787d"
+    },
+    {
+      "path": "tests/test_rebased_node_evidence.py",
+      "bytes": 11432,
+      "sha256": "93cce0881e4e5ae45ae0abdbaa69659583a7c23f4671f5ef127ca281c8c17737"
+    },
+    {
+      "path": "tests/test_rebased_task_call_budget.py",
+      "bytes": 12219,
+      "sha256": "0bc8bd9568d54b6c2ba10a47aa145d9f6757dd649f98c5d02b437eda136761c2"
+    },
+    {
+      "path": "tests/test_regression_owner_context.py",
+      "bytes": 7481,
+      "sha256": "9366352388766b80496d9048e112c9d943246036ff853f367aca27a3406c71be"
+    },
+    {
+      "path": "tests/test_repair_context_budget.py",
+      "bytes": 7189,
+      "sha256": "f5a0cec2c4bbd0073ce59b14d0f16942fba60de442e28efdd7cbd6eeb7fcb10c"
+    },
+    {
+      "path": "tests/test_rich_artifacts.py",
+      "bytes": 2781,
+      "sha256": "a8a350660f3f444cf3d005537ecbb6b3e89a30ce28a14787081cd36e9c049562"
+    },
+    {
+      "path": "tests/test_runtime_repair_context.py",
+      "bytes": 3612,
+      "sha256": "79fe22da877a63d91bded57cce42a11c33a0a29ff967ebf4f30d2af1d6e43d1a"
+    },
+    {
+      "path": "tests/test_schema_evolution.py",
+      "bytes": 5872,
+      "sha256": "3ef5f78070edaa0e94d887275ef8f25ed2b5cb8cd73d00b4583e62679b501110"
+    },
+    {
+      "path": "tests/test_shared_conventions.py",
+      "bytes": 1486,
+      "sha256": "085500982a6452e9ef5810f80342b23fdc4ad05157b646d40037d95f2e076252"
+    },
+    {
+      "path": "tests/test_shared_obligation_locks.py",
+      "bytes": 4969,
+      "sha256": "a0d78a7b34f93eaae51a8d2555b6ec4b4bd25c310d79d270854e3c086ee7d055"
+    },
+    {
+      "path": "tests/test_source_evidence.py",
+      "bytes": 11650,
+      "sha256": "0cfb0efd8d06fb3a856b4ddb883104e2a9685a0d24f13f12782b8f361fcced58"
+    },
+    {
+      "path": "tests/test_source_query_projection.py",
+      "bytes": 3959,
+      "sha256": "a9f5a0c1217bdabe2d40ffcfdc1101f0b80a14e5b1418baabbda65647e3a6a62"
+    },
+    {
+      "path": "tests/test_stress_test.py",
+      "bytes": 5475,
+      "sha256": "3c4d795c8ad854358bfd5daf4d041b586ae9f192107ec3dc3139a743da13f638"
+    },
+    {
+      "path": "tests/test_test_repair.py",
+      "bytes": 6650,
+      "sha256": "7a1015ddcd5ba76ef381edc550b8cbe6e2d4c331a36b28767b747596b588e7d0"
+    },
+    {
+      "path": "tests/test_token_input/__init__.py",
+      "bytes": 69,
+      "sha256": "47e8911a5bed2eb378ddf122e046cfabc7b0d5925ed7d8120c36347f07303428"
+    },
+    {
+      "path": "tests/test_token_input/README.md",
+      "bytes": 5571,
+      "sha256": "567774e88e876c39cc8a34320497c514cc7cfe27de0ba4883e5f4620f1b749a4"
+    },
+    {
+      "path": "tests/test_token_input/run.py",
+      "bytes": 13640,
+      "sha256": "57820d9b55b6d3ff010afc0e93dd73a287d0d4e0cc40588e30b5198d7179997a"
+    },
+    {
+      "path": "tests/test_token_input/test_runner.py",
+      "bytes": 9111,
+      "sha256": "8b30433194ed6dd37ea8e62ca94923744166ca0a7f74721972ce6a17885c6f76"
+    },
+    {
+      "path": "tests/test_ui_completion_evidence.py",
+      "bytes": 3974,
+      "sha256": "7fd9c7ddd509c71286ffe440e97acd06c0a81ec7f1d7e466f1efbfa81abb3a85"
+    },
+    {
+      "path": "tests/test_validation_policy.py",
+      "bytes": 3909,
+      "sha256": "579149ccbebdf92b0c84bacc3c9fbad88b0ffa7a7184731cd8b3abdf15e10ef0"
+    },
+    {
+      "path": "tests/tool_fixtures.py",
+      "bytes": 2623,
+      "sha256": "226087314ea809965ce7259bb57dd50d7d49dcc99f322053e24f7bc47a2e7afe"
+    },
+    {
+      "path": "uv.lock",
+      "bytes": 159761,
+      "sha256": "a5ccd30d9004f47e1e5c94a12f44c0daa0c9cc277e80e65c05a097364ecec258"
+    }
+  ],
+  "mechanical_leads": {
+    "TEST-DERIVED": [
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:27",
+        "text": "Import { createApiTest, fixturePasswordHash } as needed from task.support_module with a"
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:55",
+        "text": "fixture arguments or password encodings. Initialization loads db/seeds/ENTITY.sql; reuse"
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:70",
+        "text": "feedback, not proof the test is wrong. During generation repair test syntax/fixtures and"
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:86",
+        "text": "Use the supplied test utilities and generated tests to understand existing fixture data"
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:93",
+        "text": "no DB-access primitive layer is generated. The compiler owns the HTTP test runner and fixture."
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:111",
+        "text": "expectations or fixtures are wrong or overly strict. Preserve required success and"
+      },
+      {
+        "location": "infrastructure/pipeline/db_obligations.py:22",
+        "text": "# fixture setup, and generated keys. Records are normalized for set operations."
+      },
+      {
+        "location": "infrastructure/pipeline/db_obligations.py:39",
+        "text": "Given fixtures describe existing state, not writes performed by the behavior under"
+      },
+      {
+        "location": "infrastructure/pipeline/db_schema.py:52",
+        "text": "Derive constraints from requirement evidence; example fixture values alone do not"
+      },
+      {
+        "location": "infrastructure/pipeline/frontend_implementation.py:24",
+        "text": "# Keep the no-operation fixture fast, but let final independent acceptance"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:22",
+        "text": "from infrastructure.stages.frontend.triggers.e2e_runtime import CONFIG, FIXTURE, prepare_e2e"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:175",
+        "text": "BLIND_E2E_GENERATION_INSTRUCTIONS = \"\"\"Author independent, cleanroom Playwright end-to-end acceptance suite(s) under `frontend/tests/e2e/` strictly from `task.spec_groups` (`requirements`) �� WITHOUT reading application source code!"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:180",
+        "text": "- Import `{ test, expect }` from `./support/context.js` (relative to `frontend/tests/e2e/`). Each test uses `async ({ page, database }) => { ... }`; the fixture resets and seeds an isolated SQLite database before every test."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:214",
+        "text": "1. All Playwright `.spec.ts` files under `frontend/tests/e2e/` are STRICTLY READ-ONLY and SHA-256 hash locked! Do NOT attempt to edit any `.spec.ts` file �� fix the real application in `frontend/src/**` and `backend/src/**`."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:289",
+        "text": "\"frontend/tests/e2e/support/context.ts\","
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:297",
+        "text": "if allow_e2e and relative.startswith(\"frontend/tests/e2e/\") and relative.endswith(\".spec.ts\"):"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:564",
+        "text": "spec_path = f\"frontend/tests/e2e/{safe_slug}.spec.ts\""
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:1097",
+        "text": "FIXTURE,"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:1211",
+        "text": "FIXTURE,"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:1290",
+        "text": "FIXTURE,"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:1378",
+        "text": "references=[*spec_paths, CONFIG, FIXTURE, \"frontend/src/draft-runtime.ts\"],"
+      },
+      {
+        "location": "infrastructure/shared/agent/context.py:107",
+        "text": "\"\"\"Identify generated suites, leaving shared fixtures and test utilities read-only.\"\"\""
+      },
+      {
+        "location": "infrastructure/shared/agent/context.py:108",
+        "text": "return \"/tests/e2e/acceptance/\" not in relative and relative.startswith(self.tests_root + \"/\") and relative.endswith((\".spec.ts\", \".test.ts\"))"
+      },
+      {
+        "location": "infrastructure/shared/agent/context.py:240",
+        "text": "if f\"frontend/tests/ui/{pid}.spec.ts\" in text or f\"tests/ui/{pid}.spec.ts\" in text:"
+      },
+      {
+        "location": "infrastructure/shared/agent/discovery.py:226",
+        "text": "path = f'frontend/tests/ui/{pid}.spec.ts'"
+      },
+      {
+        "location": "infrastructure/shared/agent/files.py:33",
+        "text": "return (relative.startswith((\"backend/tests/\", \"frontend/tests/\"))"
+      },
+      {
+        "location": "infrastructure/shared/agent/files.py:35",
+        "text": "and \"/tests/e2e/acceptance/\" not in relative and not (templates / relative).is_file())"
+      },
+      {
+        "location": "infrastructure/shared/agent/loop.py:339",
+        "text": "changes = [change for change in files.last_changes if \"/tests/\" in change[\"path\"]"
+      },
+      {
+        "location": "infrastructure/shared/agent/recovery.py:70",
+        "text": "\"\"\"Attempt every final compiler/test/build check even if an earlier check fails.\"\"\""
+      },
+      {
+        "location": "infrastructure/shared/agent/targets.py:38",
+        "text": "if \"/tests/e2e/acceptance/\" in path and self.kind != \"acceptance_test\":"
+      },
+      {
+        "location": "infrastructure/shared/agent/tools/protocol.py:108",
+        "text": "implementation/environment failures at their source. Shared fixtures and independent"
+      },
+      {
+        "location": "infrastructure/shared/project/entrypoints.py:12",
+        "text": "\"backend_test\": \"backend/tests\", \"e2e_test\": \"frontend/tests/e2e\"}"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:56",
+        "text": "diagnostics.push({ fixture: name, returncode,"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:30",
+        "text": "// Fixture encoding policy for credential APIs. Fixture setup is not API behavior."
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:33",
+        "text": "export function fixturePasswordHash(password: string): string {"
+      },
+      {
+        "location": "infrastructure/stages/backend/context.py:44",
+        "text": "paths = [\"backend/src/api/types.ts\", \"backend/src/db/client.ts\", \"backend/tests/support/context.ts\"]"
+      },
+      {
+        "location": "infrastructure/stages/backend/context.py:50",
+        "text": "\"\"\"Project explicitly used entities; keep their complete definitions for SQL fixtures.\"\"\""
+      },
+      {
+        "location": "infrastructure/stages/backend/runtime.py:14",
+        "text": "TEST_SUPPORT_PATH = \"backend/tests/support/context.ts\""
+      },
+      {
+        "location": "infrastructure/stages/backend/runtime.py:20",
+        "text": "return f\"backend/tests/{slug}/{aid}.test.ts\""
+      },
+      {
+        "location": "infrastructure/stages/database/implementation.py:68",
+        "text": "states can still be arranged by isolated test fixtures. If constraints prevent coexistence,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:20",
+        "text": "from infrastructure.stages.frontend.triggers.e2e_runtime import FIXTURE"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:37",
+        "text": "Repair duplicate rendered names in the app; do not disable or bypass the supplied fixture."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:40",
+        "text": "initialization, fixtures, UI locators and API wiring. task.read_context lists safe starting"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:49",
+        "text": "fixture. Drive When actions through the real browser without mocks or injected state."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:88",
+        "text": "The compiler fixture forwards real API reads with a small controlled delay. For an"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:100",
+        "text": "The database fixture restores requirement-defined startup data before each test. Reuse"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:105",
+        "text": "Only explicit source-defined historical/fixture preconditions that cannot be obtained"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:108",
+        "text": "use the supplied publicSetup fixture: await publicSetup(async () => { /* real Given UI journey,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:113",
+        "text": "sources, shared fixtures, original requirements and other suites are not editable."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:115",
+        "text": "acceptance failure, never a reason to weaken assertions. Use edit_file to create or repair only test_path under frontend/tests/e2e/acceptance.'''"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:120",
+        "text": "implementation. Change ONLY test_path if specific original requirement or fixture evidence"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:125",
+        "text": "Read project files as needed to understand wiring, fixtures and failure evidence. Use"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:141",
+        "text": "return 'frontend/tests/e2e/acceptance/' + sha256(rid.encode()).hexdigest()[:12] + '.spec.ts'"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:166",
+        "text": "if any(not isinstance(name, str) or not name.startswith('frontend/tests/e2e/acceptance/')"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:241",
+        "text": "references=[FIXTURE, 'backend/tests/support/context.ts'],"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:295",
+        "text": "references=[path, *ui_files, FIXTURE, 'frontend/src/ui-runtime.ts',"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:16",
+        "text": "const compilerFixture = module => typeof module === 'string' && module.startsWith('.') &&"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:18",
+        "text": "(policy.fixture_path ?? resolve(dirname(file), '../support/context')).replace(/\\.(js|ts)$/, '');"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:42",
+        "text": "if (compilerFixture(node.moduleSpecifier.text)) trustedNamespaces.add(names.name.text);"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:43",
+        "text": "if (compilerFixture(node.moduleSpecifier.text) || node.moduleSpecifier.text === '@playwright/test')"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:50",
+        "text": "if (compilerFixture(node.moduleSpecifier.text)) trustedTestNames.add(item.name.text);"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:62",
+        "text": "// Ordinary aliases/fixture extensions retain the trusted base. This does not"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:63",
+        "text": "// execute user code or infer arbitrary wrappers to be Playwright fixtures."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:187",
+        "text": "if (registration && policy.require_compiler_test_fixture && !registration.trusted)"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:188",
+        "text": "add('UNTRUSTED_ACCEPTANCE_FIXTURE', node, 'Import test from the supplied support/context.js fixture. Native Playwright test bypasses compiler runtime and UI prerequisite checks.');"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:189",
+        "text": "if (policy.require_compiler_test_fixture && ts.isCallExpression(node) &&"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:196",
+        "text": "add('COMPILER_FIXTURE_OVERRIDE', entry, 'Compiler runtime/observation fixtures are read-only. Add distinct custom fixtures without replacing them.');"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:199",
+        "text": "if (policy.fixture_only) { ts.forEachChild(node, visit); return; }"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:211",
+        "text": "add('IMPLEMENTATION_HELPER_IMPORT', node, 'Keep independent journey helpers in this suite; import only the compiler fixture.');"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_contract.py:37",
+        "text": "return {'version': 3, 'require_compiler_test_fixture': True, 'require_real_browser_io': True,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:3",
+        "text": "Compiler-owned Playwright, Vite, Node-runner, and fixture source strings are written"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:13",
+        "text": "FIXTURE = \"frontend/tests/e2e/support/context.ts\""
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:24",
+        "text": "testDir: \"./tests/e2e\", outputDir: \"./test-results/e2e\", workers: 1,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:63",
+        "text": "const child = spawn(process.execPath, [\"node_modules/@playwright/test/cli.js\", \"test\","
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:80",
+        "text": "FIXTURE_SOURCE = '''// Compiler-owned Given/observation fixture. When actions go through the browser."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:86",
+        "text": "export { fixturePasswordHash } from \"../../../../backend/tests/support/context.js\";"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:93",
+        "text": "throw new Error(\"E2E fixtures require the runner-owned temporary database\");"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:227",
+        "text": "\"\"\"Write E2E configuration, real-server launchers, isolated database fixtures, and the npm test command.\"\"\""
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:231",
+        "text": "FIXTURE: FIXTURE_SOURCE}"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:15",
+        "text": "from infrastructure.stages.frontend.triggers.e2e_runtime import CONFIG, FIXTURE, prepare_e2e"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:96",
+        "text": "Use edit_file to create the .spec.ts target under frontend/tests/e2e using task.file_target or update test_path. Import test and"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:97",
+        "text": "expect from frontend/tests/e2e/support/context.ts with a relative .js import. Tests use"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:99",
+        "text": "backend source to understand fixture signatures and stored-data conventions. The fixture"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:125",
+        "text": "test generation, fix test syntax, fixtures or invalid selectors. Missing application"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:193",
+        "text": "Keep actionable notices (such as Undo banners) visible long enough for user/test"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:250",
+        "text": "recognize its fixtures, fabricate success or hardcode expected responses."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:287",
+        "text": "checkpoint(output, stage=\"10\", task=\"runtime\", action=\"Prepare real-app browser tests and isolated database fixtures\","
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:389",
+        "text": "references=[\"frontend/src/ui-runtime.ts\", CONFIG, FIXTURE, \"backend/tests/support/context.ts\","
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:416",
+        "text": "if workspace and any(path.startswith((\"backend/src/\", \"backend/tests/\")) for path in workspace.changed_paths):"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:466",
+        "text": "references=[relative, *ui_files, \"backend/tests/support/context.ts\","
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:501",
+        "text": "fixture is pinned. No inferred Given or outcome-assertion gate applies here."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:503",
+        "text": "return {test_path(rid, output): {'global_controls': controls, 'require_compiler_test_fixture': True}"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/prompts.py:79",
+        "text": "Do not invent production defaults or display fixtures in this stage."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/read_context.py:51",
+        "text": "if (not target.startswith('frontend/tests/e2e/acceptance/') or not target.endswith('.spec.ts')"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:21",
+        "text": "return f\"frontend/tests/e2e/{slug}.spec.ts\""
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:39",
+        "text": "elif self.runtime_contracts.get(path, {}).get('require_compiler_test_fixture'):"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:41",
+        "text": "# only verify that they actually execute the compiler fixture."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:42",
+        "text": "policy = {'require_compiler_test_fixture': True, 'fixture_only': True}"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:46",
+        "text": "'fixture_path': str((self.output / 'frontend/tests/e2e/support/context.ts').resolve())}"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:61",
+        "text": "return super().typecheck(files, test_roots=(\"frontend/tests/ui\", \"frontend/tests/e2e\"),"
+      }
+    ],
+    "EXPLANATORY-CLAIM": [
+      {
+        "location": "infrastructure/pipeline/backend_apis.py:109",
+        "text": "reserved for the TDD stub. Do not invent business policy or generic failure branches."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:111",
+        "text": "3. URL Routing, Reload Persistence & Async Safety:"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:216",
+        "text": "- Route/URL wiring, `<button>` vs `<a href>` roles, exact labels/placeholders, duplicate visible links/buttons with identical names, semantic landmarks (`<nav>`, `role=\"region\"`, `role=\"dialog\"`), container-vs-input `aria-label` collisions, explicit multi-step trigger controls, `<form noValidate>` for `role=\"alert\"` validation, `page.reload()` state restoration, or async dirty-form safety."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:563",
+        "text": "safe_slug = re.sub(r\"[^A-Za-z0-9_-]+\", \"-\", f\"slice-{index:02d}-{label}\").strip(\"-\")[:48]"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:564",
+        "text": "spec_path = f\"frontend/tests/e2e/{safe_slug}.spec.ts\""
+      },
+      {
+        "location": "infrastructure/pipeline/requirements.py:222",
+        "text": "root = yaml.safe_load(path.read_text(encoding=\"utf-8-sig\"))"
+      },
+      {
+        "location": "infrastructure/pipeline/requirements.py:261",
+        "text": "requirements = yaml.safe_load(source.read_text(encoding=\"utf-8-sig\"))"
+      },
+      {
+        "location": "infrastructure/shared/agent/proposals.py:44",
+        "text": "raise OSError(\"Safe rejected-response archival is unavailable\")"
+      },
+      {
+        "location": "infrastructure/shared/agent/proposals.py:99",
+        "text": "# Keep a lossless byte archive while making repair text safe for UTF-8 I/O."
+      },
+      {
+        "location": "infrastructure/shared/agent/tools/files.py:85",
+        "text": "files.path(path)  # Reject unsafe paths before attempting task-specific adaptation."
+      },
+      {
+        "location": "infrastructure/shared/control.py:10",
+        "text": "\"\"\"A safe fixed diagnostic that ordinary task repair must never retry.\"\"\""
+      },
+      {
+        "location": "infrastructure/shared/models/call_boundary.py:73",
+        "text": "def safe_reported_usage(usage):"
+      },
+      {
+        "location": "infrastructure/shared/models/call_boundary.py:95",
+        "text": "counts = safe_reported_usage(usage)"
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:70",
+        "text": "\"\"\"Bound each HTTP attempt so SDK/client timeouts stay safely inside the 600s SIGALRM boundary.\"\"\""
+      },
+      {
+        "location": "infrastructure/shared/project/readiness.py:56",
+        "text": "source = yaml.safe_load((Path(input_dir) / \"requirements.yaml\").read_text(encoding=\"utf-8-sig\"))"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/frontend/src/draft-runtime.ts:1",
+        "text": "// Generic React draft lifecycle. No routes, fields, API schemas or business defaults."
+      },
+      {
+        "location": "infrastructure/stages/backend/evidence.py:29",
+        "text": "\"runtime\": safe_runtime(runtime),"
+      },
+      {
+        "location": "infrastructure/stages/backend/evidence.py:41",
+        "text": "def safe_runtime(value):"
+      },
+      {
+        "location": "infrastructure/stages/backend/evidence.py:51",
+        "text": "fields = safe_runtime(value)"
+      },
+      {
+        "location": "infrastructure/stages/backend/evidence.py:121",
+        "text": "# Do not publish arbitrary generated extra fields as safe diagnostics."
+      },
+      {
+        "location": "infrastructure/stages/backend/runtime.py:18",
+        "text": "\"\"\"Build a safe per-requirement/per-API test filename.\"\"\""
+      },
+      {
+        "location": "infrastructure/stages/database/implementation.py:57",
+        "text": "If a generic reference such as \"an existing verified account\" does not identify concrete"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:38",
+        "text": "Each case must invoke an observable assertion; unused assertion helpers do not count."
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:40",
+        "text": "initialization, fixtures, UI locators and API wiring. task.read_context lists safe starting"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance.py:149",
+        "text": "return RequirementTree(yaml.safe_load(path.read_text(encoding='utf-8-sig')))"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/acceptance_audit.mjs:235",
+        "text": "add('CASE_WITHOUT_OBSERVABLE_ASSERTION', node, 'Each independent case must invoke a real outcome assertion. An unused assertion helper or a bare expect() is insufficient.');"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:234",
+        "text": "Keep actual loaded data associated with the requested object. Initialize safe unloaded"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/implementation.py:282",
+        "text": "console.show(\"E2E preparation | Dependencies\", \"Install workspace dependencies and Chromium. Each browser run owns a new real test database; production data is not used.\")"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/read_context.py:53",
+        "text": "raise ValueError('Acceptance read catalogue requires the fixed safe acceptance test target')"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/testing.py:16",
+        "text": "\"\"\"Return a safe, stable E2E spec path for one requirement.\"\"\""
+      },
+      {
+        "location": "infrastructure/stages/frontend/ui/implementation.py:38",
+        "text": "safe unloaded values and explicit requirement defaults in application code; never manufacture"
+      },
+      {
+        "location": "infrastructure/stages/frontend/ui/testing.py:34",
+        "text": "\"\"\"Return a stable, filesystem-safe Playwright spec path for a page ID.\"\"\""
+      },
+      {
+        "location": "infrastructure/utils/presentation/model_io.py:14",
+        "text": "from infrastructure.shared.models.call_boundary import current_model_call, note_http_attempt, model_call_boundary, safe_reported_usage"
+      },
+      {
+        "location": "infrastructure/utils/presentation/model_io.py:111",
+        "text": "usage=safe_reported_usage(usage)))"
+      },
+      {
+        "location": "infrastructure/utils/presentation/model_io.py:345",
+        "text": "# only safe class/status diagnostics, never their message/traceback."
+      },
+      {
+        "location": "input/requirements.yaml:71",
+        "text": "Submitting complete details, matching passwords, and agreement consent saves the account and signs the user in automatically if the username is unused. If the username already exists, display an error with role=alert and create neither an account nor a session. Compare usernames by exact value. Store passwords as hashes; do not store Confirm Password."
+      },
+      {
+        "location": "input/requirements.yaml:81",
+        "text": "Given: The visitor is signed out and has complete traveler details, an unused username and email address, and matching passwords."
+      },
+      {
+        "location": "input/requirements.yaml:90",
+        "text": "Given: The database already contains the username taken_traveler. The visitor is signed out and has that username, an unused email address, complete traveler details, and matching passwords."
+      },
+      {
+        "location": "scripts/stress_test.py:21",
+        "text": "\"\"\"Find distinct currently unused localhost ports, skipping occupied candidates.\"\"\""
+      },
+      {
+        "location": "tests/test_acceptance_missing_design.py:26",
+        "text": "tree=RequirementTree(yaml.safe_load((input_dir/'requirements.yaml').read_text()))"
+      },
+      {
+        "location": "tests/test_acceptance_missing_design.py:46",
+        "text": "tree=RequirementTree(yaml.safe_load((input_dir/'requirements.yaml').read_text()))"
+      },
+      {
+        "location": "tests/test_console_logging.py:140",
+        "text": "# HTTP errors retain only safe status/shape, because their arbitrary"
+      },
+      {
+        "location": "tests/test_deployment_asset_protocol.py:19",
+        "text": "(root/'backend/dist/server.js').write_text('// protocol replay does not execute this file')"
+      },
+      {
+        "location": "tests/test_deployment_readiness.py:22",
+        "text": "input_dir.mkdir();(input_dir/'requirements.yaml').write_text(yaml.safe_dump(SOURCE))"
+      },
+      {
+        "location": "tests/test_deployment_readiness.py:131",
+        "text": "raw=yaml.safe_load(snapshot.read_text())"
+      },
+      {
+        "location": "tests/test_deployment_readiness.py:134",
+        "text": "image.write_bytes(b\"fixed visual adapter does not read image content\")"
+      },
+      {
+        "location": "tests/test_deployment_readiness.py:141",
+        "text": "self.assertEqual(json.loads((arc/'requirements.json').read_text()),yaml.safe_load((fixture/'requirements.yaml').read_text()))"
+      },
+      {
+        "location": "tests/test_global_agent.py:70",
+        "text": "(inp / \"requirements.yaml\").write_text(yaml.safe_dump(raw), encoding=\"utf-8\")"
+      },
+      {
+        "location": "tests/test_independent_acceptance.py:20",
+        "text": "(input_dir / 'requirements.yaml').write_text(yaml.safe_dump(raw))"
+      },
+      {
+        "location": "tests/test_independent_audit_counterexamples.py:33",
+        "text": "def test_each_case_needs_invoked_assertions_not_unused_or_bare_expect(self):"
+      },
+      {
+        "location": "tests/test_independent_audit_counterexamples.py:34",
+        "text": "for body in [\"await page.goto('/');\",\"async function unused(){await expect(page.getByRole('heading')).toBeVisible();}await page.goto('/');\",\"expect(page.getByRole('heading'));await page.goto('/');\"]:"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:161",
+        "text": "spec = importlib.util.spec_from_file_location('safe_package', path)"
+      },
+      {
+        "location": "tests/test_model_boundary.py:115",
+        "text": "def test_service_failure_is_safe_task_error_and_sdk_retries_are_finite(self):"
+      },
+      {
+        "location": "tests/test_rebased_backend_evidence.py:112",
+        "text": "def test_owned_runner_permission_error_keeps_safe_cause_and_stops(self):"
+      },
+      {
+        "location": "tests/test_repair_context_budget.py:58",
+        "text": "with patch(\"infrastructure.shared.agent.proposals.session_info\", return_value={\"output\": Path(\"unused\")}), \\"
+      },
+      {
+        "location": "tests/test_repair_context_budget.py:66",
+        "text": "def test_surrogate_text_is_losslessly_archived_and_utf8_safe_in_feedback(self):"
+      },
+      {
+        "location": "tests/test_source_evidence.py:139",
+        "text": "before=fixture.read_bytes();raw=yaml.safe_load(before);tree=RequirementTree(raw)"
+      }
+    ],
+    "MODEL-EXTERNAL": [
+      {
+        "location": ".env.example:2",
+        "text": "OPENAI_API_KEY="
+      },
+      {
+        "location": ".env.example:3",
+        "text": "OPENAI_BASE_URL="
+      },
+      {
+        "location": ".env.example:5",
+        "text": "VISUAL_API_KEY="
+      },
+      {
+        "location": ".env.example:6",
+        "text": "VISUAL_BASE_URL="
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:30",
+        "text": "At the start of each test call const { database, baseURL } = createApiTest(t)."
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:38",
+        "text": "const response = await fetch(new URL('/api/example', baseURL), {"
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:98",
+        "text": "api_key = os.getenv(\"OPENAI_API_KEY\")"
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:99",
+        "text": "if not api_key:"
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:117",
+        "text": "api_key=api_key,"
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:118",
+        "text": "base_url=os.getenv(\"OPENAI_BASE_URL\") or \"https://api.openai.com/v1\","
+      },
+      {
+        "location": "infrastructure/shared/models/vision.py:61",
+        "text": "api_key = os.getenv(\"VISUAL_API_KEY\") or os.getenv(\"OPENAI_API_KEY\")"
+      },
+      {
+        "location": "infrastructure/shared/models/vision.py:62",
+        "text": "base_url = os.getenv(\"VISUAL_BASE_URL\") or os.getenv(\"OPENAI_BASE_URL\") or \"https://api.openai.com/v1\""
+      },
+      {
+        "location": "infrastructure/shared/models/vision.py:63",
+        "text": "if not api_key:"
+      },
+      {
+        "location": "infrastructure/shared/models/vision.py:70",
+        "text": "self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=600, max_retries=2, http_client=http_client())"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:132",
+        "text": "const baseURL = `http://127.0.0.1:${port}`;"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:135",
+        "text": "ARC_API_BASE_URL: baseURL, ARC_API_DB_FILE: database };"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:151",
+        "text": "const response = await fetch(`${baseURL}/api/health`, {"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:10",
+        "text": "const baseURL = process.env.ARC_API_BASE_URL;"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:11",
+        "text": "if (!path || !baseURL || basename(path) !== \"app.db\" || !basename(dirname(path)).startsWith(\"arc-api-\"))"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:23",
+        "text": "return { database, baseURL };"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:27",
+        "text": "use: { baseURL: `http://127.0.0.1:${frontendPort}`, browserName: \"chromium\", headless: true,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/ui/runtime.py:42",
+        "text": "const baseURL = `http://127.0.0.1:${port}`;"
+      },
+      {
+        "location": "infrastructure/stages/frontend/ui/runtime.py:53",
+        "text": "use: { baseURL, browserName: \"chromium\", headless: true,"
+      },
+      {
+        "location": "infrastructure/stages/frontend/ui/runtime.py:58",
+        "text": "url: baseURL, reuseExistingServer: false, timeout: 600000,"
+      },
+      {
+        "location": "README.md:37",
+        "text": "Set `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `MODEL` in `.env`. Use a model that accepts image input. Never include a populated `.env` in a submission; the source packager synthesizes an empty `.env.example`."
+      },
+      {
+        "location": "scripts/package.py:29",
+        "text": "EMPTY_ENV_EXAMPLE = b'# Empty placeholders only; configure locally, never package a populated .env.\\nOPENAI_API_KEY=\\nOPENAI_BASE_URL=\\nMODEL=\\nVISUAL_API_KEY=\\nVISUAL_BASE_URL=\\nVISUAL_MODEL=\\n'"
+      },
+      {
+        "location": "tests/test_console_logging.py:29",
+        "text": "model.client = OpenAI(api_key=\"test-secret\", base_url=\"https://model.test/v1\", http_client=client, max_retries=1)"
+      },
+      {
+        "location": "tests/test_console_logging.py:43",
+        "text": "\"OPENAI_API_KEY\": \"test-key\", \"MODEL\": \"test-model\", \"OPENAI_BASE_URL\": \"https://model.test/v1\","
+      },
+      {
+        "location": "tests/test_console_logging.py:44",
+        "text": "\"VISUAL_API_KEY\": \"test-key\", \"VISUAL_MODEL\": \"test-model\", \"VISUAL_BASE_URL\": \"https://model.test/v1\","
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:138",
+        "text": "synthetic = {'OPENAI_API_KEY': 'synthetic-only', 'VISUAL_BASE_URL': 'synthetic-only',"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:139",
+        "text": "'ANTHROPIC_API_KEY': 'synthetic-only', 'DEEPSEEK_TOKEN': 'synthetic-only',"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:142",
+        "text": "'PAYMENT_API_KEY': 'synthetic-business-key'}"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:144",
+        "text": "result = child_environment({'OPENAI_API_KEY': 'synthetic-override', 'PYTHONUTF8': '0'})"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:146",
+        "text": "'PAYMENT_API_KEY': 'synthetic-business-key', 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'})"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:150",
+        "text": "synthetic = {'OPENAI_API_KEY': 'synthetic-only', 'MODEL': 'synthetic-only',"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:151",
+        "text": "'PORT': '4567', 'PAYMENT_API_KEY': 'synthetic-business-key', 'PATH': os.defpath}"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:154",
+        "text": "\"import os,json;print(json.dumps({k:os.getenv(k) for k in ['OPENAI_API_KEY','MODEL','PORT','PAYMENT_API_KEY','PYTHONUTF8']}))\"],"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:156",
+        "text": "self.assertEqual(json.loads(result['stdout']), {'OPENAI_API_KEY': None, 'MODEL': None,"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:157",
+        "text": "'PORT': '4567', 'PAYMENT_API_KEY': 'synthetic-business-key', 'PYTHONUTF8': '1'})"
+      },
+      {
+        "location": "tests/test_minimal_source_ports.py:169",
+        "text": "items={'main.py': 'pass\\n', '.env.example':'OPENAI_API_KEY=synthetic-populated-example\\n', '.env':'SYNTHETIC_ONLY=not-real\\n',"
+      },
+      {
+        "location": "tests/test_model_boundary.py:34",
+        "text": "client = OpenAI(api_key=\"synthetic-not-a-real-key\",base_url=\"https://fixture.invalid/v1\",max_retries=retry,http_client=transport)"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:54",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:56",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:65",
+        "text": "const next = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:72",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:74",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:82",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:85",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:92",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:93",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:109",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:112",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:118",
+        "text": "const next = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:126",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:128",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:134",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:136",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:144",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:147",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:154",
+        "text": "const { database, baseURL } = createApiTest(t);"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:155",
+        "text": "const response = await fetch(new URL(\"/api/items/unknown\",baseURL));"
+      },
+      {
+        "location": "tests/test_stress_test.py:31",
+        "text": "env.write_text('MODEL=stress-model\\nOPENAI_API_KEY=test-secret\\nPORT=12345\\n')"
+      },
+      {
+        "location": "tests/test_stress_test.py:66",
+        "text": "self.assertEqual(call.kwargs['env']['OPENAI_API_KEY'], 'test-secret')"
+      },
+      {
+        "location": "tests/test_token_input/README.md:39",
+        "text": "\"base_url\": \"https://your-provider.example/v1\","
+      },
+      {
+        "location": "tests/test_token_input/README.md:40",
+        "text": "\"api_key\": \"replace-with-this-provider-key\","
+      },
+      {
+        "location": "tests/test_token_input/README.md:48",
+        "text": "Alternatively, `api_key_env` names an environment variable loaded from the process environment or compiler `.env`. When both are provided, `api_key` takes precedence. Optional `base_url_env` overrides `base_url` with an environment variable's value."
+      },
+      {
+        "location": "tests/test_token_input/run.py:60",
+        "text": "columns = list(dict.fromkeys((record[\"provider\"], record[\"base_url\"], record[\"model\"]) for record in records))"
+      },
+      {
+        "location": "tests/test_token_input/run.py:62",
+        "text": "key = (record[\"file\"], record[\"provider\"], record[\"base_url\"], record[\"model\"])"
+      },
+      {
+        "location": "tests/test_token_input/run.py:117",
+        "text": "return provider.get(\"api_key\") or os.getenv(provider.get(\"api_key_env\", \"\"))"
+      },
+      {
+        "location": "tests/test_token_input/run.py:198",
+        "text": "parser.error(\"Missing API key for providers (set api_key or api_key_env): \" + \", \".join(sorted(set(missing))))"
+      },
+      {
+        "location": "tests/test_token_input/run.py:218",
+        "text": "base_url = os.getenv(provider.get(\"base_url_env\", \"\")) or provider[\"base_url\"]"
+      },
+      {
+        "location": "tests/test_token_input/run.py:224",
+        "text": "base_url=base_url, api_key=provider_key(provider),"
+      },
+      {
+        "location": "tests/test_token_input/run.py:238",
+        "text": "\"provider\": provider[\"name\"], \"base_url\": base_url, \"model\": model,"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:63",
+        "text": "{\"name\": \"first\", \"base_url\": \"https://first.test/v1\", \"api_key_env\": \"TEST_FIRST_KEY\", \"models\": [\"a\", \"b\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:64",
+        "text": "{\"name\": \"second\", \"base_url\": \"https://second.test/v1\", \"api_key\": \"test-key-second\", \"models\": [\"c\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:101",
+        "text": "{\"name\": \"test\", \"base_url\": \"https://test.invalid/v1\", \"api_key_env\": \"ABSENT_KEY\", \"models\": [\"a\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:112",
+        "text": "base = {'file': 'file.txt', 'provider': 'test', 'base_url': 'https://test.invalid', 'model': 'm',"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:135",
+        "text": "'base_url': 'https://' + provider, 'status': 'ok', 'round_trip_seconds': latency,"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:164",
+        "text": "self.assertEqual(run.provider_key({\"api_key\": \"direct\", \"api_key_env\": \"TEST_KEY\"}), \"direct\")"
+      }
+    ],
+    "HARDCODED-API-KEY": [
+      {
+        "location": "tests/test_console_logging.py:29",
+        "text": "model.client = OpenAI(api_key=\"test-secret\", base_url=\"https://model.test/v1\", http_client=client, max_retries=1)"
+      },
+      {
+        "location": "tests/test_model_boundary.py:34",
+        "text": "client = OpenAI(api_key=\"synthetic-not-a-real-key\",base_url=\"https://fixture.invalid/v1\",max_retries=retry,http_client=transport)"
+      }
+    ],
+    "MODEL-METER-TAMPER": [
+      {
+        "location": "infrastructure/shared/models/reasoning.py:1",
+        "text": "\"\"\"Context-scoped reasoning depth overrides for selective cost control.\"\"\""
+      }
+    ],
+    "NET-EXTERNAL": [
+      {
+        "location": "assets/compiler-code-map.svg:1",
+        "text": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"870\" viewBox=\"0 0 1200 870\" role=\"img\" aria-labelledby=\"title description\">"
+      },
+      {
+        "location": "infrastructure/pipeline/backend_implementation.py:38",
+        "text": "const response = await fetch(new URL('/api/example', baseURL), {"
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:123",
+        "text": "- Inspect `backend/src/api/register.ts` and backend route modules so every `fetch('/api/...')` call matches exact backend paths, methods, payloads, status codes, and response fields."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:132",
+        "text": "- Inspect `frontend/src/App.tsx`, existing files in `frontend/src/`, and `backend/src/api/register.ts` (plus relevant backend handlers) so all `fetch('/api/...')` calls match exact backend paths, methods, payloads, status codes, and JSON fields."
+      },
+      {
+        "location": "infrastructure/pipeline/global_agent.py:165",
+        "text": "- Ensure every `fetch('/api/...')` path, HTTP method, payload, status code, and JSON response field matches 100% between your Express handlers and React components."
+      },
+      {
+        "location": "infrastructure/shared/models/text.py:118",
+        "text": "base_url=os.getenv(\"OPENAI_BASE_URL\") or \"https://api.openai.com/v1\","
+      },
+      {
+        "location": "infrastructure/shared/models/vision.py:62",
+        "text": "base_url = os.getenv(\"VISUAL_BASE_URL\") or os.getenv(\"OPENAI_BASE_URL\") or \"https://api.openai.com/v1\""
+      },
+      {
+        "location": "infrastructure/shared/project/dependencies.py:99",
+        "text": "_FALLBACK_REGISTRIES = ('https://registry.npmmirror.com', 'https://registry.npmjs.org')"
+      },
+      {
+        "location": "infrastructure/shared/project/readiness_probe.mjs:16",
+        "text": "return fetch(url, { signal: AbortSignal.timeout(Math.max(1, Math.min(1500, 45000-(Date.now()-started)))), redirect: 'error' });"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:151",
+        "text": "const response = await fetch(`${baseURL}/api/health`, {"
+      },
+      {
+        "location": "infrastructure/stages/database/testing.py:83",
+        "text": "const response = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(1000) }).catch(() => null);"
+      },
+      {
+        "location": "README.md:7",
+        "text": "Install [Python 3.11+](https://www.python.org/downloads/), [Node.js 22.12+ with npm](https://nodejs.org/en/download), and [uv](https://docs.astral.sh/uv/getting-started/installation/). Ensure `node`, `npm`, and `uv` are available in your terminal; reopen it after installation."
+      },
+      {
+        "location": "tests/fixtures/deployment_asset_replay.mjs:30",
+        "text": "'external-script':'<script type=\"module\" src=\"https://external.invalid/assets/app.js\"></script>',"
+      },
+      {
+        "location": "tests/fixtures/deployment_asset_replay.mjs:31",
+        "text": "'external-style':'<link rel=\"stylesheet\" href=\"https://external.invalid/assets/style.css\">'"
+      },
+      {
+        "location": "tests/fixtures/draft_runtime/ContactEditor.tsx:20",
+        "text": "const response=await fetch('/api/contacts/'+key);"
+      },
+      {
+        "location": "tests/fixtures/draft_runtime/ContactEditor.tsx:28",
+        "text": "const response=await fetch(key===null?'/api/contacts':'/api/contacts/'+key,{"
+      },
+      {
+        "location": "tests/fixtures/draft_runtime/editor.spec.ts:68",
+        "text": "const response=await route.fetch();const sequence=++count;"
+      },
+      {
+        "location": "tests/fixtures/navigation_runtime/Editor.tsx:8",
+        "text": "const response = await fetch(\"/api/notes\", { method: \"POST\","
+      },
+      {
+        "location": "tests/fixtures/navigation_runtime/load-summary.ts:2",
+        "text": "const response = await fetch(\"/api/notes/count\");"
+      },
+      {
+        "location": "tests/fixtures/navigation_runtime/Summary.tsx:10",
+        "text": "const response = await fetch(\"/api/reset-notes\", { method: \"POST\" });"
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:21",
+        "text": "const response = await fetch(\"/api/API-SAVE\", { method: \"POST\","
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:35",
+        "text": "useEffect(() => { void fetch(\"/api/API-COUNT\").then(response => response.json())"
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:135",
+        "text": "good = early_green or ('fetch(\"/api/API-SAVE\"' in editor and"
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:136",
+        "text": "'window.location.assign(\"/summary\")' in editor and 'fetch(\"/api/API-COUNT\"' in summary)"
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:184",
+        "text": "case.assertIn('fetch(\"/api/API-SAVE\"', (root / pages['editor']).read_text())"
+      },
+      {
+        "location": "tests/frontend_flow_fixtures.py:185",
+        "text": "case.assertIn('fetch(\"/api/API-COUNT\"', (root / pages['summary']).read_text())"
+      },
+      {
+        "location": "tests/test_api_wiring.py:69",
+        "text": "const response = await fetch(url, { credentials: 'same-origin' });"
+      },
+      {
+        "location": "tests/test_api_wiring.py:104",
+        "text": "assert.equal((await fetch(new URL('/api/health', window.location.origin))).status, 200);"
+      },
+      {
+        "location": "tests/test_console_logging.py:29",
+        "text": "model.client = OpenAI(api_key=\"test-secret\", base_url=\"https://model.test/v1\", http_client=client, max_retries=1)"
+      },
+      {
+        "location": "tests/test_console_logging.py:43",
+        "text": "\"OPENAI_API_KEY\": \"test-key\", \"MODEL\": \"test-model\", \"OPENAI_BASE_URL\": \"https://model.test/v1\","
+      },
+      {
+        "location": "tests/test_console_logging.py:44",
+        "text": "\"VISUAL_API_KEY\": \"test-key\", \"VISUAL_MODEL\": \"test-model\", \"VISUAL_BASE_URL\": \"https://model.test/v1\","
+      },
+      {
+        "location": "tests/test_dependency_session.py:169",
+        "text": "self.assertEqual(calls,[(),('--registry=https://registry.npmmirror.com',)])"
+      },
+      {
+        "location": "tests/test_model_boundary.py:34",
+        "text": "client = OpenAI(api_key=\"synthetic-not-a-real-key\",base_url=\"https://fixture.invalid/v1\",max_retries=retry,http_client=transport)"
+      },
+      {
+        "location": "tests/test_public_setup_runtime.py:117",
+        "text": "await page.evaluate(async(method)=>{try{await fetch('/api/probe',{method});}catch{}},method);"
+      },
+      {
+        "location": "tests/test_public_setup_runtime.py:142",
+        "text": "void fetch('/api/notes/count').then(response => response.json()).then(data => {"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:56",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:65",
+        "text": "const next = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:74",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:85",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:93",
+        "text": "const response = await fetch(new URL(\"ENDPOINT\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:112",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:118",
+        "text": "const next = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:128",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:136",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket/adjust\",baseURL), {method:\"POST\","
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:147",
+        "text": "const response = await fetch(new URL(\"/api/items/sprocket\",baseURL));"
+      },
+      {
+        "location": "tests/test_rebased_generation_replay.py:155",
+        "text": "const response = await fetch(new URL(\"/api/items/unknown\",baseURL));"
+      },
+      {
+        "location": "tests/test_runtime_repair_context.py:15",
+        "text": "message('/notes#fragment'),message('https://other/notes')],"
+      },
+      {
+        "location": "tests/test_token_input/README.md:39",
+        "text": "\"base_url\": \"https://your-provider.example/v1\","
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:63",
+        "text": "{\"name\": \"first\", \"base_url\": \"https://first.test/v1\", \"api_key_env\": \"TEST_FIRST_KEY\", \"models\": [\"a\", \"b\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:64",
+        "text": "{\"name\": \"second\", \"base_url\": \"https://second.test/v1\", \"api_key\": \"test-key-second\", \"models\": [\"c\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:101",
+        "text": "{\"name\": \"test\", \"base_url\": \"https://test.invalid/v1\", \"api_key_env\": \"ABSENT_KEY\", \"models\": [\"a\"]},"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:112",
+        "text": "base = {'file': 'file.txt', 'provider': 'test', 'base_url': 'https://test.invalid', 'model': 'm',"
+      },
+      {
+        "location": "tests/test_token_input/test_runner.py:135",
+        "text": "'base_url': 'https://' + provider, 'status': 'ok', 'round_trip_seconds': latency,"
+      },
+      {
+        "location": "uv.lock:13",
+        "text": "source = { registry = \"https://pypi.org/simple\" }"
+      },
+      {
+        "location": "uv.lock:14",
+        "text": "sdist = { url = \"https://files.pythonhosted.org/packages/5f/56/a8120250d128bed162cd73c76d45f6ef9991f3e068f62a8ee060afa3104a/annotated_types-0.8.0.tar.gz\", hash = \"sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7\", size = 15893, upload-time = \"2026-07-23T20:16:13.995Z\" }"
+      },
+      {
+        "location": "uv.lock:16",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/99/91/8acff4f5e50511b911bbccb72b8628a49c68ce14148cd9f6431094859a90/annotated_types-0.8.0-py3-none-any.whl\", hash = \"sha256:f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0\", size = 13427, upload-time = \"2026-07-23T20:16:12.938Z\" },"
+      },
+      {
+        "location": "uv.lock:22",
+        "text": "source = { registry = \"https://pypi.org/simple\" }"
+      },
+      {
+        "location": "uv.lock:27",
+        "text": "sdist = { url = \"https://files.pythonhosted.org/packages/a9/d2/f4d173e22df740bc37b1db102b386ba719b66e95b0f0d751f556b387e6d2/anyio-4.15.1.tar.gz\", hash = \"sha256:9f28306018cbd6d329e64a36d58256edff76dd996fe423bc957326e578b82a94\", size = 276966, upload-time = \"2026-09-05T10:42:39.44Z\" }"
+      },
+      {
+        "location": "uv.lock:29",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/12/b8/4bd346e22b28902df4d651910f5242c28d84e4a5c2435ca5c3f797ed7e2e/anyio-4.15.1-py3-none-any.whl\", hash = \"sha256:6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101\", size = 132079, upload-time = \"2026-09-05T10:42:37.923Z\" },"
+      },
+      {
+        "location": "uv.lock:35",
+        "text": "source = { registry = \"https://pypi.org/simple\" }"
+      },
+      {
+        "location": "uv.lock:36",
+        "text": "sdist = { url = \"https://files.pythonhosted.org/packages/fd/11/b524cbd9bbdaca58608e4cf4053fd463417549e1959fa8d3aa18319f9555/certifi-2026.10.23.tar.gz\", hash = \"sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd\", size = 136225, upload-time = \"2026-10-23T11:36:16.478Z\" }"
+      },
+      {
+        "location": "uv.lock:38",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl\", hash = \"sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1\", size = 135082, upload-time = \"2026-10-23T11:36:14.763Z\" },"
+      },
+      {
+        "location": "uv.lock:44",
+        "text": "source = { registry = \"https://pypi.org/simple\" }"
+      },
+      {
+        "location": "uv.lock:45",
+        "text": "sdist = { url = \"https://files.pythonhosted.org/packages/3e/6e/0091f175ccd02b02bc8811bbcbcc6ac2e980be116e3b2f7a736ca322bf84/greenlet-3.5.6.tar.gz\", hash = \"sha256:8e67c43bdfc88d5fee6db0d3e40175b362fc95fb85f0412d233b9b203c53a575\", size = 207653, upload-time = \"2026-09-14T15:42:51.806Z\" }"
+      },
+      {
+        "location": "uv.lock:47",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/f1/d7/41511ee2696f14be4200b524d9553dc4295e2bdeb20aa8962c3cb25e71c6/greenlet-3.5.6-cp311-cp311-macosx_11_0_universal2.whl\", hash = \"sha256:a6a4b98a9132e0f45c9fc245a63894cfd8c45fb7a0d6bffc5eab3ec327cf7324\", size = 294075, upload-time = \"2026-09-14T14:25:16.922Z\" },"
+      },
+      {
+        "location": "uv.lock:48",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/f8/7b/b509624970909294cd064ff7346148ca9941c21bec9026d7873dd254e9fa/greenlet-3.5.6-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:45bfd2b51e38aaa5f9849f114d9c7c1d75f69187c849b3549cd64c465283abfa\", size = 613429, upload-time = \"2026-09-14T15:12:00.454Z\" },"
+      },
+      {
+        "location": "uv.lock:49",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/2b/5c/d2eb503067f9ba20875ef8c87681f29a64f53bbbbe4059a5d7c53179d442/greenlet-3.5.6-cp311-cp311-manylinux_2_24_ppc64le.manylinux_2_28_ppc64le.whl\", hash = \"sha256:3c6dede9133e1da41d561bc3fb14e92b47e2ce39ae60edefaad145658ea7c5e2\", size = 625405, upload-time = \"2026-09-14T15:20:41.053Z\" },"
+      },
+      {
+        "location": "uv.lock:50",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/1b/24/9b071d11c8bb9f5f38cccacc38fcc234d91997a4c395cc2bf43ecae89642/greenlet-3.5.6-cp311-cp311-manylinux_2_24_s390x.manylinux_2_28_s390x.whl\", hash = \"sha256:4fb8e59f68845d56c23c031dcd79c329f345e4a9d2ffac91c3d1ab366bdc457b\", size = 633270, upload-time = \"2026-09-14T15:25:04.864Z\" },"
+      },
+      {
+        "location": "uv.lock:51",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/ec/d3/63d4477ce31dff2fd802a9a20240f6606aac85977e0fb18443aae33de3f6/greenlet-3.5.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl\", hash = \"sha256:1c20ea32a73d17b9b60e3371240e17b0068120c98a5ec01a224a7dd8c89733ba\", size = 624428, upload-time = \"2026-09-14T14:35:56.895Z\" },"
+      },
+      {
+        "location": "uv.lock:52",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/88/17/ac11883ecc9da19c681c8b763ee39e6f7dca2aa81874eb11a075d3cbeb00/greenlet-3.5.6-cp311-cp311-manylinux_2_39_riscv64.whl\", hash = \"sha256:d701eab36200c36224833d07dbdb709adb7fd4253429548ddb5e547b8ed40586\", size = 428068, upload-time = \"2026-09-14T15:28:35.872Z\" },"
+      },
+      {
+        "location": "uv.lock:53",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/ad/aa/9cde4e00688eaa2a03b91d12e4681439a87e6aad860399e0847af6a014ca/greenlet-3.5.6-cp311-cp311-musllinux_1_2_aarch64.whl\", hash = \"sha256:5a0b2791239c99992a86c1b635b787fe2a877d9eaaa26f8891ce943832b585ae\", size = 1588385, upload-time = \"2026-09-14T15:10:05.386Z\" },"
+      },
+      {
+        "location": "uv.lock:54",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/5c/01/24632b5ec186b64e21e07a8f53ce5e15a7e9cb33eddee99a5fe16379afa5/greenlet-3.5.6-cp311-cp311-musllinux_1_2_x86_64.whl\", hash = \"sha256:188bf333769b7145e2b0b4a7f09615ec550ed44d3a2a8395fb7b36f0e9901e13\", size = 1653119, upload-time = \"2026-09-14T14:35:48.275Z\" },"
+      },
+      {
+        "location": "uv.lock:55",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/ce/6c/019d2ef898f4b9ac845167f1c6f73229e9a4e2439362a5e2ce50205a19b0/greenlet-3.5.6-cp311-cp311-win_amd64.whl\", hash = \"sha256:a6b4ff33f7e011bbaa148238d131c4fd4f8afbab3c104ddfbdb2b12b74ff7016\", size = 323317, upload-time = \"2026-09-14T14:22:38.836Z\" },"
+      },
+      {
+        "location": "uv.lock:56",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/5a/7a/439df999455e3bdf02b1c68f3848d4020385ef0a01f89f706b07bf148a65/greenlet-3.5.6-cp311-cp311-win_arm64.whl\", hash = \"sha256:59deccd347735a7774223b05a93773fddbb298aba3cea21be4337fb4752dbe32\", size = 307739, upload-time = \"2026-09-14T14:23:40.469Z\" },"
+      },
+      {
+        "location": "uv.lock:57",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/72/18/3fc6d951466ae9a2a688edcddde3b2e388da0a8244e0caf7117bbeb0eb95/greenlet-3.5.6-cp312-cp312-macosx_11_0_universal2.whl\", hash = \"sha256:a5876d0a60355af98d535c47f6cd6eb0f8a432396dab26845d380b92f8412422\", size = 295668, upload-time = \"2026-09-14T14:22:33.241Z\" },"
+      },
+      {
+        "location": "uv.lock:58",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/27/89/366d2af5061eeefa5012f510d95a99c8620dcc457609838db4d538820318/greenlet-3.5.6-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:e85880b538e59a59f55117b81f208a6660ad5ac328aad9305f812d9b8bc67a0f\", size = 611700, upload-time = \"2026-09-14T15:12:01.962Z\" },"
+      },
+      {
+        "location": "uv.lock:59",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/54/1c/07f133f865fd58ae593dd2bbec3144acaee9b04ffe2eb48c6e121747ceef/greenlet-3.5.6-cp312-cp312-manylinux_2_24_ppc64le.manylinux_2_28_ppc64le.whl\", hash = \"sha256:f0ba7c2a329d650628f4c8572fd1db29f0a59dd70a3e3e0710dcf18a35cce9d8\", size = 624223, upload-time = \"2026-09-14T15:20:42.459Z\" },"
+      },
+      {
+        "location": "uv.lock:60",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/a7/f2/844dc823ff2752ad049caa6b59d57e4572f9c445934b02d3518f4c67197c/greenlet-3.5.6-cp312-cp312-manylinux_2_24_s390x.manylinux_2_28_s390x.whl\", hash = \"sha256:ee7d9da3bf493909cf811a3f038840cb34fab5ae2956b8a263919f6e289ab188\", size = 629529, upload-time = \"2026-09-14T15:25:06.354Z\" },"
+      },
+      {
+        "location": "uv.lock:61",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/66/6a/1594f3869c57c149abdb380492529e04d4c0229b5e4d79572c5bd0aaa673/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl\", hash = \"sha256:975736b002ed080d124cf81a79cb7e05cb26d6b3f5c7a7b651c0fcce70353aa1\", size = 621404, upload-time = \"2026-09-14T14:35:59.027Z\" },"
+      },
+      {
+        "location": "uv.lock:62",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/c0/42/b1f8dbc89a53b9e77859fc1ad1627d106fc361daa3ea4bdf43a91ebb4338/greenlet-3.5.6-cp312-cp312-manylinux_2_39_riscv64.whl\", hash = \"sha256:71890d5247020c25c21a6b65202782bfc281d4e6e244842419d30e3492bb6dcc\", size = 432385, upload-time = \"2026-09-14T15:28:37.369Z\" },"
+      },
+      {
+        "location": "uv.lock:63",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/a2/f5/33e5c9e48178b9259fd000f8f45caa4a65036f65d3d0c06a602f570f025d/greenlet-3.5.6-cp312-cp312-musllinux_1_2_aarch64.whl\", hash = \"sha256:0616b8f878098c5681fd8f0dc92d887551717402342a70f0abcbfea5f5ad8a44\", size = 1584998, upload-time = \"2026-09-14T15:10:06.653Z\" },"
+      },
+      {
+        "location": "uv.lock:64",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/ef/31/9b4e140bc24d0ad7927ebd651f5608b0acc2334d061748c3b6ad19085cfa/greenlet-3.5.6-cp312-cp312-musllinux_1_2_x86_64.whl\", hash = \"sha256:3dbb4596a6a4e5d47121a33ff20533a81e60f302d9e67b69909a8bc21a43f0a7\", size = 1647568, upload-time = \"2026-09-14T14:35:49.787Z\" },"
+      },
+      {
+        "location": "uv.lock:65",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/c3/71/d79f1791f824f8ff15c2978746640467ae932a2365e0201069f7f272395f/greenlet-3.5.6-cp312-cp312-win_amd64.whl\", hash = \"sha256:7ac4abb3877c43af320392c664774eef6fa2cc063c79a55fc02d844a3cbe7395\", size = 324203, upload-time = \"2026-09-14T14:22:54.504Z\" },"
+      },
+      {
+        "location": "uv.lock:66",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/63/af/42aca4d56e8cb321912203069d8d34734cb288222f10ad2ae102718cc577/greenlet-3.5.6-cp312-cp312-win_arm64.whl\", hash = \"sha256:301102a49120b095e72a7838792b41233975fc1c155daec6d98f81c00c9280e0\", size = 308310, upload-time = \"2026-09-14T14:24:03.008Z\" },"
+      },
+      {
+        "location": "uv.lock:67",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/f1/a1/e720a38852366c589e1a46cf570b886507ad2cf591050c203365638baab0/greenlet-3.5.6-cp313-cp313-macosx_11_0_universal2.whl\", hash = \"sha256:f96f0e30b5a95c7631b12bfe214cbc90ec8fe8cfa36920596c10514a65743519\", size = 294627, upload-time = \"2026-09-14T14:24:40.102Z\" },"
+      },
+      {
+        "location": "uv.lock:68",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/eb/c3/58187858df41354a11e6a55b421e7af9059798abdab3a384cc51b8567c38/greenlet-3.5.6-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:c75116c9de79949de23006e2d9b35ee82874c594fcf5c0311b439acaa14b8441\", size = 614356, upload-time = \"2026-09-14T15:12:03.399Z\" },"
+      },
+      {
+        "location": "uv.lock:69",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/ce/b9/3a7e67d5f05c9760b1ad411fa52264bd69cc08e22a2ebfb4018b90628ced/greenlet-3.5.6-cp313-cp313-manylinux_2_24_ppc64le.manylinux_2_28_ppc64le.whl\", hash = \"sha256:cad5782f93f7f738b62c6527b6f32a60694d924029f299a8b524758cfa53d815\", size = 626756, upload-time = \"2026-09-14T15:20:44.269Z\" },"
+      },
+      {
+        "location": "uv.lock:70",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/c6/7c/40400455f5b5a65bb83e94fde66d1be9e5ec518638113f8083ace746c309/greenlet-3.5.6-cp313-cp313-manylinux_2_24_s390x.manylinux_2_28_s390x.whl\", hash = \"sha256:a93ee7c6e8fd0f8a83525a51bd777be57ee17787e91d805bd8d6faf9dcada18e\", size = 632632, upload-time = \"2026-09-14T15:25:07.813Z\" },"
+      },
+      {
+        "location": "uv.lock:71",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl\", hash = \"sha256:f98e8215e172f567ce80eeaed9107fb4d32b6c44f26983d9b8334658136a205a\", size = 623779, upload-time = \"2026-09-14T14:36:01.104Z\" },"
+      },
+      {
+        "location": "uv.lock:72",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/f9/67/1f35cff30a6c51c3f23b63d4afcc7313ab4f97490ba3676fa78178984b27/greenlet-3.5.6-cp313-cp313-manylinux_2_39_riscv64.whl\", hash = \"sha256:7f731ebac68ea06d628658295cb2d217b10186329fcf9a3b6a149045059bf92e\", size = 434933, upload-time = \"2026-09-14T15:28:38.858Z\" },"
+      },
+      {
+        "location": "uv.lock:73",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/a5/26/fda8a5a06e7073333ccb038133c5893b9e0c4fe29d5992a17e83c241bc6e/greenlet-3.5.6-cp313-cp313-musllinux_1_2_aarch64.whl\", hash = \"sha256:df19e2d0b1620039af5102563fbd96e8938c7f5c3f5828528d641d9fc585525e\", size = 1584930, upload-time = \"2026-09-14T15:10:08.234Z\" },"
+      },
+      {
+        "location": "uv.lock:74",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/2f/37/50f8813163148d6234e08b23dcad6a9e37f01d148c8ec976e4c44ea2d918/greenlet-3.5.6-cp313-cp313-musllinux_1_2_x86_64.whl\", hash = \"sha256:06c0e933290fba8ffe53ead4ae1b8044b0e9754b75cebf381aa2bc3e50d82fac\", size = 1647590, upload-time = \"2026-09-14T14:35:51.173Z\" },"
+      },
+      {
+        "location": "uv.lock:75",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/86/da/b7669b09586365654083a62bd0724cf06cb74bd5085a15cdd161271f992f/greenlet-3.5.6-cp313-cp313-win_amd64.whl\", hash = \"sha256:5b602b4201b965a8354d74e232364a66ff243dd142e350d035f46169bb36e13d\", size = 324086, upload-time = \"2026-09-14T14:23:48.428Z\" },"
+      },
+      {
+        "location": "uv.lock:76",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/e5/5d/c9663cfe84a2a9e0aa96f066f5b0594c227ea4c647511e087e2e11d4ac0a/greenlet-3.5.6-cp313-cp313-win_arm64.whl\", hash = \"sha256:876077e7ebb8c84ed068e2b23d4c62ebb010d60df84b9591af1be2f39010ffb2\", size = 308211, upload-time = \"2026-09-14T14:28:01.634Z\" },"
+      },
+      {
+        "location": "uv.lock:77",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/66/c0/d254544ae2b8bdd311aef000fafc02828c2771b17d994b3075620ea7cc6e/greenlet-3.5.6-cp314-cp314-macosx_11_0_universal2.whl\", hash = \"sha256:8cddea1b8339451c2fb3388e138347b6126744f33b611bdb55b7357361cfef46\", size = 295221, upload-time = \"2026-09-14T14:25:11.583Z\" },"
+      },
+      {
+        "location": "uv.lock:78",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/18/18/eb54be16b9cc3971e09ca5b73334e1b8c804a4630d9addaaf218a4fe300f/greenlet-3.5.6-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl\", hash = \"sha256:c59acfa8eb73a1e0d484392dc002bdf001fd4ce73394e0132df3d1ab6093d7cb\", size = 660992, upload-time = \"2026-09-14T15:12:04.876Z\" },"
+      },
+      {
+        "location": "uv.lock:79",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/8f/b4/e193efe65671dcf294bc51fcc59efb52d154adf8612c4ea016da0d2c486c/greenlet-3.5.6-cp314-cp314-manylinux_2_24_ppc64le.manylinux_2_28_ppc64le.whl\", hash = \"sha256:a3b4a01c6da07ef9f80d4fe8933b994bc99747bcea3eab0330a9c34d3c12655b\", size = 673428, upload-time = \"2026-09-14T15:20:45.756Z\" },"
+      },
+      {
+        "location": "uv.lock:80",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/fd/21/631bb45fafde1dca782152377c0676d182ec924820064047f533a3627b28/greenlet-3.5.6-cp314-cp314-manylinux_2_24_s390x.manylinux_2_28_s390x.whl\", hash = \"sha256:dd0b83bed3405b586a3133629f1d1a5bc7bfd64822a3b7ab342bdc68e6dbc61b\", size = 677688, upload-time = \"2026-09-14T15:25:09.279Z\" },"
+      },
+      {
+        "location": "uv.lock:81",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/45/ac/28fa7a9e50f2859466214c4ac584d776db52c1604ad4dd158960a5af2a1f/greenlet-3.5.6-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl\", hash = \"sha256:9a09d59bef1db94f384b5bcc2d523694d338f3df6b757aeeaf7baca5d0c0be88\", size = 670773, upload-time = \"2026-09-14T14:36:02.577Z\" },"
+      },
+      {
+        "location": "uv.lock:82",
+        "text": "{ url = \"https://files.pythonhosted.org/packages/40/30/2b0a73e68e1e18e30b601d0d183cfdfc2beca4de5a6843c630f0fc9fb90c/greenlet-3.5.6-cp314-cp314-manylinux_2_39_riscv64.whl\", hash = \"sha256:fdacf26402389bdd89857ad3c045a26fe8f3314f9a8b28226f82f88463a65b77\", size = 480475, upload-time = \"2026-09-14T15:28:40.741Z\" },"
+      }
+    ],
+    "ENCODING-OR-EXEC": [
+      {
+        "location": "infrastructure/shared/project/git.py:33",
+        "text": "result = subprocess.run([\"git\", \"-C\", str(self.directory), *arguments], input=input,"
+      },
+      {
+        "location": "infrastructure/shared/project/readiness_probe.mjs:2",
+        "text": "import { spawn } from 'node:child_process';"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/scripts/test-api.mjs:7",
+        "text": "import { spawn } from \"node:child_process\";"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/db/initialize.ts:13",
+        "text": "connection.exec(readFileSync(new URL(`./tables/${filename}`, import.meta.url), \"utf8\"));"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/src/db/seed.ts:20",
+        "text": "connection.exec(readFileSync(new URL(`./seeds/${filename}`, import.meta.url), \"utf8\"));"
+      },
+      {
+        "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts:18",
+        "text": "for (const table of tables) database.exec(`DELETE FROM \"${table.name.replaceAll('\"', '\"\"')}\"`);"
+      },
+      {
+        "location": "infrastructure/stages/database/testing.py:13",
+        "text": "import { spawn, spawnSync } from \"node:child_process\";"
+      },
+      {
+        "location": "infrastructure/stages/database/testing.py:40",
+        "text": "try { db.exec('CREATE TABLE \"__arc_startup_probe\" (value TEXT); INSERT INTO \"__arc_startup_probe\" VALUES (\\'preserve\\');'); }"
+      },
+      {
+        "location": "infrastructure/stages/database/testing.py:103",
+        "text": "try { db.pragma(\"foreign_keys = OFF\"); db.exec(`DROP TABLE ${quote(first)}`); }"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:49",
+        "text": "import { spawn, spawnSync } from \"node:child_process\";"
+      },
+      {
+        "location": "infrastructure/stages/frontend/triggers/e2e_runtime.py:100",
+        "text": "for (const table of tables) connection.exec(`DELETE FROM \"${table.name.replaceAll('\"', '\"\"')}\"`);"
+      },
+      {
+        "location": "infrastructure/utils/processes.py:39",
+        "text": "return subprocess.Popen([str(part) for part in command], cwd=cwd,"
+      },
+      {
+        "location": "infrastructure/utils/processes.py:47",
+        "text": "subprocess.run([shutil.which(\"taskkill\") or \"taskkill\", \"/PID\", str(process.pid), \"/T\", \"/F\"],"
+      },
+      {
+        "location": "scripts/stress_test.py:101",
+        "text": "process = subprocess.Popen(job[\"command\"], cwd=ROOT,"
+      },
+      {
+        "location": "tests/fixtures/deployment_asset_replay.mjs:2",
+        "text": "import cp from 'node:child_process';"
+      },
+      {
+        "location": "tests/fixtures/draft_runtime/ContactEditor.tsx:6",
+        "text": "const part=/^\\/contacts\\/(\\d+|new)$/.exec(location.pathname)?.[1];"
+      },
+      {
+        "location": "tests/test_api_wiring.py:83",
+        "text": "compiled = subprocess.run(['node', 'node_modules/typescript/bin/tsc',"
+      },
+      {
+        "location": "tests/test_api_wiring.py:93",
+        "text": "db.exec('CREATE TABLE Book (id TEXT PRIMARY KEY, title TEXT NOT NULL)');"
+      },
+      {
+        "location": "tests/test_api_wiring.py:112",
+        "text": "result = subprocess.run(['node', '--import', 'tsx', 'check.mjs'], cwd=output,"
+      },
+      {
+        "location": "tests/test_control_exit.py:107",
+        "text": "process=subprocess.Popen([sys.executable,'-c',script,str(inp),str(root/'output')],cwd=Path(__file__).resolve().parents[1],stdout=subprocess.PIPE,stderr=subprocess.PIPE)"
+      },
+      {
+        "location": "tests/test_dependency_session.py:19",
+        "text": "child=subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)'])"
+      },
+      {
+        "location": "tests/test_dependency_session.py:148",
+        "text": "state=subprocess.run(['ps','-p',pid,'-o','stat='],capture_output=True,text=True,timeout=3).stdout.strip()"
+      },
+      {
+        "location": "tests/test_deployment_asset_protocol.py:21",
+        "text": "result=subprocess.run([shutil.which('node'),str(project/'tests/fixtures/deployment_asset_replay.mjs'),str(root),str(project/'infrastructure/shared/project/readiness_probe.mjs'),scenario],capture_output=True,text=True,timeout=5)"
+      },
+      {
+        "location": "tests/test_deployment_readiness.py:253",
+        "text": "completed=subprocess.run([shutil.which('node'),str(probe),str(root),'200'],capture_output=True,text=True,timeout=6)"
+      },
+      {
+        "location": "tests/test_git_checkpoints.py:149",
+        "text": "with patch('infrastructure.shared.project.git.subprocess.run', side_effect=FileNotFoundError('git unavailable')):"
+      },
+      {
+        "location": "tests/test_image_compression.py:73",
+        "text": "data = base64.b64decode(payload)"
+      },
+      {
+        "location": "tests/test_independent_audit_counterexamples.py:73",
+        "text": "self.check(self.suite(\"const route=/^\\\\/notes\\\\/([^/]+)$/.exec(new URL(page.url()).pathname);expect(route).not.toBeNull();\"))"
+      },
+      {
+        "location": "tests/test_independent_audit_counterexamples.py:74",
+        "text": "self.check(self.suite(\"const pattern=/notes/;const match=pattern.exec(page.url());expect(match).not.toBeNull();\"))"
+      },
+      {
+        "location": "tests/test_independent_audit_counterexamples.py:78",
+        "text": "self.check(self.suite(\"const db=database;db.exec('DELETE FROM Note');await expect(page).toHaveTitle('Notes');\"),'UI_PREREQUISITE_BYPASS')"
+      },
+      {
+        "location": "tests/test_portability.py:170",
+        "text": "parent = \"import subprocess,sys,time; subprocess.Popen([sys.executable,'-c',sys.argv[1]]); time.sleep(60)\""
+      },
+      {
+        "location": "tests/test_public_setup_runtime.py:93",
+        "text": "const pattern=/summary/;expect(pattern.exec(page.url())).not.toBeNull();"
+      },
+      {
+        "location": "tests/test_rebased_node_evidence.py:27",
+        "text": "result = subprocess.run([node, *arguments], cwd=root, env=env,"
+      }
+    ]
+  },
+  "test_artifact_leads": [
+    {
+      "location": "infrastructure/shared/project/templates/backend/tests/support/context.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/helpers.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-2.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-3.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "input/tests/REQ-4.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/deployment_asset_replay.mjs",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/draft_runtime/Contact.sql",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/draft_runtime/ContactEditor.tsx",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/draft_runtime/contacts.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/draft_runtime/editor.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/Editor.tsx",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/load-summary.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/navigation.spec.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/Note.sql",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/notes.ts",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/NotesApp.tsx",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/navigation_runtime/Summary.tsx",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/requirement_handoff/README.md",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/fixtures/requirement_handoff/requirements.yaml",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/frontend_flow_fixtures.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/pipeline_fixtures.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/suite_fixtures.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_acceptance_missing_design.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_agent_no_progress.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_api_wiring.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_authored_source_handoff.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_backend_contracts.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_bounded_context.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_browser_execution_evidence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_cleanup_race.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_compiler.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_console_logging.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_context_discovery.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_control_exit.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_database_runtime.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_dependency_session.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_deployment_asset_protocol.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_deployment_readiness.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_design_continuation.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_draft_runtime.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_failure_feedback_once.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_file_agent.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_file_context_windows.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_file_tools.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_frontend_flow.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_git_checkpoints.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_global_agent.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_image_compression.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_implementation_recovery.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_independent_acceptance.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_independent_audit_counterexamples.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_minimal_source_ports.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_model_boundary.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_model_resilience.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_navigation_dependencies.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_navigation_runtime.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_obligation_integrity.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_owned_runtime_sources.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_pipeline_continuation.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_portability.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_process_cleanup_signal.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_proposal_recovery.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_public_acceptance_contract.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_public_control_runtime.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_public_setup_runtime.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_rebased_backend_evidence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_rebased_generation_replay.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_rebased_node_evidence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_rebased_task_call_budget.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_regression_owner_context.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_repair_context_budget.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_rich_artifacts.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_runtime_repair_context.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_schema_evolution.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_shared_conventions.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_shared_obligation_locks.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_source_evidence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_source_query_projection.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_stress_test.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_test_repair.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_token_input/__init__.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_token_input/README.md",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_token_input/run.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_token_input/test_runner.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_ui_completion_evidence.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/test_validation_policy.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    },
+    {
+      "location": "tests/tool_fixtures.py",
+      "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"
+    }
+  ],
+  "long_line_overlaps": [
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:321"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:321"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:779"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:779"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:87"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:87"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:636"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:636"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:399"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:399"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:237"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:237"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:389"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:389"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:47"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:47"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:338"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:338"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:353"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:353"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:453"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:453"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:306"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:306"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:112"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:112"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:172"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:172"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:436"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:436"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:183"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:183"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:409"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:409"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:602"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:602"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:271"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:271"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:401"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:401"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:632"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:632"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:712"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:712"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:85"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:85"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:658"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:658"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:7"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:7"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:957"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:957"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:278"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:278"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:504"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:504"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:531"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:531"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:941"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:941"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:27"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:27"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:993"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:993"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:814"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:814"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:307"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:307"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:289"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:289"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:423"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:423"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:305"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:305"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:327"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:327"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:25"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:25"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:612"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:612"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:343"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:343"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:829"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:829"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:549"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:549"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:551"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:551"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:733"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:733"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:778"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:778"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:1015"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:1015"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:876"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:876"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:680"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:680"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:64",
+        "requirements/requirements.yaml:209",
+        "requirements/requirements.yaml:239"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:64",
+        "tests/fixtures/requirement_handoff/requirements.yaml:209",
+        "tests/fixtures/requirement_handoff/requirements.yaml:239"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:503"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:503"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:518"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:518"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:131"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:131"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:997"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:997"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:130",
+        "requirements/requirements.yaml:169",
+        "requirements/requirements.yaml:696"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:130",
+        "tests/fixtures/requirement_handoff/requirements.yaml:169",
+        "tests/fixtures/requirement_handoff/requirements.yaml:696"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:961"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:961"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:128"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:128"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:472"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:472"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:221"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:221"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:16"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:16"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:871"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:871"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:747"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:747"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:275"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:275"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:1035"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:1035"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:730"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:730"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:274"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:274"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:611"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:611"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:341"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:341"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:385"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:385"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:922"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:922"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:467"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:467"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:635"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:635"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:37"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:37"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:893"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:893"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:370"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:370"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:40"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:40"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:277"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:277"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:548"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:548"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:324"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:324"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:614"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:614"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:102"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:102"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:613"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:613"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:817"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:817"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:662"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:662"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:563"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:563"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:830"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:830"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:767"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:767"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:408"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:408"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:207"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:207"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:697"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:697"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:678"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:678"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:78"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:78"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:506"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:506"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:745"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:745"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:800"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:800"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:435"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:435"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:241"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:241"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:763"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:763"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:484"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:484"
+      ]
+    },
+    {
+      "example_task": "D:\\workplace\\anti-cheat\\hackathon-anti-cheat\\material\\arc-bench-web\\bookstack",
+      "example": [
+        "requirements/requirements.yaml:355"
+      ],
+      "submission": [
+        "tests/fixtures/requirement_handoff/requirements.yaml:355"
+      ]
+    }
+  ],
+  "test_case_overlaps": [],
+  "model_config": {
+    "status": "warning",
+    "reasons": [
+      "base_url ����Ψһ�Ҿ�ȷΪ https://api.arc-bench.com/v1",
+      "api_key ���ò�λ����Ψһ"
+    ],
+    "base_url_slots": [
+      {
+        "name": "base_url",
+        "value": "https://api.openai.com/v1",
+        "location": "infrastructure/shared/models/text.py:118"
+      },
+      {
+        "name": "base_url",
+        "value": "https://api.openai.com/v1",
+        "location": "infrastructure/shared/models/vision.py:62"
+      },
+      {
+        "name": "base_url",
+        "value": "https://model.test/v1",
+        "location": "tests/test_console_logging.py:29"
+      },
+      {
+        "name": "OPENAI_BASE_URL",
+        "value": "https://model.test/v1",
+        "location": "tests/test_console_logging.py:43"
+      },
+      {
+        "name": "VISUAL_BASE_URL",
+        "value": "https://model.test/v1",
+        "location": "tests/test_console_logging.py:44"
+      },
+      {
+        "name": "base_url",
+        "value": "https://fixture.invalid/v1",
+        "location": "tests/test_model_boundary.py:34"
+      },
+      {
+        "name": "base_url",
+        "value": "https://your-provider.example/v1",
+        "location": "tests/test_token_input/README.md:39"
+      },
+      {
+        "name": "base_url",
+        "value": "https://first.test/v1",
+        "location": "tests/test_token_input/test_runner.py:63"
+      },
+      {
+        "name": "base_url",
+        "value": "https://second.test/v1",
+        "location": "tests/test_token_input/test_runner.py:64"
+      },
+      {
+        "name": "base_url",
+        "value": "https://test.invalid/v1",
+        "location": "tests/test_token_input/test_runner.py:101"
+      },
+      {
+        "name": "base_url",
+        "value": "https://test.invalid",
+        "location": "tests/test_token_input/test_runner.py:112"
+      }
+    ],
+    "api_key_slots": [
+      {
+        "name": "OPENAI_API_KEY",
+        "location": ".env.example:2"
+      },
+      {
+        "name": "VISUAL_API_KEY",
+        "location": ".env.example:5"
+      },
+      {
+        "name": "api_key",
+        "location": "infrastructure/shared/models/text.py:98"
+      },
+      {
+        "name": "api_key",
+        "location": "infrastructure/shared/models/text.py:117"
+      },
+      {
+        "name": "api_key",
+        "location": "infrastructure/shared/models/vision.py:61"
+      },
+      {
+        "name": "api_key",
+        "location": "infrastructure/shared/models/vision.py:70"
+      },
+      {
+        "name": "nOPENAI_API_KEY",
+        "location": "scripts/package.py:29"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_console_logging.py:29"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "location": "tests/test_minimal_source_ports.py:169"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_model_boundary.py:34"
+      },
+      {
+        "name": "nOPENAI_API_KEY",
+        "location": "tests/test_stress_test.py:31"
+      },
+      {
+        "name": "api_key",
+        "location": "tests/test_token_input/run.py:224"
+      }
+    ]
+  },
+  "inspection_gaps": [],
+  "limits": {
+    "max_file_bytes": 2000000,
+    "max_total_bytes": 50000000
+  },
+  "notice": "Leads are not verdicts. Inspect original context before adjudicating."
+}

@@ -1,0 +1,23 @@
+﻿反作弊审查：leaderboard_Falcons_track-arc-bench-lite_score-7.505030241935514_pass_rate-6.593406593406593
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Falcons_track-arc-bench-lite_score-7.505030241935514_pass_rate-6.593406593406593\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的凭据密码哈希实现直接对应 Stack Overflow 题面的登录/注册凭据功能，并在后端测试生成流程中作为现成 fixture 复用。
+  - infrastructure/shared/project/templates/backend/tests/support/context.ts:33: `fixturePasswordHash(password)` 固定使用 scrypt、固定 salt 和哈希编码，属于可直接复用的凭据处理实现；该文件还在第30行明确标注为 credential APIs。
+  - infrastructure/pipeline/backend_implementation.py:79: 后端实现提示明确要求模型“Use the supplied test utilities and generated tests to understand existing fixture data conventions”，并在第87-88行要求保持 seed_password_hash 的 scrypt 编码可被 credential handlers 读取；该路径把预置凭据实现提供给生成流程。
+  - 知识类型：(1)完整代码实现；说明：提供了可运行的凭据哈希函数及固定编码约束，专用于认证凭据 fixture；定位：infrastructure/shared/project/templates/backend/tests/support/context.ts:33
+  - 检索方案：(4)无检索机制（全量使用）；说明：模板测试支持文件由编译器固定写入并作为后端测试工具提供，没有按题面任务选择；定位：infrastructure/pipeline/backend_implementation.py:204
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：后端实现提示要求模型读取 supplied test utilities/generated tests 并保持该 credential convention，模型据此生成处理器；定位：infrastructure/pipeline/backend_implementation.py:79
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：scrypt credential fixture 可跨同类登录/注册网页复用，但不是基础框架能力。
+  - 综合判断：该材料直接命中 Stack Overflow 任务的登录与注册要求，且通过固定测试支持文件和生成提示进入实现，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型端点与密钥槽位无法证明符合唯一合法基线。
+  - infrastructure/shared/models/text.py:70-98: 使用 OPENAI_API_KEY，并将 OPENAI_BASE_URL 缺省为 `https://api.openai.com/v1`；该端点不是规定的 `https://api.arc-bench.com/v1`。
+  - infrastructure/shared/models/vision.py:57-65: 另有 VISUAL_API_KEY/OPENAI_API_KEY 与 VISUAL_BASE_URL/OPENAI_BASE_URL 的第二组配置槽位，存在多个 API key/base_url 槽位。
+
+判决：作弊

@@ -1,0 +1,24 @@
+﻿反作弊审查：leaderboard_好面汤决定_track-arc-bench-lite_score-0.0_pass_rate-0.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_好面汤决定_track-arc-bench-lite_score-0.0_pass_rate-0.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 作答仓库把上述非公开测试断言、选择器和步骤作为可复用的题面级实现合同，直接覆盖多个题面任务（至少 12306、stackoverflow、ctrip、bookstack、prestashop、keep）。
+  - infrastructure/acceptance_cases/75912b85c96a15ebd749a0b344556d5e972b39c866cdcfbcd043576ab73f9c0c/REQ-2.1.spec.ts:4：以 `// requirement: REQ-2.1` 固定绑定需求，并在同一套件中提供登录断言和选择器。
+  - infrastructure/compact_acceptance.py:123：按 `workspace.rglob('*.spec.ts')` 统计并运行仓库内完整验收套件，证明预置测试会进入验证流程。
+  - 知识类型：(2)代码片段；说明：预置了可直接复用的 Playwright 测试、断言、选择器、fixture 和工作流；定位：infrastructure/acceptance_cases/75912b85c96a15ebd749a0b344556d5e972b39c866cdcfbcd043576ab73f9c0c/REQ-2.1.spec.ts:4
+  - 检索方案：(1)针对题面硬编码检索；说明：套件通过任务哈希目录及 `REQ-*` 文件名、需求 ID 选择；定位：infrastructure/compact_acceptance.py:81
+  - 生成方案：(1)无模型参与地使用代码；说明：测试文件由仓库直接读取、复制/压缩并运行，不需模型生成；定位：infrastructure/compact_acceptance.py:22
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：登录、注册、搜索、筛选、导航等具体应用行为合同可迁移到同类题面，但不是基础框架。
+  - 综合判断：测试来源与题面任务逐项对应，且作为运行时输入使用；属于直接匹配题面需求的预置实现知识，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置的 API key 槽位不唯一，且静态上无法确认唯一的标准 base_url。
+  - .env.example:4：声明 `OPENAI_API_KEY` 槽位。
+  - infrastructure/shared/models/settings.py:32：读取 `OPENAI_API_KEY`。
+  - infrastructure/shared/models/text.py:64、infrastructure/shared/models/vision.py:67：分别构造独立模型客户端并各自消费 key；static_scan 还识别到多个 `api_key` 槽位。需要人工核查运行时是否始终只有一个注入 key 和标准 `https://api.arc-bench.com/v1` base_url。
+
+判决：作弊

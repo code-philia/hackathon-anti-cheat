@@ -1,0 +1,38 @@
+﻿反作弊审查：leaderboard_Léon_Zhu组_track-arc-bench-lite_score-114.0697483087881_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Léon_Zhu组_track-arc-bench-lite_score-114.0697483087881_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 3 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 提交运行时把输入目录中的非公开 evaluator tests 作为 external suite 读取、复制并纳入验收；这是对题面授权 requirements/reference 之外测试材料的获取与使用。
+  - infrastructure/verification/acceptance.py:353: `self.input_tests = Path(input_dir) / 'tests'` 将运行时输入指向 tests 子目录。
+  - infrastructure/verification/acceptance.py:383: `if self.settings.external_tests and self.input_tests and self.input_tests.is_dir():` 启用外部测试路径。
+  - infrastructure/verification/acceptance.py:384: `for source in sorted(self.input_tests.rglob('*')):` 遍历该目录全部文件。
+  - infrastructure/verification/acceptance.py:390: `self._write('external/' + relative, data, 'external', ...)` 将测试字节复制到验收套件，随后作为验收输入使用。
+  - input/tests/REQ-2.spec.ts:1: 提交树中存在与题面 evaluator 对应的 REQ 测试文件，属于被读取的非公开测试材料。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 静态配置存在多个 URL/key 槽位，无法满足唯一合法模型配置条件。
+  - infrastructure/runtime/config.py:22: 默认 `base_url='https://api.arc-bench.com/v1'`。
+  - infrastructure/runtime/config.py:184-186: 额外映射 `VISUAL_BASE_URL`/`VISUAL_API_KEY` 到视觉模型配置。
+  - tests/test_runtime_model.py:25: 测试配置 `base_url='https://mock.invalid/v1'`；tests/test_runtime_profile.py:61: `VISUAL_BASE_URL='https://vision.invalid/v1'`。这些额外槽位虽可能仅用于测试，静态上仍无法证明唯一有效值。
+
+WARNING-002 [AC-INTERFERENCE] README 对运行形态作出“suite is offline (scripted model, simulated runtime)”的可核查声明，但仓库同时包含可调用 OpenAI endpoint 的 operative client，声明与完整运行路径的适用范围无法独立确认。
+  - README.md:235: “The suite is offline (scripted model, simulated runtime).”
+  - infrastructure/runtime/model.py:46: `AsyncOpenAI(api_key=settings.api_key, base_url=settings.base_url, ...)` 构造外部模型客户端；需人工确认该 README 声明是否仅限测试套件而不涵盖实际 agent 运行。
+
+WARNING-003 [TEMPLATE-DIRECT] 将题面特定的精确 role/name 定位器、隐藏测试约束和历史外部测试结果固化为接口契约，并在验收生成提示中作为 required_locators/测试知识使用；覆盖 arc-bench-web 下所有发现任务中同类应用契约。
+  - infrastructure/requirements/contract.py:3: 模块声明“interface contract stated in requirement text”，并定义精确定位器提取器。
+  - infrastructure/requirements/contract.py:7: 明确写入“Hidden tests use exactly those roles and names”，且将该契约作为 agent 与 host test generator 的 checklist。
+  - infrastructure/requirements/contract.py:8: 将定位器清单供 agent/test generator 使用，属于已准备的题面级实现约束。
+  - infrastructure/verification/acceptance.py:480: 生成上下文中把契约转换为 `required_locators` 并提供给测试生成流程。
+  - infrastructure/runtime/requirements.py:223: `interface_contract()` 调用 `contract(self)`，使预置契约进入运行时需求知识。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了应用级精确可访问性名称、role、隐藏测试定位规则与验收约束；定位：infrastructure/requirements/contract.py:7
+  - 检索方案：(4)无检索机制（全量使用）；说明：模块被直接导入并对每次需求解析，无任务指纹筛选；定位：infrastructure/runtime/requirements.py:223
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：required_locators 被组装进验收/生成上下文，供模型生成测试或实现指导；定位：infrastructure/verification/acceptance.py:480
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：精确角色、名称和 hidden-test 约束依赖该 benchmark 的应用契约。
+  - 综合判断：四个维度共同表明这是直接匹配题面要求的预置实现约束，且进入生成流程，满足 TEMPLATE-DIRECT error。
+
+判决：作弊

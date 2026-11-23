@@ -1,0 +1,30 @@
+﻿反作弊审查：leaderboard_Isak_Bjelland_Vormeland组_track-arc-bench-lite_score-107.17136866352202_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Isak_Bjelland_Vormeland组_track-arc-bench-lite_score-107.17136866352202_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在多个非基线 base_url 与 api_key 槽位，无法静态证明唯一使用指定端点。
+  - infrastructure/shared/models/text.py:65: 从 `OPENAI_API_KEY` 或 `LLM_API_KEY` 读取 key。
+  - infrastructure/shared/models/text.py:82: base_url 默认值为 `https://api.openai.com/v1`，不是基线 `https://api.arc-bench.com/v1`。
+  - infrastructure/shared/models/vision.py:56: 视觉模型另有 `VISUAL_API_KEY`、`OPENAI_API_KEY`、`LLM_API_KEY` 多个 key 槽位。
+  - infrastructure/shared/models/vision.py:57: 视觉模型另有 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`、`LLM_BASE_URL` 和 `https://api.openai.com/v1` 槽位。
+  - 需要人工核查实际运行时环境是否将这些槽位解析到唯一获准模型端点；该项本身按策略仅为 warning。
+
+WARNING-002 [TEMPLATE-DIRECT] 提交内置的 testing reference 将登录、会话、CSRF、幂等键、工作流事务以及 Given/When/Then 测试步骤作为预置契约注入模型，直接覆盖 12306、Ctrip、BookStack、PrestaShop、Stack Overflow 等题面的账户/会话/业务流程要求。
+  - infrastructure/shared/agent/testing_reference.py:21: 函数读取整份 infrastructure/knowledge/testing/guide.md 并按 backend/frontend 测试路径构造返回内容；该内容随后被放入模型请求。
+  - infrastructure/shared/agent/loop.py:104: `request['test_tool_reference'] = test_reference` 将上述预置材料注入生成请求。
+  - infrastructure/knowledge/testing/guide.md:18: 预置 `loginSession`、`sessionRequest`、`insertGiven`、`ownGiven` 等固定测试/会话 API。
+  - infrastructure/knowledge/testing/guide.md:93: 预置 `/api/auth/login`、`/api/auth/me`、`/api/auth/logout`、CSRF 与幂等键工作流规则；这些属于应用行为契约而非基础框架。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料不是完整应用代码，但给出了可复用的认证、会话、事务和测试工作流约束；定位：infrastructure/knowledge/testing/guide.md:93
+  - 检索方案：(2)针对关键词硬编码检索；说明：按测试路径角色固定选择并加载 http/browser 章节，存在具体的登录/会话关键词映射；定位：infrastructure/shared/agent/testing_reference.py:15
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：testing reference 被作为 `test_tool_reference` 字段传入文件生成循环的请求上下文；定位：infrastructure/shared/agent/loop.py:104
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：认证、会话、CSRF、幂等和业务工作流可跨多个同类应用复用，但并非一般网页基础设施。
+  - 综合判断：上述材料以可执行测试/实现契约形式直接供应模型，并与六个任务中明确的登录、账户、会话、订单/内容工作流要求相匹配，构成 TEMPLATE-DIRECT error。
+
+判决：通过

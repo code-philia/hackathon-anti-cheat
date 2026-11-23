@@ -1,0 +1,28 @@
+﻿反作弊审查：leaderboard_哦鲸鲸_track-arc-bench-lite_score-4.277016571760413_pass_rate-4.395604395604396
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_哦鲸鲸_track-arc-bench-lite_score-4.277016571760413_pass_rate-4.395604395604396\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 预置的后端测试支持代码包含凭据 API 的固定密码哈希算法和数据库清理/初始化契约，并被作答流程作为生成测试与实现的参考；其内容直接覆盖 prestashop 题面的登录/注册/结账账户行为。
+  - infrastructure/shared/project/templates/backend/tests/support/context.ts:42: `fixturePasswordHash(password: string)` 固定 salt、scrypt 参数和 `scrypt$...` 输出格式，属于可直接复用的认证测试实现；同文件 10-31 行还固定了真实后端数据库重置、初始化和 API 测试上下文。
+  - 08_implement_backend_tdd.py:219: 后端测试/实现 agent 的 `references` 明确加入由 `supplied_sources(...)` 提供的共享测试支持文件，使该预置知识进入模型上下文和生成流程。
+  - infrastructure/stages/backend/testing.py:47: 编译器自带真实 HTTP 测试执行路径，表明该支持代码不是仅文档，而是测试契约的一部分。
+  - 知识类型：(2)代码片段；说明：预置了认证 fixture 哈希、数据库清理和 API 测试上下文，可直接复制到应用测试/实现；定位：infrastructure/shared/project/templates/backend/tests/support/context.ts:42
+  - 检索方案：(4)无检索机制（全量使用）；说明：模板文件通过固定的 `supplied_sources` 引用加入每个后端测试 agent 的上下文，不依赖题面关键词筛选；定位：08_implement_backend_tdd.py:219
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：共享测试支持文件作为 references 传给模型，模型据此生成后端测试和应用实现；定位：08_implement_backend_tdd.py:219
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：scrypt fixture 和认证 API 测试可跨同类登录/注册网页复用，但并非一般网页基础设施。
+  - 综合判断：该材料含有应用级认证行为契约，且通过全量模板引用进入生成上下文；prestashop requirements 明确要求登录、注册及验证账户，因此属于直接匹配的预置实现知识，构成 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型客户端存在多个非标准 base_url 槽位，无法证明唯一使用竞赛指定端点。
+  - infrastructure/shared/models/text.py:71: `base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"`。
+  - infrastructure/shared/models/vision.py:57: `VISUAL_BASE_URL` 独立回退到 `https://api.openai.com/v1`；扫描还发现 text/vision 各自多个 api_key 槽位。需人工确认运行时是否统一注入 `https://api.arc-bench.com/v1` 且没有额外提供商。
+
+WARNING-002 [AC-INTERFERENCE] README 含有影响审查的运行/评测声明，但无法仅凭静态代码完全核实。
+  - README.md:34: “Platform supplies OPENAI_BASE_URL and OPENAI_API_KEY. No .env or key is bundled.”；已检查模型配置和仓库清单，未发现明文 key，但运行时平台注入及实际端点唯一性仍需外部核验。
+  - README.md:35: “No paid inference or official evaluation is performed during packaging.”；仓库中存在模型调用和测试编排代码，无法由静态材料证明打包阶段绝不执行这些路径，需人工核查执行流程。
+
+判决：作弊

@@ -1,0 +1,25 @@
+﻿反作弊审查：leaderboard_新滨蛋子_track-arc-bench-lite_score-12.320363504744924_pass_rate-12.637362637362637
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_新滨蛋子_track-arc-bench-lite_score-12.320363504744924_pass_rate-12.637362637362637\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 将与题面任务直接匹配的测试级应用契约预置并供模型/实现流程复用，覆盖本次 ctrip 认证任务（REQ-1 至 REQ-4）。
+  - input/tests/REQ-2.spec.ts:1：预置 Register 的两个完整场景及精确断言，包括 “Next step”、role=alert、用户名冲突和刷新后 signed-out 状态，属于题面认证需求的直接实现契约。
+  - infrastructure/stages/frontend/triggers/implementation.py:342：把相应 test_path 放入 test_context，形成测试契约进入实现上下文的具体路径。
+  - 知识类型：(2)代码片段；说明：仓库预置可直接复用的 Playwright 场景、定位器调用和断言，而非基础框架；定位：input/tests/REQ-2.spec.ts:1
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试文件固定放在 input/tests 并由实现阶段按 test_path 直接装载，没有按当前题面重新生成的选择边界；定位：infrastructure/stages/frontend/triggers/implementation.py:342
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：test_context 被组装为实现上下文并传给后续生成流程，测试契约可被模型复用；定位：infrastructure/stages/frontend/triggers/implementation.py:342
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：REQ-2/REQ-3/REQ-4、用户名 taken_traveler、Next step、LOGIN、alert 和会话刷新均是本题认证行为的专用契约。
+  - 综合判断：四个维度共同表明这是直接命中题面认证需求的预置测试知识，且存在进入实现上下文的路径，因此为 error；其非公开来源同时由 ERROR-001 覆盖。
+  - input/tests/REQ-3.spec.ts:1：预置精确登录成功/错误密码场景；input/tests/REQ-4.spec.ts:1：预置 Logout 场景，均属于同一直接认证契约，按同一行为去重。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在非标准且非唯一的 base_url/api_key 槽位，静态无法证明唯一合法配置。
+  - infrastructure/journey/model.py:41：默认 base_url 明确构造为 https://api.openai.com/v1，而合法基线要求唯一 https://api.arc-bench.com/v1。
+  - infrastructure/journey/model.py:47：视觉客户端可由 VISUAL_API_KEY/VISUAL_BASE_URL 另行配置，形成额外 URL/key 槽位；infrastructure/shared/models/text.py:74 与 infrastructure/shared/models/vision.py:59 也定义独立 base_url。
+  - 判定依据：依据 MODEL-EXTERNAL，额外或不同 base_url、多个 api_key 槽位属于 warning；未将模型端点重复计为 NET-EXTERNAL。
+
+判决：作弊

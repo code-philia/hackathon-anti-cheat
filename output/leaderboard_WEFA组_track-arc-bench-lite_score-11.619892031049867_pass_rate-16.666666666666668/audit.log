@@ -1,0 +1,28 @@
+﻿反作弊审查：leaderboard_WEFA组_track-arc-bench-lite_score-11.619892031049867_pass_rate-16.666666666666668-agent
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_WEFA组_track-arc-bench-lite_score-11.619892031049867_pass_rate-16.666666666666668\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 提交仓库内置的 token benchmark 可按配置向任意 provider.base_url 创建 OpenAI 客户端并发送请求，存在获取外部第三方信息的具体网络路径。
+  - tests/test_token_input/run.py:218: 从配置或环境读取 provider 的 base_url。
+  - tests/test_token_input/run.py:223: 非 dry-run 时创建 OpenAI 客户端；tests/test_token_input/run.py:224-226 将该 URL、API key 和 HTTP 客户端用于外部请求，随后 tests/test_token_input/run.py:242 调用 run_case 发送请求。该路径可访问配置的非指定模型服务，超出仅允许的 assigned-model endpoint。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型客户端配置存在多个非标准 base_url/API key 槽位，无法证明唯一合法配置。
+  - infrastructure/shared/models/text.py:77: 读取 OPENAI_API_KEY，且 infrastructure/shared/models/text.py:94 默认 base_url 为 https://api.openai.com/v1。
+  - infrastructure/shared/models/vision.py:57-58 另行读取 VISUAL_API_KEY/OPENAI_API_KEY 和 VISUAL_BASE_URL/OPENAI_BASE_URL，并再次提供 https://api.openai.com/v1 默认值；.env.example:4 则声明 OPENAI_BASE_URL=https://api.arc-bench.com/v1。静态扫描还发现 tests/test_console_logging.py 与 tests/test_token_input/test_runner.py 中额外测试 URL/key 槽位。依据策略，这些额外/不同槽位属于 warning-only。
+
+WARNING-002 [TEMPLATE-DIRECT] 预置的前端测试与实现提示词直接规定了登录、注册、登出、表单提交、错误反馈、页面入口和业务结果等应用功能契约，并在生成阶段供应给模型；这些契约覆盖本题面集合中 12306 railway travel、Ctrip travel services、BookStack knowledge base、Keep personal note management、PrestaShop B2C storefront、Stack Overflow developer knowledge sharing 的共同/相邻应用行为。
+  - infrastructure/stages/frontend/triggers/implementation.py:65: TEST_INSTRUCTIONS 明确要求为当前需求生成 Playwright 业务 smoke suite，并在第75行把“registration, login or logout workflows”作为预置的跨需求行为边界。
+  - infrastructure/stages/frontend/triggers/implementation.py:118: IMPLEMENT_INSTRUCTIONS 预置“full path: UI event -> ... backend API -> success/rejection response -> updated state and visible UI”以及表单、路由、Cookie、错误处理和业务状态实现约束。
+  - infrastructure/stages/frontend/triggers/implementation.py:300: implementation_task 使用上述实现提示词驱动每个需求的模型实现任务；因此材料具有实际生成使用路径。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料不是完整应用源码，但预置了注册、登录、登出和表单/错误/路由行为的实现级约束；定位：infrastructure/stages/frontend/triggers/implementation.py:65
+  - 检索方案：(4)无检索机制（全量使用）；说明：这些固定提示词作为阶段指令整体拼接并供应给当前需求模型，没有按题面任务指纹选择；定位：infrastructure/stages/frontend/triggers/implementation.py:118
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：实现任务直接将该应用行为契约放入模型提示上下文，模型据此生成测试与实现；定位：infrastructure/stages/frontend/triggers/implementation.py:300
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：所述登录/注册/表单/路由/错误反馈契约可跨这些应用复用，但属于应用功能语义而非基础框架。
+  - 综合判断：固定提示词命中题面应用功能及其相邻行为，且存在明确模型生成路径，符合 TEMPLATE-DIRECT；对直接命中的注册/登录/表单契约判定为 error。
+
+判决：作弊

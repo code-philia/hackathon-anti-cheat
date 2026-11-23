@@ -1,0 +1,33 @@
+﻿反作弊审查：leaderboard_Ruben_Matevosyan组_track-arc-bench-lite_score-106.10926080925678_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：material/arc-bench-web/keep；material/arc-bench-web/bookstack；material/arc-bench-web/12306；material/arc-bench-web/prestashop；material/arc-bench-web/stackoverflow；material/arc-bench-web/ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Ruben_Matevosyan组_track-arc-bench-lite_score-106.10926080925678_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 仓库内的 grader-replica/测试摘要及完整 BookStack 需求副本被用于针对题面实现。
+  - CHANGELOG_v15.md:7-18: 保存了具体隐藏测试代码行为（Edit、Save Book、getByPlaceholder）及失败原因，并将其转化为实现规则。
+  - infrastructure/stages/frontend/triggers/implementation.py:103-115: 将“grader isolates data”“grader clicks exact name”“grader ... fill at once”等测试特定约束硬编码进生成提示。
+  - 知识类型：(2)代码片段；说明：包含可直接复用的测试步骤、选择器和断言语义；定位：CHANGELOG_v15.md:7-18
+  - 检索方案：(4)无检索机制（全量使用）；说明：CHANGELOG、fixture 与常量随仓库固定加载/引用，不是授权输入驱动的泛化检索；定位：infrastructure/stages/frontend/triggers/implementation.py:117-122
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：测试规则作为 prompt 内容指导模型生成 E2E 与应用实现；定位：infrastructure/stages/frontend/triggers/implementation.py:81-122
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：REQ-2.4/REQ-3.2 的 BookStack 字段、placeholder 与场景时序是题面专用；定位：CHANGELOG_v15.md:16-18
+  - 综合判断：隐藏测试摘要和字段级步骤直接解决题面场景，构成直接模板违规。
+  - 匹配任务：material/arc-bench-web/bookstack（REQ-2.4、REQ-3.2 及相关页面流程）。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在多个非标准 base_url/API key 槽位，无法静态证明唯一合法配置。
+  - infrastructure/shared/models/text.py:82,97-100: 使用 OPENAI_API_KEY 与 OPENAI_BASE_URL，默认 base_url 为 https://api.openai.com/v1。
+  - infrastructure/shared/models/vision.py:59-67: 另有 VISUAL_API_KEY、VISUAL_BASE_URL，并可回退到 OPENAI_*；因此存在多个 key/url 槽位，且不是唯一的 https://api.arc-bench.com/v1。
+
+WARNING-002 [TEMPLATE-DIRECT] 预置的 BookStack 任务级测试契约直接匹配题面任务并供模型复用。
+  - infrastructure/stages/frontend/accessibility.py:3-6: 将隐藏 ARC-Bench suite 的定位方式、ARIA role/name、alert 与 data-testid 行为写成共享生成契约。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了隐藏测试的定位器、字段名和交互时序等应用级验收契约；定位：infrastructure/stages/frontend/accessibility.py:9-20
+  - 检索方案：(4)无检索机制（全量使用）；说明：常量提示在生成阶段直接拼接使用，没有基于当前授权输入的选择；定位：infrastructure/stages/frontend/triggers/implementation.py:117-124
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：TEST_INSTRUCTIONS 将 SCENARIO_TEST_RULES 与隐藏 grader 规则直接置入模型提示；定位：infrastructure/stages/frontend/triggers/implementation.py:117-122
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：规则针对书籍/页面表单、导航、记录创建和编辑等应用功能，超出基础框架；定位：infrastructure/stages/frontend/triggers/implementation.py:91-115
+  - 综合判断：四轴均指向题面功能专用的预置验收契约，构成直接模板违规。
+  - 匹配任务：material/arc-bench-web/bookstack（REQ-2/REQ-3 的书籍、页面创建编辑与占位符验收）。
+
+判决：作弊

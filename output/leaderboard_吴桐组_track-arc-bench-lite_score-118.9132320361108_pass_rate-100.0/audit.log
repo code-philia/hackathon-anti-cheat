@@ -1,0 +1,29 @@
+反作弊审查：leaderboard_吴桐组_track-arc-bench-lite_score-118.9132320361108_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_吴桐组_track-arc-bench-lite_score-118.9132320361108_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型端点和密钥槽位无法静态证明为唯一且均为指定平台配置。
+  - infrastructure/shared/models/text.py:90-94: 文本模型读取 OPENAI_API_KEY，base_url 可取 OPENAI_BASE_URL，缺省为 https://api.openai.com/v1。
+  - infrastructure/shared/models/vision.py:56-64: 视觉模型另有 VISUAL_API_KEY、VISUAL_BASE_URL 槽位，并回退到 OPENAI_* 配置和 https://api.openai.com/v1。
+  - .env.example:3-4: 示例声明 OPENAI_API_KEY 与 OPENAI_BASE_URL=https://api.arc-bench.com/v1；源码同时保留视觉独立槽位，无法建立恰好一个指定端点/密钥。
+
+WARNING-002 [TEMPLATE-DIRECT] 提交把认证、注册、密码、搜索/筛选、分页、持久化断言和 UI 可访问性契约预置到模型提示，并用于生成六个题面任务的实现/测试；这超出基础 Web 脚手架并直接匹配业务功能。
+  - infrastructure/pipeline/backend_implementation.py:22: 提示预置成功/拒绝案例、认证 Cookie、注册/创建 Given 数据、密码哈希和持久化 SQL 断言，并要求模型生成 HTTP 测试。
+  - infrastructure/pipeline/backend_implementation.py:74: 实现提示要求模型依据 generated tests 实现请求校验、认证、密码存储、路由注册和数据库效果。
+  - infrastructure/stages/database/implementation.py:40: 数据库提示预置 account、registration、login、password-hash、session/history/favorites 等业务状态和测试前置数据规则。
+  - infrastructure/stages/frontend/triggers/acceptance.py:26: 验收提示预置双身份隔离、注册/创建、拒绝不写入、重复提交、刷新持久化等应用断言。
+  - infrastructure/stages/frontend/ui/implementation.py:45: UI 提示预置精确控件文案、可访问名称、按钮/链接语义、分页和导航定位等验收契约。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了认证、数据库前置状态、测试断言和 UI 选择器等可直接约束应用实现的知识；定位：infrastructure/pipeline/backend_implementation.py:22
+  - 检索方案：(4)无检索机制（全量使用）；说明：阶段提示常量直接随任务传入模型，没有按题面需求选择；定位：infrastructure/pipeline/backend_implementation.py:22
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：run_file_agent 将上述提示与任务上下文交给模型并接收文件编辑；定位：infrastructure/pipeline/backend_implementation.py:74
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：这些约束适用于同类账户、内容、旅行和电商网页，但仍是具体业务契约。
+  - 综合判断：四个维度共同表明这是全量注入、由模型复用的应用级实现约束，直接覆盖 bookstack、12306、ctrip、prestashop、stackoverflow、keep 任务中的业务验收行为，因此为 error。
+
+判决：通过

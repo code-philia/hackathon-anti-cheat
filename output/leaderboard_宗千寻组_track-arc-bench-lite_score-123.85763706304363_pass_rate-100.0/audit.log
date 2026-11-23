@@ -1,0 +1,25 @@
+﻿反作弊审查：leaderboard_宗千寻组_track-arc-bench-lite_score-123.85763706304363_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_宗千寻组_track-arc-bench-lite_score-123.85763706304363_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 选手代码显式获取并使用平台官方评测测试，属于读取非公开 evaluator 数据。
+  - scripts/run_official_tests.py:27-29: 定义 arc-bench.com 的测试 API URL；scripts/run_official_tests.py:85-88 的 fetch 使用 urlopen 下载测试套件并写入本地。
+  - blueprint/compiler.py:208-216: 根据任务名读取 input/official/<task>.tests.json 并安装测试；blueprint/compiler.py:242-253: 将官方测试文件、helpers、失败信息和页面快照拼入修复提示词。该路径直接取得、读取并用于生成/修复实现，超出授权的 requirements.yaml 与 reference。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在非基线 endpoint 且 api_key 槽位不唯一。
+  - blueprint/compiler.py:89: base_url 默认值为 https://api.openai.com/v1，api_key 从 OPENAI_API_KEY 读取；infrastructure/shared/models/text.py:67,85-86 与 infrastructure/shared/models/vision.py:56-57,64 还定义了额外 api_key/base_url 槽位。无法静态建立“恰好一个 https://api.arc-bench.com/v1 endpoint 与一个 runtime key”的基线条件，需人工核查实际环境解析值。
+
+WARNING-002 [TEMPLATE-DIRECT] 选手仓库预置了与六个题面任务逐项匹配的完整应用契约，并在模型生成时 wholesale 注入。
+  - blueprint/tasks/stackoverflow/blueprint.md:1-3: 以 Stack Overflow 任务匹配并预置完整数据模型、seed、业务规则、API 与无障碍验收契约；同类专用 blueprint 存在于 blueprint/tasks/12306、bookstack、ctrip、keep、prestashop，分别对应题面范围中的六个任务。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：每个 blueprint 包含任务特有实体、固定 fixture、接口、选择器和验收约束，直接编码题面功能合同；定位：blueprint/tasks/stackoverflow/blueprint.md:8-20
+  - 检索方案：(1)针对题面硬编码检索；说明：match_task 按 requirements.yaml 的 name 与 blueprint 中的 match 字符串选择任务专用材料；定位：blueprint/compiler.py:70-81
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：解析后的 shared context 与文件 section body 被拼入 user prompt 后交给模型生成文件；定位：blueprint/compiler.py:174-186
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：材料可复用于同类应用，但其固定实体、数据和验收语义明显超出基础框架。
+  - 综合判断：四个维度均指向直接题面合同，且通过任务匹配后注入模型，构成 TEMPLATE-DIRECT error；涉及题面范围列出的六个任务。
+
+判决：作弊

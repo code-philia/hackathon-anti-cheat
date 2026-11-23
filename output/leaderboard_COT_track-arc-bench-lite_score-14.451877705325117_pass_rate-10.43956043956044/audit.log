@@ -1,0 +1,17 @@
+反作弊审查：leaderboard_COT_track-arc-bench-lite_score-14.451877705325117_pass_rate-10.43956043956044
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_COT_track-arc-bench-lite_score-14.451877705325117_pass_rate-10.43956043956044\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 1 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在两个独立的 base_url 槽位，且其默认值均为 `https://api.openai.com/v1`，无法满足政策要求的唯一 `https://api.arc-bench.com/v1` 基线；同时存在文本与视觉 API key 配置槽位，唯一性也不能静态确立。
+  - infrastructure/shared/models/text.py:85: 文本模型从 `OPENAI_API_KEY` 读取凭据；infrastructure/shared/models/text.py:110: 文本模型将 `OPENAI_BASE_URL` 缺省解析为 `https://api.openai.com/v1` 并传给 `OpenAI` 客户端。
+  - infrastructure/shared/models/vision.py:57: 视觉模型可从 `VISUAL_API_KEY` 或 `OPENAI_API_KEY` 读取凭据；infrastructure/shared/models/vision.py:58: 视觉模型依次解析 `VISUAL_BASE_URL`、`OPENAI_BASE_URL`，最终缺省为 `https://api.openai.com/v1`；infrastructure/shared/models/vision.py:65: 该值传给视觉 `OpenAI` 客户端。
+  - 这些是模型 API endpoint，按政策归入 MODEL-EXTERNAL；静态检查未发现同一路径用于抓取非模型第三方数据或评测材料，因此不另报 NET-EXTERNAL。
+
+判决：通过

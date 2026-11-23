@@ -1,0 +1,27 @@
+﻿反作弊审查：leaderboard_kskbl_track-arc-bench-lite_score-6.55494524072503_pass_rate-6.593406593406593
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_kskbl_track-arc-bench-lite_score-6.55494524072503_pass_rate-6.593406593406593\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 选手仓库内预置并使用了与非公开 BookStack 评测测试相重合的测试工件，构成获取、读取或使用测试数据的路径。
+  - infrastructure/stages/frontend/triggers/bookstack_acceptance/REQ-2.3.spec.ts:3: 固定测试套件直接包含 BookStack 的 REQ-2.3 测试，并使用对应的创建图书、取消编辑、可见性断言；该内容与题面目录 bookstack/tests 的非公开测试案例重合。
+  - infrastructure/stages/frontend/triggers/acceptance.py:170: `FileTools.for_target(..., fixed_path=path, references=[FIXTURE, 'backend/tests/support/context.ts'])` 将固定测试路径纳入接受测试工作区；:181-189 继续检查并执行该路径集合，说明工件进入评测/生成流程而非仅作说明。
+  - infrastructure/stages/frontend/triggers/bookstack_web_acceptance/helpers.ts:40-58: 预置 `createBook`、`createPage`、`Save Book`、`Page list` 等完整测试步骤与断言，和题面 BookStack 测试的具体工作流相符。
+
+ERROR-002 [TEMPLATE-DIRECT] 选手为题面 BookStack 任务预置了直接可复用的完整验收测试代码和特定断言，属于非公开测试衍生的直接模板知识。
+  - infrastructure/stages/frontend/triggers/bookstack_acceptance/REQ-2.4.spec.ts:3: 代码硬编码 `REQ-2.4`、`Book Updated 5.4.1`、`Save Book`、刷新后标题/描述保持等具体步骤和断言，直接匹配 BookStack 任务的功能合同。
+  - 知识类型：(1)完整代码实现；说明：预置了可运行的 Playwright BookStack 验收套件、辅助函数、选择器和业务断言；定位：infrastructure/stages/frontend/triggers/bookstack_acceptance/REQ-2.4.spec.ts:1-18
+  - 检索方案：(4)无检索机制（全量使用）；说明：固定套件按任务路径预置并由 `fixed_path` 直接装载，没有基于运行时需求的泛化选择；定位：infrastructure/stages/frontend/triggers/acceptance.py:170-182
+  - 生成方案：(1)无模型参与地使用代码；说明：文件存在时直接跳过生成并将既有测试送入 typecheck/tests，代码本身即可复用；定位：infrastructure/stages/frontend/triggers/acceptance.py:173-189
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：REQ 编号、BookStack 文案、角色名、页面区域和具体数据均绑定 BookStack 题面测试合同。
+  - 综合判断：该材料同时是可运行的完整实现、全量固定装载、无需模型即可进入最终验收流程，并精确匹配 BookStack 题面要求；结合 ERROR-001 的测试重合证据，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型客户端存在多个 API key/base_url 槽位，且默认 endpoint 为 `https://api.openai.com/v1`，无法建立竞赛指定的唯一 `https://api.arc-bench.com/v1` 配置。
+  - infrastructure/shared/models/text.py:53-70: 读取 `OPENAI_API_KEY`，并将 `OPENAI_BASE_URL` 缺省为 `https://api.openai.com/v1`。
+  - infrastructure/shared/models/vision.py:56-64: 另行读取 `VISUAL_API_KEY`/`OPENAI_API_KEY` 和 `VISUAL_BASE_URL`/`OPENAI_BASE_URL`，同样缺省为 `https://api.openai.com/v1`，形成额外 URL/key 槽位；需人工确认运行时环境是否覆盖为唯一指定 endpoint。
+
+判决：作弊

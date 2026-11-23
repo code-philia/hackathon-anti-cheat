@@ -1,0 +1,28 @@
+﻿反作弊审查：leaderboard_付芸菀组_track-arc-bench-lite_score-25.867915290178757_pass_rate-34.61538461538461
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_付芸菀组_track-arc-bench-lite_score-25.867915290178757_pass_rate-34.61538461538461\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 无法从静态代码确认唯一且精确的模型 `base_url`；配置从运行时 `OPENAI_BASE_URL` 读取，且扫描未发现固定值 `https://api.arc-bench.com/v1`，需要人工核验运行环境实际值。
+  - infrastructure/shared/models/config.py:53-60: `base_url` 和 `api_key` 均从环境变量读取并直接传给 OpenAI 客户端；源码没有建立唯一标准 endpoint 的有效值。
+  - infrastructure/shared/models/text.py:49-65；infrastructure/shared/models/vision.py:54-60: 文本和视觉客户端分别消费该运行时 URL/key，无法仅凭仓库证明只有一个标准槽位。
+
+WARNING-002 [TEMPLATE-DIRECT] 预置的后端验收提示和数据库模板包含账户认证、登录依赖、密码哈希及种子凭据的实现级约束，并被用于生成作答；这些内容直接对应题面中的 Ctrip、BookStack、12306 的 Account access/登录或注册需求。
+  - infrastructure/pipeline/backend_implementation.py:24: `TEST_INSTRUCTIONS` 固定要求模型先编写 HTTP acceptance suite，并在同一提示中规定“only contract-required authentication”、会话/账户准备及 `fixturePasswordHash` 的使用；这是面向认证功能的可复用实现约束。
+  - infrastructure/pipeline/backend_implementation.py:54: 提示明确讨论其他 requirement 的 login flow、existing sessions/accounts 和 SQL 准备，随后由 backend implementation 的模型循环将该提示传入生成流程。
+  - infrastructure/shared/project/templates/backend/src/db/seed.ts:9: 模板直接注册 `seed_password_hash`，并在第 13 行用 `scryptSync` 生成密码哈希；该代码会被运行时模板初始化复制到作答项目。
+  - infrastructure/shared/project/templates/backend/tests/support/context.ts:18: 共享测试 fixture 会清理数据库表并导出认证 fixture，形成可直接复用的账户测试基础。
+  - 题面对应：ctrip/requirements/requirements.yaml、bookstack/requirements/requirements.yaml、12306/requirements/requirements.yaml 均声明 Account access 或注册/登录相关需求；上述认证合同与这些明确功能相匹配。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了认证验收范围、会话/账户准备、密码哈希和 fixture 的具体行为约束，而非单纯框架启动代码；定位：infrastructure/pipeline/backend_implementation.py:24
+  - 检索方案：(4)无检索机制（全量使用）；说明：`TEST_INSTRUCTIONS` 和共享模板在相应阶段直接装载并作为上下文/模板使用，没有依据当前题面选择后才生成；定位：infrastructure/pipeline/backend_implementation.py:24
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：认证验收提示被传给模型循环，数据库/fixture 模板同时作为生成和测试上下文；定位：infrastructure/pipeline/backend_implementation.py:251
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：账户登录、注册、会话和密码哈希可跨多个同类网页应用复用，但已超出基本 HTTP/数据库脚手架。
+  - 综合判断：四个维度共同表明该仓库预置了直接命中题面账户功能的应用合同，并通过提示和模板供生成阶段复用，符合 TEMPLATE-DIRECT error。
+
+判决：通过

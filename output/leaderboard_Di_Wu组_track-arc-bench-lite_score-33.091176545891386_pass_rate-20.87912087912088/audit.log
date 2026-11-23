@@ -1,0 +1,38 @@
+反作弊审查：leaderboard_Di_Wu组_track-arc-bench-lite_score-33.091176545891386_pass_rate-20.87912087912088
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Di_Wu组_track-arc-bench-lite_score-33.091176545891386_pass_rate-20.87912087912088\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：3 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对 12306 railway travel 题面，提交物按任务名分支直接复制预置的完整 Railway12306 应用，包含搜索、乘客、订单与支付等题面功能实现。
+  - main.py:66: `copy_railway_application_to_output` 将仓库内 `apps/railway12306` 作为 completed application 复制到输出目录。
+  - main.py:124-125: 通过固定字符串 `name: 12306 railway travel` 选择该预置路径；main.py:181-184 随后直接复制应用且没有模型生成实现。
+  - apps/railway12306/frontend/src/App.tsx:5: 预置固定评测日期 `2026-07-21`；该文件后续定义完整铁路搜索/预订状态与界面，属于可运行的题面专用代码。
+  - 知识类型：(1)完整代码实现；说明：`apps/railway12306` 是可直接运行的铁路票务应用代码包；定位：main.py:66-75
+  - 检索方案：(1)针对题面硬编码检索；说明：固定匹配任务名称后选择该代码包；定位：main.py:124-125
+  - 生成方案：(1)无模型参与地使用代码；说明：任务分支直接复制代码到输出，模型调用之后也不参与实现；定位：main.py:180-184
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：代码含 12306 专用日期、车次、乘客和订单语义。
+  - 综合判断：四个维度共同表明这是针对 12306 题面的预置完整实现，直接用于作答，构成 TEMPLATE-DIRECT error。
+
+ERROR-002 [TEMPLATE-DIRECT] 针对 BookStack knowledge base 题面，提交物把包含完整书架、书籍、章节、页面、账户和编辑流程的预置应用模板直接复制到输出。
+  - main.py:47-63: `copy_template_contents_to_output` 将 `template/` 全量复制到输出目录。
+  - main.py:128-129: 通过固定字符串 `name: BookStack knowledge base` 选择该分支；main.py:185-187 在分支中直接复制模板并宣称应用已就绪。
+  - template/frontend/src/App.tsx:5-6: 预置 BookStack 专用时间与账户；template/frontend/src/App.tsx:8-12、17-40: 预置 Shelf/Book/Chapter/Page 数据结构、书架/书籍/章节/页面实体及页面内容。
+  - 知识类型：(1)完整代码实现；说明：模板已包含可运行的 BookStack 领域模型、数据和界面代码；定位：template/frontend/src/App.tsx:8-40
+  - 检索方案：(1)针对题面硬编码检索；说明：固定 BookStack 题面名称选择模板复制分支；定位：main.py:128-129
+  - 生成方案：(1)无模型参与地使用代码；说明：分支调用全量模板复制，未将实现交给模型生成；定位：main.py:185-187
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：代码显式使用 BookStack、Shelf/Book/Chapter/Page、账户和固定评测时钟。
+  - 综合判断：预置领域代码与 BookStack 题面直接对应并被全量复制，构成 TEMPLATE-DIRECT error。
+
+ERROR-003 [AC-INTERFERENCE] README 对模型调用和模板用途的说明与实际入口矛盾，能够淡化前述预置实现和模型路径。
+  - README.md:86: 声称 “The default main.py copies the bundled template without calling a model”，但 main.py:180 在任何任务分支前无条件调用 `analyze_requirements_with_model`，且 main.py:181-187 对特定题面复制预置应用。
+  - main.py:102-115: `OpenAI(...).chat.completions.create(...)` 实际执行模型调用并把 requirements.yaml 发送给模型；main.py:124-129、181-187 实际执行按题面名称选择的预置复制。
+  - 该可核查的矛盾性说明会影响审查者对模型使用和预置代码来源的判断，属于具有审查相关性的误导性陈述。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 无法仅凭静态源码确认 `OPENAI_BASE_URL` 的有效值是否唯一且等于 `https://api.arc-bench.com/v1`。
+  - main.py:88-102: `OPENAI_API_KEY` 与 `OPENAI_BASE_URL` 均从运行时环境读取并直接传给 `OpenAI`；源码未定义固定的标准 base_url，也未提供其他可静态确认的唯一值，因此需人工核查运行时配置。未发现明文 API key 或第二个 operative model endpoint。
+
+判决：作弊

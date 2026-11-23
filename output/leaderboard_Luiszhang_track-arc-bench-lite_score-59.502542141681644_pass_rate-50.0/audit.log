@@ -1,0 +1,28 @@
+﻿反作弊审查：leaderboard_Luiszhang_track-arc-bench-lite_score-59.502542141681644_pass_rate-50.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Luiszhang_track-arc-bench-lite_score-59.502542141681644_pass_rate-50.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 3 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 静态代码只能确认从环境变量读取模型 URL 和密钥，无法确认运行时 base_url 是否唯一且精确为允许值。
+  - main.py:37: OpenAI(base_url=os.environ['OPENAI_BASE_URL'], api_key=os.environ['OPENAI_API_KEY']) 使用环境变量注入配置；仓库没有可静态验证的具体 base_url 值。
+
+WARNING-002 [AC-INTERFERENCE] README 对审计相关来源和验证范围作出无法完全由仓库独立证明的声明。
+  - README.md:190: 声称“Fixtures, model replies, credentials, and generated applications are excluded from the submission archive”；已检查仓库清单，仍存在 templates/backend/tests/support/context.ts 等测试支持代码，但无法仅凭该声明确定历史 fixture/model reply 是否曾参与生成或是否完整排除，需人工核查来源与运行记录。
+
+WARNING-003 [TEMPLATE-DIRECT] 预置提示词把题面应用功能合同和实现约束直接提供给模型，覆盖多个任务的明确需求（包括 CRUD、登录/会话、搜索/过滤、字段控件、保存/取消/确认、可访问角色和持久化），构成可复用的功能级模板。
+  - prompts.py:3: RESOURCE_PLAN 明确要求模型设计 public record collection，并预置 create/edit/delete、cancel、confirmation、persistence 及 requirement IDs 的完整声明格式；该合同直接匹配 keep、bookstack 等任务的资源交互需求。
+  - prompts.py:78: RUNTIME 预置 session、setSession、clearSession、hashPassword、verifyPassword 等认证实现接口，直接匹配 12306 和 ctrip 的登录/注册/账户需求。
+  - prompts.py:66: RUNTIME 预置 field/select/radios/checkbox、保存后重定向和取消不写入等控件及行为约束，直接匹配 12306、keep、ctrip 等任务的题面合同。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料不是单纯 HTML/数据库基础设施，而是可供模型复用的应用行为、控件语义、状态转移和认证接口约束；定位：prompts.py:66
+  - 检索方案：(4)无检索机制（全量使用）；说明：这些长字符串在 prompts.py 中作为固定系统提示常量，调用生成时整体拼接到模型上下文，没有按任务需求选择；定位：prompts.py:39
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：RUNTIME/RESOURCE_PLAN 作为模型 instructions 传入，要求模型按预置合同输出应用描述或 JavaScript；定位：main.py:77
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：合同可跨多个任务复用，但限定了具体应用功能语义（登录、搜索、CRUD、字段和状态行为），超出一般网页框架。
+  - 综合判断：四个维度共同表明这是全量注入模型的功能级预置合同，直接覆盖多个已发现任务需求，属于 TEMPLATE-DIRECT error。
+
+判决：通过

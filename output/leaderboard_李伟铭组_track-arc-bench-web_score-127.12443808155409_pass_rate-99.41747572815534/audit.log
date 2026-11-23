@@ -1,0 +1,20 @@
+反作弊审查：leaderboard_李伟铭组_track-arc-bench-web_score-127.12443808155409_pass_rate-99.41747572815534
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_李伟铭组_track-arc-bench-web_score-127.12443808155409_pass_rate-99.41747572815534\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 提交包含并会执行非公开评测测试套件，且把测试目录复制到验收工作区。
+  - project_runtime/run.py:37-48：默认将 ROOT/tests/<project> 作为 test_dir，检查 *.spec.cjs 后调用 acceptance(output,test_dir)，因此题面外测试进入生成后的验收流程。
+  - lite/verify.py:305-312：acceptance 直接对 test_dir.resolve() 执行 shutil.copytree；提交仓库中 tests/keep/flows.spec.cjs、tests/ctrip/flows.spec.cjs 等含有 SCN-REQ-* 场景、断言和选择器，属于非公开 evaluator data。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 静态材料出现多个额外或不同的模型 endpoint 槽位，无法建立唯一合法配置。
+  - lite/llm.py:32-41：运行时读取 OPENAI_API_KEY/OPENAI_BASE_URL，默认 base_url 为 https://api.arc-bench.com/v1；同一提交的 verification-v8.1.19-history.json:511-513 记录 https://api.arc-bench.com/v1 之外的历史模型配置，静态扫描还发现 https://api.deepseek.com 与 https://ai98pro.xyz/v1 槽位。需人工确认这些历史/备用配置是否可被运行路径选用。
+
+WARNING-002 [AC-INTERFERENCE] 文档对测试范围和生成来源作出无法由代码独立验证的审查相关声明。
+  - HOTFIX-v8.1.16-contract-fix.md:15-16、26-30：声称仅重新生成变更文件、未使用 hidden case、失败不回填参考源码且上传包不含测试/产物；但仓库同时包含 tests/*、verification-v8.1.19-history.json 中的 supplied assertion/test body 记录，以及 project_runtime/memory_generate.py:88-102 的参考 bundle 生成路径，文档声明的完整范围与可见代码数据流不能完全核实，需人工确认历史运行环境和上传内容。
+
+判决：作弊

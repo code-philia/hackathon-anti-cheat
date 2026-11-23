@@ -1,0 +1,32 @@
+﻿反作弊审查：leaderboard_Spec2Reality_track-arc-bench-lite_score-3.935255481968315_pass_rate-4.395604395604396
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Spec2Reality_track-arc-bench-lite_score-3.935255481968315_pass_rate-4.395604395604396\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 选手工作区静态包含并使用了非公开评测测试与其断言/步骤，形成对评测数据的获取和复用。
+  - input/tests/REQ-4.spec.ts:5: 文件直接保存评测场景“SCN-REQ-4-01: Log out and remain signed out after refresh”，并在同目录的 REQ-2/REQ-3 测试中保存注册、登录成功/失败及会话持久化断言；这些测试不属于授权的 requirements.yaml 或 reference 输入。
+  - infrastructure/shared/agent/context.py:54: 上下文选择逻辑显式识别并排除 `/tests/e2e/acceptance/`，同时仍把工作区测试集合加入上下文；该仓库还将测试套件作为生成与验收输入，说明测试材料被纳入编译流程而非仅作无关文档。
+
+ERROR-002 [TEMPLATE-DIRECT] 选手仓库携带了面向题面任务的完整应用模板及测试契约，并通过编译器模板路径供生成流程复用；该模板包含 BookStack 需求、数据库/API/UI 实现和 acceptance 测试，直接对应题面集合中的 bookstack 任务。
+  - infrastructure/stages/backend/runtime.py:29: `templates` 被解析为仓库内 `infrastructure/shared/project/templates`，将预置模板作为运行时模板源。
+  - infrastructure/stages/backend/runtime.py:31: 代码从模板目录读取并写入 `backend/src/api/register.ts`；同一函数在第32-33行继续复制固定测试运行器和测试支持代码。
+  - cc2b49d7e2da-template/template/requirements/requirements.yaml:27: 预置文件包含 BookStack 的具体场景 ID、实体和行为契约；该目录同时存在 `backend/src/api/*`、`frontend/src/pages/*` 与 `frontend/tests/e2e/acceptance/*` 的完整可复用实现。
+  - 知识类型：(1)完整代码实现；说明：包含 BookStack 领域的可运行前后端、数据库、测试和页面，而非基础框架；定位：infrastructure/stages/backend/runtime.py:31
+  - 检索方案：(4)无检索机制（全量使用）；说明：模板目录由固定路径整体装载，未见按当前题面过滤；定位：infrastructure/stages/backend/runtime.py:29
+  - 生成方案：(1)无模型参与地使用代码；说明：模板文件由 `read_text` 直接复制到输出，复制动作先于模型生成；定位：infrastructure/stages/backend/runtime.py:31
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：CRUD、实体页面、API 与验收测试可迁移到同类网页应用，但其中 BookStack 具体契约仍是应用级知识。
+  - 综合判断：四个维度共同表明这是预置应用实现和测试契约，并通过直接文件复制进入产物，属于 TEMPLATE-DIRECT error；匹配题面集合的 bookstack 任务。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置无法满足唯一合法基线：存在明文 API key，以及视觉模型的独立 `VISUAL_API_KEY`/`VISUAL_BASE_URL` 回退槽位。
+  - .env:3: `OPENAI_API_KEY=ak_KeROtDXV1jbxwsIcoozMQsq8LjO3-r_B-EYednmmn68` 是硬编码明文 key。
+  - infrastructure/shared/models/text.py:72-74: 文本客户端读取 `OPENAI_API_KEY`，base URL 可回退到 `https://api.openai.com/v1`。
+  - infrastructure/shared/models/vision.py:73-82: 视觉客户端额外读取 `VISUAL_API_KEY`、`VISUAL_BASE_URL`，并在缺省时回退到 OPENAI 槽位/默认 URL；存在多个 key/base_url 槽位需人工核查。
+
+WARNING-002 [INSPECTION-GAP] 扫描器报告若干无法完整读取的证据文件。
+  - static-scan.json:inspection_gaps: `.test-win-venv` 中多个 `.pyd`、`cc2b49d7e2da-template/template/.arc/stdout.log` 和 `run_log/1107_2.txt` 超过 2000000 字节扫描上限；这些二进制或大文件的完整内容及其是否含额外模板/测试痕迹仍需人工核查。
+
+判决：作弊

@@ -1,0 +1,26 @@
+﻿反作弊审查：leaderboard_Re_从零开始的_se_agent_track-arc-bench-lite_score-84.50356898625502_pass_rate-78.02197802197803-agent
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Re_从零开始的_se_agent_track-arc-bench-lite_score-84.50356898625502_pass_rate-78.02197802197803\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型 endpoint 与 API key 槽位无法静态证明唯一且符合唯一合法配置。
+  - infrastructure/shared/models/text.py:50: 文本模型从 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL` 环境变量读取配置；同一文件第 72 行再次把 `api_key` 传入 OpenAI 客户端。
+  - infrastructure/shared/models/vision.py:56: 视觉模型额外接受 `VISUAL_API_KEY` 并回退到 `OPENAI_API_KEY`；第 57 行同样接受 `VISUAL_BASE_URL` 或 `OPENAI_BASE_URL`，因此存在多个 key/base_url 槽位和不确定的有效值。
+  - `.env.example:5`: 示例声明 `OPENAI_API_KEY`，但运行时还可使用视觉专用 key；`.env.example:6` 的标准 URL 不能证明实际 `.env` 的唯一有效值。
+
+WARNING-002 [TEMPLATE-DIRECT] 预置的控制器提示把题面级应用契约作为通用生成规则注入模型，直接覆盖六个任务的功能实现。
+  - infrastructure/repository/compiler.py:85: `Exact evaluator contract` 后的规则要求模型复用题面中的精确控件名称、角色、状态标签、种子账户和持久化结果；其中第 87-109 行还具体规定登录、搜索、日期/乘客字段、seed 账户、路由、可访问名称和固定时钟等应用行为。
+  - infrastructure/repository/compiler.py:146: 提示继续要求把 seed prerequisites、持久化历史状态和题面场景中的每个角色/状态/身份写入并由测试断言，属于直接实现验收契约的准备知识，而非基础框架。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：预置了应用控件语义、角色命名、状态可访问名称、种子数据、路由和持久化验收约束；定位：infrastructure/repository/compiler.py:85
+  - 检索方案：(4)无检索机制（全量使用）；说明：这些规则作为固定 INSTRUCTIONS 字符串每轮直接发送给模型，没有按任务选择；定位：infrastructure/repository/compiler.py:25
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：模型收到该固定契约后据此编写 React/Express/SQLite 实现和测试；定位：infrastructure/repository/compiler.py:152
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：规则可跨六个网页任务复用，但明确规定了题面级控件、seed、状态和验收行为，超出基础脚手架。
+  - 综合判断：固定提示全量注入应用级验收合同，并要求模型将其落实到实现和测试；其内容直接匹配六个任务的 stated requirements，因此属于 TEMPLATE-DIRECT error。
+
+判决：通过

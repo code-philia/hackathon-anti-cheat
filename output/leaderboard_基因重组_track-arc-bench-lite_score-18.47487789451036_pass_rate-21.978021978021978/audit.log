@@ -1,0 +1,28 @@
+反作弊审查：leaderboard_基因重组_track-arc-bench-lite_score-18.47487789451036_pass_rate-21.978021978021978
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_基因重组_track-arc-bench-lite_score-18.47487789451036_pass_rate-21.978021978021978\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：2 error(s), 1 warning(s)
+
+[ERROR]
+ERROR-001 [NET-EXTERNAL] 提交仓库保存并使用了非公开评测测试及其固定场景数据，构成对测试材料的未授权取得/复用。
+  - input/tests/REQ-2.spec.ts:1: 文件直接标注“requirement: REQ-2 — Register; the two teaching scenarios”，并在第 6-24 行实现注册成功、重复用户名拒绝两个评测场景；input/tests/REQ-3.spec.ts:1-19 和 input/tests/REQ-4.spec.ts:1-24 同样保存登录、错误密码、登出及刷新后的断言。
+  - input/tests/helpers.ts:13-16: 固定声明“Seeded by the scenario environment”，并硬编码 `taken_traveler`、`taken.traveler@example.com`、`TakenSmoke!2026`；第 49-73 行还硬编码 12306 注册字段、`China`、`Next step` 和同意条款等评测交互。
+  - infrastructure/stages/frontend/triggers/acceptance.py:120-125,148-170,194-203: 运行时读取原始 requirements 并建立 `test_requirement` 上下文，向独立测试生成暴露测试路径、fixture 和测试相关文件；因此上述测试/场景材料具有明确进入评测生成流程的路径。
+
+ERROR-002 [TEMPLATE-DIRECT] 已预置针对 12306 题面注册、登录、登出要求的可复用测试代码、选择器、字段和场景契约，并存放在提交仓库供生成/实现使用；该知识直接匹配题面任务 12306 的 REQ-2、REQ-3、REQ-4。
+  - input/tests/REQ-2.spec.ts:1-24: 预置注册成功、重复用户名失败、刷新后会话保持的完整 Playwright 测试实现。
+  - 知识类型：(1)完整代码实现；说明：包含可直接运行的注册测试、断言、固定账号和场景步骤，专用于 12306 身份认证页面；定位：input/tests/REQ-2.spec.ts:1-24
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试文件随提交仓库整体预置，未见按当前任务选择的必要检索，且 `input/tests` 可直接作为工程材料读取；定位：input/tests/REQ-2.spec.ts:1-4
+  - 生成方案：(1)无模型参与地使用代码；说明：测试代码、字段选择器和固定场景以源文件形式直接存在并可被测试/实现流程复用；定位：input/tests/helpers.ts:49-73
+  - 泛用估计：(1)知识仅可用于题面给定的需求；说明：`12306.cn` 条款、Nationality/Passport 字段、`taken_traveler` 账号及 `Next step` 交互是该题面特有契约。
+  - 综合判断：完整测试代码通过全量预置直接提供，并与 12306 的注册、登录、登出要求逐项匹配，四个维度共同支持 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置的标准端点和唯一凭据无法静态成立，存在多个非标准 URL/凭据槽位。
+  - infrastructure/shared/models/text.py:83-101: 从 `OPENAI_API_KEY` 读取凭据，并将 `OPENAI_BASE_URL` 或默认值设为 `https://api.openai.com/v1`。
+  - infrastructure/shared/models/vision.py:56-68: 另行读取 `VISUAL_API_KEY`/`OPENAI_API_KEY` 与 `VISUAL_BASE_URL`/`OPENAI_BASE_URL`，默认同为 `https://api.openai.com/v1`；这形成第二套 API key/base_url 槽位，且均不同于允许的 `https://api.arc-bench.com/v1`。
+  - tests/test_console_logging.py:29, tests/test_token_input/test_runner.py:63-64: 还存在额外 `base_url`/`api_key` 配置样例。上述内容未证明实际运行时一定选择某一槽位，但按规则需人工核查。
+
+判决：作弊

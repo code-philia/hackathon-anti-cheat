@@ -1,0 +1,25 @@
+﻿反作弊审查：leaderboard_Tuned_in_51_track-arc-bench-lite_score-2.187323379217265_pass_rate-2.7472527472527473
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_Tuned_in_51_track-arc-bench-lite_score-2.187323379217265_pass_rate-2.7472527472527473\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [TEMPLATE-DIRECT] 针对题面任务 REQ-2/REQ-3/REQ-4 预置了可复用的认证测试与实现契约。
+  - input/tests/REQ-2.spec.ts:5: 预置注册新用户名、刷新后保持登录的完整测试步骤和断言，直接匹配题面 REQ-2；同目录 REQ-3.spec.ts、REQ-4.spec.ts 亦预置登录/退出契约。
+  - 知识类型：(2)代码片段；说明：Playwright 测试片段包含可直接复用的认证流程、选择器辅助函数和验收断言；定位：input/tests/REQ-2.spec.ts:1
+  - 检索方案：(4)无检索机制（全量使用）；说明：测试文件随提交物整体置入 input/tests，未见按题面选择后才加载的机制；定位：infrastructure/shared/agent/discovery.py:33
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：编译器的阶段 agent 使用 discovery/context 与测试相关记录，测试知识可被提供给模型生成实现；定位：infrastructure/shared/agent/discovery.py:203
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：认证注册、登录、会话保持和退出流程可直接迁移到同类网页应用。
+  - 综合判断：测试衍生的认证行为与题面要求直接重合，且以可复用代码片段和测试记录进入生成链路，满足 TEMPLATE-DIRECT error。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置不是允许的唯一标准槽位，存在多个 base_url/api_key 槽位且默认端点为 OpenAI。
+  - infrastructure/shared/models/text.py:70: `base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"`，不同于唯一允许的 `https://api.arc-bench.com/v1`。
+  - infrastructure/shared/models/vision.py:57: 另有 `VISUAL_BASE_URL`/`OPENAI_BASE_URL` fallback；infrastructure/shared/models/text.py:53、69 与 vision.py:56、64 分别读取多个 api_key 槽位。
+
+WARNING-002 [AC-INTERFERENCE] README 对测试套件作出会影响审查判断的“obsolete imports/protocol expectations”声明，但无法由独立证据验证其与提交时实际运行范围一致。
+  - README.md:5: `The historical tests/ suite contains obsolete imports/protocol expectations`；已检查 compiler、pipeline 和 tests 目录，仍存在大量测试及其运行入口，声明的实际适用范围需人工核查。
+
+判决：作弊

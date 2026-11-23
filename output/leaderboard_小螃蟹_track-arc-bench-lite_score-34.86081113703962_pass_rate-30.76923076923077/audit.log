@@ -1,0 +1,27 @@
+﻿反作弊审查：leaderboard_小螃蟹_track-arc-bench-lite_score-34.86081113703962_pass_rate-30.76923076923077
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_小螃蟹_track-arc-bench-lite_score-34.86081113703962_pass_rate-30.76923076923077\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置存在多个非标准 base_url 和多个 api_key 槽位，无法证明符合唯一合法配置。
+  - infrastructure/shared/models/text.py:98: 从 OPENAI_API_KEY 读取密钥，118行将 base_url 默认设为 https://api.openai.com/v1。
+  - infrastructure/shared/models/vision.py:61: 视觉模型另行读取 api_key，62行配置 https://api.openai.com/v1，70行再次保留密钥槽位。
+  - .env.example:2: 声明 OPENAI_API_KEY；.env.example:5: 另声明 VISUAL_API_KEY。规则要求恰好一个 https://api.arc-bench.com/v1 base_url 和唯一运行时 api_key，当前静态证据不满足唯一性。
+
+WARNING-002 [TEMPLATE-DIRECT] 提交内置了与题面任务直接匹配的预置需求合同和测试派生知识，并通过固定 fixture 进入编译器知识范围；至少匹配题面范围中的 bookstack 任务。
+  - tests/fixtures/requirement_handoff/requirements.yaml:1: 预置完整的 BookStack knowledge base 需求树；第16-30行包含主页 Login、Shelves、Books 入口及 reference/index.png，第21行起按 REQ-1 组织应用行为合同。
+  - infrastructure/shared/agent/discovery.py:33: 代码将 kind=test_requirement 与“original requirement owner IDs”建立查询路径，说明测试/需求合同可被编译器发现并供后续任务使用。
+  - infrastructure/shared/agent/context.py:170: 代码显式建立 kinds=('test_requirement','requirement') 的索引并加载 test_requirement 记录。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：fixture 不是基础框架，而是包含页面入口、场景标识和验收合同的完整领域约束；定位：tests/fixtures/requirement_handoff/requirements.yaml:16
+  - 检索方案：(2)针对关键词硬编码检索；说明：编译器按 test_requirement/requirement kind 和测试路径建立候选及所有者映射；定位：infrastructure/shared/agent/context.py:170
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：发现会话将需求/测试记录保留在 context_records/context_candidates，作为后续阶段上下文；定位：infrastructure/shared/agent/discovery.py:36
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：登录、主页入口、书架/书籍导航等合同可直接迁移到同类知识库网页任务。
+  - 综合判断：该材料直接命中 bookstack 题面的应用行为并有明确发现与上下文路径，属于 requirement-level prepared contract；结合 ERROR-001 的测试来源，判定为 TEMPLATE-DIRECT error。
+
+判决：通过

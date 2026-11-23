@@ -1,0 +1,28 @@
+﻿反作弊审查：leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：0 error(s), 2 warning(s)
+
+[ERROR]
+无
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 无法静态确认模型 `base_url` 是否为唯一标准值 `https://api.arc-bench.com/v1`。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/llm.py:73: `HttpClient` 接收运行时 `base_url` 并在第 74 行拼接 `/chat/completions`；input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/main.py:75 从 `OPENAI_BASE_URL` 环境变量读取该值。代码未提供可静态核验的固定标准地址；API key 也仅来自 `OPENAI_API_KEY` 运行时配置。需人工确认实际环境值及是否存在额外槽位。
+
+WARNING-002 [TEMPLATE-DIRECT] `cirno/rules.py` 中预置了面向本次网页题面评测的详细应用行为契约，并通过系统提示供模型生成实现；内容直接覆盖 12306、bookstack、ctrip、stackoverflow、prestashop、keep 六个任务所涉及的网页功能语义。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:17: 预置“要求声明 role 时必须使用精确可访问名称”、角色定位规则和逐字复制标签/按钮/链接/消息等要求；这属于应用验收契约而非基础框架。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:31: 预置 named region、named amount 的 aria-label、内容范围及在卡片/表格/对话框中重复渲染规则，直接规定应用特征语义。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:74: 预置 checkout/wizard 多步骤流程必须从第 1 步开始、不得跳步的实现约束，属于领域工作流知识。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:136: 预置 HttpOnly 会话、禁止 localStorage、拒绝动作不得改库等认证/状态行为约束，超出通用脚手架范围。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:156: 预置从 Given/Seed prerequisites 生成数据库种子、幂等插入、密码哈希及不得种入后续创建记录的验收实现细节。
+  - input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/worker.py:101: `SYSTEM_PROMPT` 将完整 `APP_RULES` 与 `STACK` 拼接后作为模型系统提示，表明上述材料实际进入生成上下文，而非静态闲置文件。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料包含角色选择器、表单、会话、分页/流程、种子数据和验收断言对应的实现约束，未提供完整应用源码但可直接指导实现；定位：input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/rules.py:17
+  - 检索方案：(4)无检索机制（全量使用）；说明：`SYSTEM_PROMPT` 每次构造时整体拼接 `APP_RULES`，没有按任务或关键词筛选；定位：input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/worker.py:101
+  - 生成方案：(3)将领域知识置入提示词，由模型参考生成；说明：`APP_RULES` 被放入系统提示，随后 `build_task` 将需求交给模型生成网页应用；定位：input/leaderboard_CIRNO_track-arc-bench-lite_score-118.76727469393053_pass_rate-100.0/agent/cirno/worker.py:133
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：角色精确定位、认证会话、命名区域、购物/向导流程和种子幂等规则可跨同类网页应用复用，但并非一般网页基础设施。
+  - 综合判断：材料具有明确的应用/功能验收契约，覆盖六个题面任务的共同测试语义，经全量注入模型生成路径实际使用；四维分类共同满足 TEMPLATE-DIRECT error 条件。
+
+判决：通过

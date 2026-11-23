@@ -1,0 +1,27 @@
+﻿反作弊审查：leaderboard_翟澈组_track-arc-bench-lite_score-85.02843279609161_pass_rate-91.66666666666667
+题面路径：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web
+题面范围：D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\prestashop；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\bookstack；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\12306；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\stackoverflow；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\keep；D:\workplace\anti-cheat\hackathon-anti-cheat\material\arc-bench-web\ctrip
+作答路径：D:\workplace\anti-cheat\hackathon-anti-cheat\input\leaderboard_翟澈组_track-arc-bench-lite_score-85.02843279609161_pass_rate-91.66666666666667\agent
+审查覆盖：TEMPLATE-DIRECT/TEMPLATE-INDIRECT=已检查；MODEL-EXTERNAL=已检查；MODEL-METER-TAMPER=已检查；NET-EXTERNAL=已检查；AC-INTERFERENCE=已检查；OTHER-SUSPICIOUS/INSPECTION-GAP=已检查
+摘要：1 error(s), 2 warning(s)
+
+[ERROR]
+ERROR-001 [AC-INTERFERENCE] 选手说明性文字否认复制平台测试，但仓库实际包含并使用同类测试材料，足以影响审查判断。
+  - CHANGELOG.md:311: 声称“只修改 agent 的生成指令；不直接把 12/12 网页复制进提交包，也不改原始 requirements 或平台测试”。但 input/tests/REQ-2.spec.ts:1-23、input/tests/helpers.ts:7-86 实际包含完整认证验收测试及专用 fixture；且 infrastructure/pipeline/backend_implementation.py:84-85 明确将 generated tests 用于实现。
+  - CHANGELOG.md:307: 声称尚未重跑平台评测、仅做语法/差异检查；该声明无法解释仓库中已保存的非授权 evaluator 测试及其被生成管线读取的事实。
+
+[WARNING]
+WARNING-001 [MODEL-EXTERNAL] 模型配置槽位不满足唯一标准端点基线，需人工确认实际运行配置。
+  - infrastructure/shared/models/text.py:54: 读取 OPENAI_API_KEY，71 行将 base_url 回退为 https://api.openai.com/v1；infrastructure/shared/models/vision.py:56-64 另有 VISUAL_API_KEY/VISUAL_BASE_URL 槽位并独立创建客户端。静态扫描还发现 playground/server.py 的 OPENAI_BASE_URL/VISUAL_API_KEY 槽位及多个测试端点，无法建立唯一且精确为 https://api.arc-bench.com/v1 的有效配置。
+
+WARNING-002 [TEMPLATE-DIRECT] 选手将与题面任务 REQ-2、REQ-3、REQ-4 直接匹配的测试合同、选择器、账号和工作流作为预置知识供模型复用。
+  - input/tests/helpers.ts:7-11: 预置 Register/Login/Logout 的精确 role、accessible name、字段标签和密码定位器；37-47 行预置 signed-in/signed-out 断言，直接编码认证需求的实现合同。
+  - input/tests/REQ-2.spec.ts:6-23: 预置注册成功、刷新保持登录、重复用户名 alert 和无会话断言，直接对应 REQ-2 场景。
+  - infrastructure/stages/frontend/triggers/implementation.py:85-108: 生成指令要求保留原始命名契约、region/button 语义、data-testid 及在前置流程后复跑测试；该路径把测试合同供应给模型实现。
+  - 知识类型：(3)代码实现逻辑/细节/约束；说明：材料不是完整应用，但包含题面认证功能的专用选择器、状态、流程和验收约束；定位：input/tests/helpers.ts:7
+  - 检索方案：(4)无检索机制（全量使用）；说明：input/tests 被作为工作区输入直接保留并由管线读取，没有仅限基础框架的选择；定位：infrastructure/pipeline/backend_implementation.py:84
+  - 生成方案：(2)将代码知识置入提示词，由模型复用拼接生成；说明：测试指令和实现指令把 generated tests、fixture conventions 及语义契约交给模型；定位：infrastructure/pipeline/backend_implementation.py:20
+  - 泛用估计：(2)知识在与题面功能一致的网页应用上可以兼容泛化；说明：认证测试助手可迁移到同类认证网页，但其具体字段、用户名、按钮和状态断言仍是题面功能级合同。
+  - 综合判断：测试材料与 REQ-2/3/4 直接匹配，且通过模型提示进入实现，满足 TEMPLATE-DIRECT error；同时其来源构成 ERROR-001 的非授权测试获取。
+
+判决：作弊
