@@ -81,6 +81,8 @@ def validate(path: Path) -> list[str]:
                 errors.append(f"{finding} must cite the explanatory claim as path:line")
         if match.group(2) not in TEMPLATE_RULES:
             continue
+        if not any(re.match(r"^\s{2}-\s+(?:[A-Za-z]:)?[^：\n]+:\d+(?:\b|`)", line) for line in block):
+            errors.append(f"{finding} must begin with an ordinary path:line evidence bullet")
         for field, pattern in TEMPLATE_FIELDS.items():
             if not any(pattern.match(line) for line in block):
                 errors.append(f"{finding} has missing or malformed template field: {field}")

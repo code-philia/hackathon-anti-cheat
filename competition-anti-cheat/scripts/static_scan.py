@@ -20,6 +20,13 @@ ZIP_SUFFIXES = {".zip", ".jar", ".whl", ".apk"}
 ARCHIVE_SUFFIXES = {".7z", ".rar", ".tar", ".tgz", ".gz", ".bz2", ".xz"}
 
 PATTERNS = {
+    "TEST-DERIVED": re.compile(
+        r"(?i)(^|[\\/])(?:tests?|specs?|__tests__|fixtures?)(?:[\\/]|$)|"
+        r"(?:\\.spec\\.(?:js|jsx|ts|tsx)|\\.test\\.(?:js|jsx|ts|tsx)|test_[^\\s/\\]+\\.(?:py|js|ts))|"
+        r"\\b(?:describe|it|test|beforeEach|afterEach|expect|assert|assertThat|fixture|fixtures|snapshot|"
+        r"expected[_ -]?(?:output|result)|golden[_ -]?file|selector|locator|test[_ -]?case|acceptance[_ -]?criteria)\\b|"
+        r"(?:测试用例|测试总结|测试清单|断言|预期输出|期望结果|选择器|定位器|fixture|验收条件|测试步骤)"
+    ),
     "AC-INTERFERENCE": re.compile(
         r"(?i)(ignore\s+(all\s+)?(previous|prior)\s+instructions|bypass|disable|evade|"
         r"neutralize|绕过|规避|禁用|无效化|忽略).{0,100}"
@@ -131,6 +138,12 @@ def scan_tree(root: Path) -> dict:
             continue
         size = path.stat().st_size
         inventory.append({"path": relative, "bytes": size, "sha256": None})
+        # Hash before size/total-budget checks so an oversized file can still
+        # be recognized as an exact copy of authorized example material.
+        try:
+            inventory[-1]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            pass
         if size > MAX_FILE_BYTES:
             gaps.append({"location": relative, "reason": f"file exceeds {MAX_FILE_BYTES} byte scan limit"})
             continue
@@ -147,7 +160,6 @@ def scan_tree(root: Path) -> dict:
         if suffix in ARCHIVE_SUFFIXES:
             gaps.append({"location": relative, "reason": "unsupported archive format; inspect manually"})
         data = path.read_bytes()
-        inventory[-1]["sha256"] = hashlib.sha256(data).hexdigest()
         text = decode(data)
         total += len(data)
         if text is not None:
@@ -159,8 +171,22 @@ def discover_example_tasks(root: Path) -> list[Path]:
     """Resolve one task root or every requirements.yaml-marked task in a collection."""
     root = root.resolve()
     if (root / "requirements.yaml").is_file():
+        if root.name.lower() == "requirements" and (root.parent / "tests").is_dir():
+            return [root.parent]
         return [root]
-    tasks = sorted({marker.parent.resolve() for marker in root.rglob("requirements.yaml")})
+    tasks: set[Path] = set()
+    for marker in root.rglob("requirements.yaml"):
+        candidate = marker.parent.resolve()
+        # Some competition exports keep requirements/reference in a nested
+        # directory while tests remain beside it:
+        #   task/requirements/requirements.yaml
+        #   task/requirements/reference/*
+        #   task/tests/*
+        if candidate.name.lower() == "requirements" and (candidate.parent / "tests").is_dir():
+            tasks.add(candidate.parent.resolve())
+        else:
+            tasks.add(candidate)
+    tasks = set(tasks)
     return tasks or [root]
 
 
@@ -173,6 +199,46 @@ def collect_matches(lines: list[TextLine]) -> dict[str, list[dict]]:
     return {rule: evidence for rule, evidence in matches.items() if evidence}
 
 
+def collect_test_artifacts(inventory: list[dict]) -> list[dict]:
+    """Return file-level test artifacts, including files with no readable text."""
+    pattern = re.compile(
+        r"(?i)(^|/)(?:tests?|specs?|__tests__|fixtures?)(?:/|$)|"
+        r"(?:\\.spec\\.(?:js|jsx|ts|tsx)|\\.test\\.(?:js|jsx|ts|tsx)|test_[^/]+\\.(?:py|js|ts))$"
+    )
+    return [
+        {"location": item["path"], "reason": "test-like filename or directory; verify whether it contains non-public evaluator material"}
+        for item in inventory
+        if pattern.search(item.get("path", ""))
+    ]
+
+
+def model_config_summary(lines: list[TextLine]) -> dict:
+    """Statically summarize URL/key slots for the legal single-endpoint baseline."""
+    url_re = re.compile(r"(?i)\b([A-Z0-9_]*(?:BASE_URL|API_BASE|ENDPOINT)[A-Z0-9_]*)\b[^\n]{0,160}?['\"](https?://[^'\"]+)['\"]")
+    key_re = re.compile(r"(?i)\b([A-Z0-9_]*(?:API_KEY|ACCESS_TOKEN)[A-Z0-9_]*)\b\s*=|\bos\.environ(?:\.get|\.__getitem__)?\s*\([^)]*(?:API_KEY|ACCESS_TOKEN)")
+    urls: list[dict] = []
+    keys: list[dict] = []
+    for line in lines:
+        if match := url_re.search(line.text):
+            urls.append({"name": match.group(1), "value": match.group(2), "location": f"{line.location}:{line.number}"})
+        if match := key_re.search(line.text):
+            name = match.group(1) or "environment-api-key"
+            keys.append({"name": name, "location": f"{line.location}:{line.number}"})
+    distinct_urls = sorted({item["value"] for item in urls})
+    distinct_keys = sorted({item["name"] for item in keys})
+    reasons: list[str] = []
+    if len(urls) != 1 or distinct_urls != ["https://api.arc-bench.com/v1"]:
+        reasons.append("base_url 不是唯一且精确为 https://api.arc-bench.com/v1")
+    if len(distinct_keys) != 1:
+        reasons.append("api_key 配置槽位不是唯一")
+    return {
+        "status": "legal" if not reasons else "warning",
+        "reasons": reasons,
+        "base_url_slots": urls,
+        "api_key_slots": keys,
+    }
+
+
 def normalized_long_lines(lines: list[TextLine]) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for line in lines:
@@ -182,6 +248,25 @@ def normalized_long_lines(lines: list[TextLine]) -> dict[str, list[str]]:
         digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
         index.setdefault(digest, []).append(f"{line.location}:{line.number}")
     return index
+
+
+def is_test_location(location: str) -> bool:
+    value = location.replace("\\", "/").lower()
+    return bool(re.search(r"(?:^|/)(?:tests?|specs?|__tests__|fixtures?)(?:/|$)|(?:\\.spec\\.|\\.test\\.)", value))
+
+
+def test_lines(lines: list[TextLine]) -> list[TextLine]:
+    return [line for line in lines if is_test_location(line.location)]
+
+
+def test_overlap_leads(example_lines: list[TextLine], submission_lines: list[TextLine]) -> list[dict]:
+    """Compare canonical example tests with submission material separately from general overlap."""
+    example_index = normalized_long_lines(test_lines(example_lines))
+    submission_index = normalized_long_lines(submission_lines)
+    return [
+        {"example_test": example_index[digest][:3], "submission": submission_index[digest][:3]}
+        for digest in sorted(set(example_index) & set(submission_index))[:100]
+    ]
 
 
 def overlap_leads(example_lines: list[TextLine], submission_lines: list[TextLine]) -> list[dict]:
@@ -210,17 +295,40 @@ def main() -> int:
     example_tasks = discover_example_tasks(args.example)
     examples = [(task, scan_tree(task)) for task in example_tasks]
     submission = scan_tree(args.submission.resolve())
+    authorized_reference_hashes = {
+        item["sha256"]
+        for _, example in examples
+        for item in example["inventory"]
+        if item.get("sha256") and re.search(r"(?:^|/)(?:requirements/)?reference/", item["path"].replace("\\", "/"), re.I)
+    }
+    if authorized_reference_hashes:
+        copied_reference_paths = {
+            item["path"]
+            for item in submission["inventory"]
+            if item.get("sha256") in authorized_reference_hashes
+            and re.search(r"(?:^|/)(?:input/)?reference/", item["path"].replace("\\", "/"), re.I)
+        }
+        submission["inspection_gaps"] = [
+            gap for gap in submission["inspection_gaps"]
+            if gap["location"] not in copied_reference_paths
+        ]
     overlaps = []
+    test_overlaps = []
     for task, example in examples:
         for lead in overlap_leads(example["lines"], submission["lines"]):
             overlaps.append({"example_task": str(task), **lead})
+        for lead in test_overlap_leads(example["lines"], submission["lines"]):
+            test_overlaps.append({"example_task": str(task), **lead})
     report = {
         "example_root": str(args.example.resolve()),
         "example_tasks": [str(task) for task in example_tasks],
         "submission_root": str(args.submission.resolve()),
         "submission_inventory": submission["inventory"],
         "mechanical_leads": collect_matches(submission["lines"]),
+        "test_artifact_leads": collect_test_artifacts(submission["inventory"]),
         "long_line_overlaps": overlaps[:100],
+        "test_case_overlaps": test_overlaps[:100],
+        "model_config": model_config_summary(submission["lines"]),
         "inspection_gaps": submission["inspection_gaps"],
         "limits": {"max_file_bytes": MAX_FILE_BYTES, "max_total_bytes": MAX_TOTAL_BYTES},
         "notice": "Leads are not verdicts. Inspect original context before adjudicating.",

@@ -50,6 +50,16 @@ codex exec --ephemeral --json --sandbox workspace-write --skip-git-repo-check "�
 | `--sandbox workspace-write` | 允许读取工作区，并仅在工作区范围内写入文件。skill 自身还要求只写指定的结果文件。 |
 | `--skip-git-repo-check` | 即使当前目录未被 Codex 识别为 Git 仓库也继续执行。 |
 
+## 单个 leaderboard ZIP 的完整审计
+
+从仓库根目录运行下面的脚本即可完成“解压 agent、整理 input、创建 output、调用 Codex 和保存审计结果”的完整流程：
+
+```powershell
+python tools\run_single_audit.py download\leaderboard-export.zip --overwrite
+```
+
+脚本只提取 leaderboard 中的 `agent.zip`，并在 `input/` 下生成纯净 agent 目录；审计结果写入 `output/<leaderboard-name>/audit.log`，Codex 事件写入同目录的 `trace.jsonl`，临时文件写入 `temp/`。需求材料默认使用 `material\arc-bench-web`，也可通过 `--example` 覆盖。
+
 ## 单题审查示例
 
 只审查 `sheet` 题目时，可将题目路径缩小到对应目录：
