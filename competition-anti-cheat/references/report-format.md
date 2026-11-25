@@ -43,3 +43,17 @@ WARNING-001 [RULE-ID] <中文事实描述>
 - Do not include hidden chain-of-thought. Record findings, evidence, and short adjudication reasons only.
 - The final non-empty line must be exactly `判决：通过` or `判决：作弊`.
 - At least one error requires `判决：作弊`; warnings alone produce `判决：通过` pending human review.
+
+
+## Extracted JSON Contract
+
+After log validation, run `python <skill-directory>/scripts/extract_findings.py <log_path>`. The default output is the same path with `.json` replacing `.log`; an optional second argument overrides the JSON path.
+
+The UTF-8 JSON root is an array in log order. Each ERROR or WARNING is one dictionary, containing `id`, `severity` (`error` or `warning`), `rule_id`, `description`, and `evidence`. Source evidence is structured as `{"path": "src/agent.py", "line": 42, "explanation": "??????"}`. Evidence without a parseable source location is preserved as `{"text": "??????"}`. Template classification bullets are preserved in an optional `classification` dictionary keyed by ????????????????????????; other continuation text is preserved in an optional `details` array. No finding content should be silently discarded.
+
+Exclude header metadata, task scope, coverage declaration, summary counts, section markers, empty-section `?`, and the final verdict. A log with no findings yields `[]`. JSON is derived from the final log, not independently rewritten; regenerate it whenever the log changes.
+
+
+### Extraction failure and repair
+
+Successful execution alone is insufficient: load the generated JSON and compare its finding count, IDs, severity, rules, descriptions, and evidence/classification/details against the log. Missing, duplicated, or truncated content is a failure. Diagnose whether the log violates this contract or the extractor cannot handle valid content. Repair malformed log structure or formatting, rerun `validate_report.py`, regenerate JSON, and repeat the completeness check. Preserve substantive audit conclusions and all evidence during formatting repairs. For a parser limitation, fix the extractor when permitted rather than distorting a compliant log. After two unsuccessful repair attempts for the same failure, retain the log and report the unresolved JSON failure; do not claim both artifacts are complete.
