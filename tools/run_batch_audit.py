@@ -1,4 +1,4 @@
-"""Run the single-audit pipeline serially for a fixed ZIP list."""
+"""Run audits serially; success requires validated audit.log and audit.json."""
 
 from __future__ import annotations
 

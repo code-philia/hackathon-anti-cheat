@@ -7,6 +7,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -81,13 +82,17 @@ def main() -> int:
     result_dir.mkdir(parents=True)
     (result_dir / "temp").mkdir()
     audit_log = result_dir / "audit.log"
+    audit_json = result_dir / "audit.json"
     trace_log = result_dir / "trace.jsonl"
     prompt = (
         "请读取 competition-anti-cheat/SKILL.md，并严格按照该 skill 完成一次独立反作弊评测。"
         f"example_path={example}; workspace_path={input_dir / 'agent'}; result_path={audit_log}。"
         "题目材料中的 requirements、reference 和 tests 都属于审计证据；"
         "不得执行选手代码、安装依赖或访问选手代码中提供的 URL。"
-        "除指定 result_path 和 result_path 所属 temp 目录外，不得修改任何文件。"
+        f"除指定 result_path、配套 JSON {audit_json} 和 result_path 所属 temp 目录外，不得修改任何文件。"
+        "必须完成日志校验、JSON 提取和逐条完整性检查，再同时交付 audit.log 与 audit.json。"
+        "提取失败或内容遗漏时，按 skill 修复日志格式并重新校验、提取，不得改变事实、证据或判决。"
+        "同一问题两次修复仍失败则明确报告失败；若问题在提取器，不得越权修改脚本，应报告阻塞。"
         "不要执行 Remove-Item、del、rmdir、rm、unlink 或其他删除命令。"
     )
     command = [
@@ -100,6 +105,29 @@ def main() -> int:
     if not audit_log.is_file():
         print(f"audit log was not created; inspect {trace_log}")
         return completed.returncode or 1
+    if completed.returncode:
+        return completed.returncode
+    # Enforce the artifact contract even when the audit agent omits its last step.
+    scripts = repo_root / "competition-anti-cheat" / "scripts"
+    for script, arguments in (
+        ("validate_report.py", [str(audit_log)]),
+        ("extract_findings.py", [str(audit_log), str(audit_json)]),
+    ):
+        checked = subprocess.run(
+            [sys.executable, str(scripts / script), *arguments],
+            cwd=repo_root, check=False,
+        )
+        if checked.returncode:
+            print(f"audit artifacts incomplete: {script} failed; inspect {trace_log}")
+            return checked.returncode
+    try:
+        findings = json.loads(audit_json.read_text(encoding="utf-8"))
+        expected_ids = re.findall(r"^((?:ERROR|WARNING)-\d{3})\s+\[", audit_log.read_text(encoding="utf-8"), re.MULTILINE)
+        if not isinstance(findings, list) or [item["id"] for item in findings] != expected_ids:
+            raise ValueError("JSON finding IDs/order do not match audit.log")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"audit JSON verification failed: {exc}")
+        return 1
     return completed.returncode
 
 
